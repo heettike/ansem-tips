@@ -31,7 +31,8 @@ function LoginInner({ label, className, onAuthed }: Props) {
         const linkedWallet = (user.linkedAccounts || []).find(
           (a) => a.type === "wallet" && "address" in a
         ) as { address?: string } | undefined;
-        const sol = user.wallet?.address || linkedWallet?.address || null;
+        const primaryWallet = user.wallet as { address?: string } | null | undefined;
+        const sol = primaryWallet?.address || linkedWallet?.address || null;
         await fetch("/api/auth/sync", {
           method: "POST",
           headers: {
