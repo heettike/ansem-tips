@@ -277,10 +277,10 @@ body::after {
   text-shadow: 0 0 14px rgba(245, 185, 66, 0.3);
 }
 
-/* ── Site nav — no backdrop-blur-xl ── */
+/* ── Site nav — solid dark, no backdrop-filter blur ── */
 .site-nav {
   border-bottom: 1px solid var(--card-border);
-  background: color-mix(in srgb, var(--background) 90%, transparent);
+  background: #050505;
 }
 .site-nav-strip {
   border-bottom: 1px solid rgba(182, 255, 59, 0.18);

@@ -7,9 +7,9 @@ import { useState } from "react";
 
 const links = [
   { href: "/", label: "Home" },
-  { href: "/onboard", label: "Onboard" },
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/withdraw", label: "Withdraw" },
+  { href: "/onboard", label: "Tipper" },
+  { href: "/dashboard", label: "Dash" },
+  { href: "/withdraw", label: "Cash out" },
 ];
 
 export function Nav() {
