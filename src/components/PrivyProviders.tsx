@@ -1,6 +1,6 @@
 "use client";
 
-import { PrivyProvider } from "@privy-io/react-auth";
+import { PrivyProvider, type PrivyClientConfig } from "@privy-io/react-auth";
 import { type ReactNode, useMemo } from "react";
 import { ClientErrorBoundary } from "@/components/ClientErrorBoundary";
 
@@ -8,20 +8,20 @@ import { ClientErrorBoundary } from "@/components/ClientErrorBoundary";
 export default function PrivyProviders({ children }: { children: ReactNode }) {
   const appId = (process.env.NEXT_PUBLIC_PRIVY_APP_ID || "").trim();
 
-  const config = useMemo(
+  const config = useMemo<PrivyClientConfig>(
     () => ({
-      loginMethods: ["twitter"] as const,
+      loginMethods: ["twitter"],
       appearance: {
-        theme: "dark" as const,
-        accentColor: "#b6ff3b" as `#${string}`,
+        theme: "dark",
+        accentColor: "#b6ff3b",
       },
       // Solana embedded wallets — keep shape Privy v3 expects
       embeddedWallets: {
         solana: {
-          createOnLogin: "users-without-wallets" as const,
+          createOnLogin: "users-without-wallets",
         },
         ethereum: {
-          createOnLogin: "off" as const,
+          createOnLogin: "off",
         },
       },
     }),
