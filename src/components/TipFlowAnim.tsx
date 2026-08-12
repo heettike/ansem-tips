@@ -1,62 +1,75 @@
+"use client";
+
+import type { CSSProperties } from "react";
+
 const TARGETS: {
   id: string;
   label: string;
   x: number;
   y: number;
   delay: string;
+  dur: string;
   gold?: boolean;
 }[] = [
-  { id: "like", label: "LIKE", x: 320, y: 28, delay: "0s" },
-  { id: "reply", label: "REPLY", x: 320, y: 78, delay: "0.35s" },
-  { id: "follow", label: "FOLLOW", x: 320, y: 128, delay: "0.7s" },
-  { id: "qt", label: "QT", x: 320, y: 178, delay: "1.05s" },
-  { id: "bull", label: "🐂 SUPER", x: 320, y: 228, delay: "1.4s", gold: true },
+  { id: "like", label: "like", x: 248, y: 28, delay: "0s", dur: "2.6s" },
+  { id: "reply", label: "reply", x: 248, y: 78, delay: "0.35s", dur: "2.7s" },
+  { id: "follow", label: "follow", x: 248, y: 128, delay: "0.7s", dur: "2.8s" },
+  { id: "qt", label: "QT", x: 248, y: 178, delay: "1.05s", dur: "2.9s" },
+  {
+    id: "bull",
+    label: "🐂 super",
+    x: 248,
+    y: 228,
+    delay: "1.4s",
+    dur: "3s",
+    gold: true,
+  },
 ];
 
-/** CSS/SVG tip flow: tipper → engagement wallets. No WebGL/canvas. */
+/** CSS/SVG tip flow: tipper → engagement wallets. No WebGL / heavy blur. */
 export function TipFlowAnim() {
   return (
-    <div className="tip-flow" aria-hidden="true">
+    <div className="tip-flow card-terminal" aria-hidden="true">
       <svg
         className="tip-flow-svg"
-        viewBox="0 0 420 270"
+        viewBox="0 0 340 290"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         role="img"
       >
-        <title>Tip flow: one tipper spreads $ansem to many wallets</title>
+        <title>Tips flow from one tipper to many wallets</title>
 
-        {/* faint grid */}
         <defs>
-          <pattern id="tip-grid" width="20" height="20" patternUnits="userSpaceOnUse">
-            <path d="M20 0H0V20" stroke="rgba(182,255,59,0.06)" strokeWidth="1" />
+          <pattern id="tip-grid" width="16" height="16" patternUnits="userSpaceOnUse">
+            <path d="M16 0H0V16" stroke="rgba(182,255,59,0.07)" strokeWidth="1" />
           </pattern>
-          {TARGETS.map((t) => (
-            <path
-              key={`path-${t.id}`}
-              id={`tip-path-${t.id}`}
-              d={`M 108 135 C 180 ${135 + (t.y - 128) * 0.35}, 240 ${t.y}, ${t.x - 8} ${t.y + 12}`}
-            />
-          ))}
         </defs>
-        <rect width="420" height="270" fill="url(#tip-grid)" />
+        <rect width="340" height="290" fill="url(#tip-grid)" />
 
-        {/* Tipper node */}
-        <rect x="28" y="108" width="80" height="54" fill="#0a0a0a" stroke="#b6ff3b" strokeWidth="1.5" />
+        {/* Tipper */}
+        <circle
+          className="tip-node-pulse"
+          cx="52"
+          cy="145"
+          r="28"
+          fill="#0a0a0a"
+          stroke="#b6ff3b"
+          strokeWidth="1.75"
+        />
         <text
-          x="68"
-          y="128"
+          x="52"
+          y="141"
           textAnchor="middle"
           fill="#9ca3af"
           fontFamily="ui-monospace, monospace"
-          fontSize="8"
+          fontSize="7"
           letterSpacing="1.5"
         >
           TIPPER
         </text>
         <text
-          x="68"
-          y="146"
+          x="52"
+          y="155"
           textAnchor="middle"
           fill="#b6ff3b"
           fontFamily="ui-monospace, monospace"
@@ -66,70 +79,74 @@ export function TipFlowAnim() {
           YOU
         </text>
 
-        {/* Paths + target nodes */}
         {TARGETS.map((t) => (
           <g key={t.id}>
-            <path
+            <line
               className="flow-path"
-              d={`M 108 135 C 180 ${135 + (t.y - 128) * 0.35}, 240 ${t.y}, ${t.x - 8} ${t.y + 12}`}
+              x1="80"
+              y1="145"
+              x2={t.x - 4}
+              y2={t.y + 12}
               stroke={t.gold ? "rgba(245,185,66,0.55)" : "rgba(182,255,59,0.35)"}
               strokeWidth="1.25"
-              fill="none"
+              strokeDasharray="4 3"
               style={{ animationDelay: t.delay }}
             />
             <rect
               x={t.x}
               y={t.y}
-              width={88}
-              height={26}
+              width={78}
+              height="24"
               fill="#0a0a0a"
-              stroke={t.gold ? "#f5b942" : "#b6ff3b"}
+              stroke={t.gold ? "#f5b942" : "#22ff44"}
               strokeWidth="1.25"
+              rx="2"
+              ry="2"
             />
             <text
-              x={t.x + 44}
-              y={t.y + 17}
+              x={t.x + 39}
+              y={t.y + 16}
               textAnchor="middle"
               fill={t.gold ? "#f5b942" : "#b6ff3b"}
               fontFamily="ui-monospace, monospace"
               fontSize="9"
               fontWeight="700"
-              letterSpacing="1"
+              letterSpacing="0.5"
             >
               {t.label}
             </text>
-            {/* particle as SVG circle along path */}
-            <circle r="3.5" fill={t.gold ? "#f5b942" : "#b6ff3b"}>
-              <animateMotion
-                dur="2.8s"
-                repeatCount="indefinite"
-                begin={t.delay}
-                path={`M 108 135 C 180 ${135 + (t.y - 128) * 0.35}, 240 ${t.y}, ${t.x - 8} ${t.y + 12}`}
-              />
-              <animate
-                attributeName="opacity"
-                values="0;1;1;0"
-                keyTimes="0;0.1;0.85;1"
-                dur="2.8s"
-                repeatCount="indefinite"
-                begin={t.delay}
-              />
-            </circle>
           </g>
         ))}
 
         <text
-          x="210"
-          y="262"
+          x="170"
+          y="278"
           textAnchor="middle"
           fill="#9ca3af"
           fontFamily="ui-monospace, monospace"
           fontSize="8"
-          letterSpacing="2"
+          letterSpacing="1.5"
         >
-          ONE TIPPER → MANY WALLETS
+          one tipper → many wallets
         </text>
       </svg>
+
+      {TARGETS.map((t) => (
+        <span
+          key={`p-${t.id}`}
+          className={`tip-particle${t.gold ? " gold" : ""}`}
+          style={
+            {
+              left: "15.3%",
+              top: "50%",
+              "--dx": `${((t.x + 39 - 52) / 340) * 100}cqw`,
+              "--dy": `${((t.y + 12 - 145) / 290) * 100}cqh`,
+              "--delay": t.delay,
+              "--dur": t.dur,
+            } as CSSProperties
+          }
+        />
+      ))}
     </div>
   );
 }

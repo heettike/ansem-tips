@@ -13,7 +13,8 @@ export const dynamic = "force-dynamic";
 
 /**
  * GET /api/balance?username=heettike&role=tipper
- * Returns ledger balances (+ optional on-chain token balance).
+ * Returns tip balances (+ optional on-chain token balance).
+ * Demo fallbacks are zeros — never invent fake totals.
  */
 export async function GET(req: NextRequest) {
   const username = (

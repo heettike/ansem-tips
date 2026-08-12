@@ -14,11 +14,11 @@ type ReceivedTip = {
 
 const ACTION_LABEL: Record<string, string> = {
   like: "liked",
-  comment: "commented on",
+  comment: "replied to",
   reply: "replied to",
-  quote: "quote-tweeted",
+  quote: "QT’d",
   follow: "followed you",
-  super_tip: "super-tipped 🐂",
+  super_tip: "super tipped 🐂",
 };
 
 export function ReceivedTipsFeed({ tips }: { tips: ReceivedTip[] }) {
@@ -26,7 +26,7 @@ export function ReceivedTipsFeed({ tips }: { tips: ReceivedTip[] }) {
     <div className="card overflow-hidden">
       <div className="panel-head">
         <h3>Tips you earned</h3>
-        <p className="mt-1 text-xs text-muted">
+        <p className="mt-1 font-mono text-[0.62rem] uppercase tracking-[0.12em] text-muted">
           What tippers did + how much $ansem landed
         </p>
       </div>
@@ -65,10 +65,10 @@ export function ReceivedTipsFeed({ tips }: { tips: ReceivedTip[] }) {
                 </p>
               </div>
               <div className="shrink-0 text-right">
-                <span className="badge badge-bull font-mono">
+                <span className="badge badge-gold font-mono">
                   +{usd.toFixed(2)}
                 </span>
-                <p className="mt-1 font-mono text-xs text-muted">
+                <p className="mt-1 font-mono text-xs text-accent-2">
                   {t.amount.toFixed(2)} $ansem
                 </p>
               </div>
@@ -80,7 +80,8 @@ export function ReceivedTipsFeed({ tips }: { tips: ReceivedTip[] }) {
             <div className="empty-state">
               <p className="empty-title">No tips yet</p>
               <p className="empty-body">
-                Tips show up after someone engages you.
+                Tips show up after someone likes, replies, follows, QTs, or
+                drops 🐂.
               </p>
             </div>
           </li>

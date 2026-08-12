@@ -39,10 +39,10 @@ export default async function OnboardPage() {
     <div className="mx-auto max-w-3xl px-4 py-10">
       <p className="badge badge-bull">Tipper onboard</p>
       <h1 className="stadium-banner mt-3 text-3xl sm:text-5xl">
-        Three steps. Then tip.
+        Sign in → deposit → tip
       </h1>
       <p className="mt-3 text-muted">
-        Allowlist:{" "}
+        Tippers right now:{" "}
         <strong className="text-foreground">
           {config.tipperAllowlist.map((t) => `@${t}`).join(" · ")}
         </strong>
@@ -52,7 +52,7 @@ export default async function OnboardPage() {
         <div className="empty-state mt-6">
           <p className="empty-title">Not on the tipper list</p>
           <p className="empty-body">
-            Only allowlisted tippers can run tips right now.
+            Only listed tippers can run tips right now. Ask to get added.
           </p>
         </div>
       )}
@@ -86,7 +86,7 @@ export default async function OnboardPage() {
             </p>
             <p className="mt-3 font-mono text-sm">
               Deposited:{" "}
-              <span className="text-accent-2">{deposited.toFixed(2)} $ansem</span>
+              <span className="gold-glow">{deposited.toFixed(2)} $ansem</span>
             </p>
 
             {hasDepositAddress && wallet ? (

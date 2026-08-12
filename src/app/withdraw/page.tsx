@@ -30,6 +30,24 @@ const EMPTY_BALANCE: BalanceView = {
   walletAddress: null,
 };
 
+function friendlyWithdrawError(raw: unknown): string {
+  const msg = typeof raw === "string" ? raw : "";
+  if (!msg) return "Withdraw didn’t go through. Try again in a bit.";
+  if (/demo/i.test(msg)) {
+    return "Demo mode is on — withdraws are paused right now.";
+  }
+  if (/insufficient|too low|balance is 0|nothing to withdraw/i.test(msg)) {
+    return "Nothing to withdraw yet — your tip balance is 0 (or too low for that amount).";
+  }
+  if (/not found|sign in|userId|xUsername/i.test(msg)) {
+    return "Sign in with X first, then withdraw.";
+  }
+  if (/address|amount|validation|looks off|flatten/i.test(msg)) {
+    return "Check your wallet address and amount — something looks off.";
+  }
+  return msg;
+}
+
 export default function WithdrawPage() {
   const [toAddress, setToAddress] = useState("");
   const [amount, setAmount] = useState(0);
@@ -132,10 +150,16 @@ export default function WithdrawPage() {
         }
         setAmount(0);
       } else {
-        setStatusError(data.result?.error || data.error || "Withdraw failed");
+        setStatusError(
+          friendlyWithdrawError(data.result?.error || data.error)
+        );
       }
     } catch (err) {
-      setStatusError(err instanceof Error ? err.message : "Request failed");
+      setStatusError(
+        friendlyWithdrawError(
+          err instanceof Error ? err.message : "Request failed"
+        )
+      );
     } finally {
       setLoading(false);
     }
@@ -182,7 +206,7 @@ export default function WithdrawPage() {
       <div className="mt-8 grid gap-3 sm:grid-cols-3">
         <div className="card p-4">
           <p className="label-mono">Lifetime earned</p>
-          <p className="mt-1 font-mono text-xl font-semibold">
+          <p className="mt-1 font-mono text-xl font-semibold gold-glow">
             {lifetime.toFixed(2)}{" "}
             <span className="text-sm text-accent-2">$ansem</span>
           </p>

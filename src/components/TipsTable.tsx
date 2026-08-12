@@ -31,15 +31,18 @@ export function TipsTable({ tips }: { tips: TipRow[] }) {
                 <td className="px-5 py-3">
                   <span
                     className={
-                      t.actionType === "super_tip" ? "badge badge-bull" : "badge"
+                      t.actionType === "super_tip"
+                        ? "badge badge-bull"
+                        : "badge"
                     }
                   >
-                    {t.actionType === "super_tip" ? "🐂 super" : t.actionType}
+                    {t.actionType === "super_tip" ? "🐂 super tip" : t.actionType}
                   </span>
                 </td>
                 <td className="px-5 py-3">@{t.toXUsername}</td>
                 <td className="px-5 py-3 font-mono">
-                  {t.amount} <span className="text-accent-2">$ansem</span>
+                  <span className="gold-glow">{t.amount}</span>{" "}
+                  <span className="text-accent-2">$ansem</span>
                 </td>
                 <td className="px-5 py-3 capitalize text-muted">{t.status}</td>
                 <td className="px-5 py-3 font-mono text-xs text-muted">
@@ -54,7 +57,7 @@ export function TipsTable({ tips }: { tips: TipRow[] }) {
                     <p className="empty-title">No tips yet</p>
                     <p className="empty-body">
                       Go touch some tweets. Likes, replies, follows, QTs — and
-                      🐂 for more.
+                      🐂 for a super tip.
                     </p>
                   </div>
                 </td>

@@ -16,54 +16,33 @@ export const DEMO_SETTINGS: TipAmountSettings = {
   enabled: true,
 };
 
+/** Demo balances stay empty — never invent fake tip totals. */
 export const DEMO_TIPPER_BALANCE: BalanceView = {
-  deposited: 420.69,
+  deposited: 0,
   withdrawable: 0,
-  lifetimeSent: 69.42,
+  lifetimeSent: 0,
   lifetimeReceived: 0,
   walletAddress: DEMO_TIPPER.walletAddress,
 };
 
 export const DEMO_RECIPIENT_BALANCE: BalanceView = {
   deposited: 0,
-  withdrawable: 12.5,
+  withdrawable: 0,
   lifetimeSent: 0,
-  lifetimeReceived: 12.5,
+  lifetimeReceived: 0,
   walletAddress: null,
 };
 
-export const DEMO_RECENT_TIPS = [
-  {
-    id: "tip_demo_1",
-    actionType: "like" as const,
-    actionId: "like_demo_1001",
-    toXUsername: "solana",
-    amount: 1,
-    status: "completed" as const,
-    txSig: "demo_sig_like_1001",
-    createdAt: new Date(Date.now() - 3600_000).toISOString(),
-  },
-  {
-    id: "tip_demo_2",
-    actionType: "super_tip" as const,
-    actionId: "comment_demo_1002",
-    toXUsername: "a1lon9",
-    amount: 10,
-    status: "completed" as const,
-    txSig: "demo_sig_super_1002",
-    createdAt: new Date(Date.now() - 7200_000).toISOString(),
-  },
-  {
-    id: "tip_demo_3",
-    actionType: "follow" as const,
-    actionId: "follow_demo_1003",
-    toXUsername: "pumpdotfun",
-    amount: 3,
-    status: "completed" as const,
-    txSig: "demo_sig_follow_1003",
-    createdAt: new Date(Date.now() - 10800_000).toISOString(),
-  },
-];
+export const DEMO_RECENT_TIPS: Array<{
+  id: string;
+  actionType: "like" | "super_tip" | "follow" | "comment" | "quote";
+  actionId: string;
+  toXUsername: string;
+  amount: number;
+  status: "completed" | "pending" | "failed";
+  txSig: string;
+  createdAt: string;
+}> = [];
 
 export function demoTwitterActions(): TwitterAction[] {
   const now = new Date().toISOString();
@@ -113,10 +92,10 @@ export function demoTxSig(prefix = "demo"): string {
   return `${prefix}_${Math.random().toString(36).slice(2, 10)}_${Date.now()}`;
 }
 
-/** Landing page placeholder “noice” stats */
+/** Landing page placeholder stats — empty until live. */
 export const DEMO_LANDING_STATS = {
-  tipsSent: 1337,
-  ansemTipped: 42069,
-  recipients: 256,
-  avgTip: 2.4,
+  tipsSent: 0,
+  ansemTipped: 0,
+  recipients: 0,
+  avgTip: 0,
 };

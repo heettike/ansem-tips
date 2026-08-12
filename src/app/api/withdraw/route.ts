@@ -16,14 +16,17 @@ const bodySchema = z.object({
 
 /**
  * POST /api/withdraw
- * Real SPL transfer from custody hot wallet → recipient personal Solana address.
- * No demo/fake success paths.
+ * Send tip balance from the tip wallet to the user's personal wallet.
  */
 export async function POST(req: NextRequest) {
   try {
     if (config.demoMode) {
       return NextResponse.json(
-        { ok: false, error: "DEMO_MODE is on — disable it for real withdraws" },
+        {
+          ok: false,
+          error:
+            "Demo mode is on — withdraws are paused. Turn demo off for real cash-outs.",
+        },
         { status: 400 }
       );
     }
@@ -32,7 +35,11 @@ export async function POST(req: NextRequest) {
     const parsed = bodySchema.safeParse(json);
     if (!parsed.success) {
       return NextResponse.json(
-        { ok: false, error: parsed.error.flatten() },
+        {
+          ok: false,
+          error:
+            "Check your wallet address and amount — something looks off.",
+        },
         { status: 400 }
       );
     }
@@ -48,7 +55,10 @@ export async function POST(req: NextRequest) {
       });
       if (!user) {
         return NextResponse.json(
-          { ok: false, error: "User not found" },
+          {
+            ok: false,
+            error: "We couldn’t find that account. Sign in with X and try again.",
+          },
           { status: 404 }
         );
       }
@@ -57,12 +67,31 @@ export async function POST(req: NextRequest) {
 
     if (!uid) {
       return NextResponse.json(
-        { ok: false, error: "userId or xUsername required" },
+        {
+          ok: false,
+          error: "Sign in with X first, then withdraw.",
+        },
         { status: 400 }
       );
     }
 
     const result = await withdrawForUser(uid, toAddress, amount);
+    if (
+      !result.success &&
+      result.error &&
+      /insufficient|too low|balance is 0/i.test(result.error)
+    ) {
+      return NextResponse.json({
+        ok: false,
+        demoMode: false,
+        result: {
+          ...result,
+          error:
+            "Nothing to withdraw yet — your tip balance is 0 (or too low for that amount).",
+        },
+      });
+    }
+
     return NextResponse.json({
       ok: result.success,
       demoMode: false,
@@ -71,7 +100,13 @@ export async function POST(req: NextRequest) {
   } catch (e) {
     console.error("[withdraw]", e);
     return NextResponse.json(
-      { ok: false, error: e instanceof Error ? e.message : "Withdraw failed" },
+      {
+        ok: false,
+        error:
+          e instanceof Error
+            ? e.message
+            : "Withdraw didn’t go through. Try again in a bit.",
+      },
       { status: 500 }
     );
   }

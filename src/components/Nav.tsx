@@ -17,7 +17,7 @@ export function Nav() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="site-nav sticky top-0 z-40">
+    <header className="site-nav sticky top-0 z-40 bg-background/90">
       <div className="site-nav-strip px-4 py-1.5">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
           <span className="flex items-center gap-2">
@@ -31,7 +31,10 @@ export function Nav() {
       </div>
 
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-        <Link href="/" className="group flex items-center gap-2.5 font-semibold tracking-tight">
+        <Link
+          href="/"
+          className="group flex items-center gap-2.5 font-semibold tracking-tight"
+        >
           <span className="nav-mark relative">
             <Image
               src="/brand/ansem.png"
@@ -52,7 +55,10 @@ export function Nav() {
           </span>
         </Link>
 
-        <nav className="nav-links-desktop items-center gap-1" aria-label="Primary">
+        <nav
+          className="nav-links-desktop items-center gap-1"
+          aria-label="Primary"
+        >
           {links.map((l) => {
             const active =
               l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);

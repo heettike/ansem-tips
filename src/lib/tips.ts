@@ -383,7 +383,8 @@ export async function withdrawForUser(
       success: false,
       amount,
       toAddress,
-      error: "Insufficient withdrawable balance",
+      error:
+        "Nothing to withdraw yet — your tip balance is 0 (or too low for that amount).",
     };
   }
 

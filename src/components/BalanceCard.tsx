@@ -14,7 +14,7 @@ export function BalanceCard({
   return (
     <div className="card p-5">
       <p className="label-mono">{title}</p>
-      <p className="mt-2 font-mono text-3xl font-semibold tracking-tight">
+      <p className="mt-2 font-mono text-3xl font-semibold tracking-tight gold-glow">
         {main.toLocaleString(undefined, { maximumFractionDigits: 2 })}{" "}
         <span className="text-base text-accent-2">$ansem</span>
       </p>
@@ -27,7 +27,7 @@ export function BalanceCard({
         </div>
         <div>
           <p className="label-mono text-[0.6rem]">Withdrawable</p>
-          <p className="mt-0.5 font-mono text-foreground">
+          <p className="mt-0.5 font-mono text-accent-2">
             {balance.withdrawable.toFixed(2)}
           </p>
         </div>

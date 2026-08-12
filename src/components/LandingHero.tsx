@@ -19,26 +19,38 @@ export function LandingHero() {
           priority
         />
       </div>
-      <div className="pointer-events-none absolute inset-0 grid-noise opacity-60" />
+      <div className="pointer-events-none absolute inset-0 grid-noise opacity-50" />
       <div className="pointer-events-none absolute inset-0 vignette" />
 
       <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-10 sm:pt-14">
-        {/* Hero composition: brand + one H1 + one line + CTAs + tip flow */}
-        <div className="stadium-in">
-          <p className="label-mono text-accent text-glow">The Black Bull</p>
-          <h1 className="stadium-banner mt-3 max-w-4xl text-[clamp(2.75rem,12vw,6.5rem)]">
-            <span className="block">ansem.tips</span>
-            <span className="line-gold mt-1 block text-[0.55em]">
-              Tip $ansem on every like.
-            </span>
-            <span className="line-accent mt-1 block text-[0.5em]">
-              Super-tip on 🐂.
-            </span>
-          </h1>
+        <div className="stadium-in flex flex-wrap items-end gap-5">
+          <div className="crt-bull-frame">
+            <Image
+              src="/brand/ansem.png"
+              alt="ansem — The Black Bull"
+              width={96}
+              height={96}
+              className="size-20 object-cover sm:size-24"
+              priority
+            />
+          </div>
+          <div>
+            <p className="label-mono text-accent text-glow">The Black Bull</p>
+            <h1 className="stadium-banner mt-2 max-w-4xl text-[clamp(2.75rem,12vw,6.5rem)]">
+              <span className="block">ansem.tips</span>
+              <span className="line-gold mt-1 block text-[0.55em]">
+                Tip $ansem on every like.
+              </span>
+              <span className="line-accent mt-1 block text-[0.5em]">
+                Super tip on 🐂.
+              </span>
+            </h1>
+          </div>
         </div>
 
         <p className="stadium-in stadium-in-delay-1 mt-5 max-w-lg text-base text-muted sm:text-lg">
-          Like someone. They get $ansem. Drop 🐂 — they get more.
+          Like someone. They get $ansem. Drop 🐂 — they get more. Tips spread
+          to new wallets.
         </p>
 
         <div className="stadium-in stadium-in-delay-2 mt-7 flex flex-wrap gap-3">

@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "ansem.tips — tip $ansem · The Black Bull",
   description:
-    "Like someone. They get $ansem. Drop 🐂 — they get more. Tip on likes, replies, follows, QTs. Inspired by Black Bull / @blknoiz06 culture.",
+    "Tip $ansem when you like, reply, follow, or QT. Drop 🐂 for a super tip. Inspired by Black Bull / @blknoiz06 — tips spread to new wallets.",
   icons: {
     icon: "/brand/ansem.png",
     apple: "/brand/ansem.png",

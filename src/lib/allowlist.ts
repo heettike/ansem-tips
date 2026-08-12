@@ -12,8 +12,8 @@ export function getTipperAllowlist(): string[] {
 export function assertAllowlistedTipper(username: string): void {
   if (!isAllowlistedTipper(username)) {
     throw new Error(
-      `User @${username.replace(/^@/, "")} is not an allowlisted tipper. ` +
-        `Trial tipper: @${config.trialTipper}. Future prod: @${config.prodTipperFuture}.`
+      `@${username.replace(/^@/, "")} isn’t on the tipper list yet. ` +
+        `Ask to get added, or tip as @${config.trialTipper}.`
     );
   }
 }

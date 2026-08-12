@@ -7,8 +7,8 @@ const fields: { key: keyof TipAmountSettings; label: string; hint: string }[] = 
   { key: "likeAmount", label: "Like", hint: "per like" },
   { key: "commentAmount", label: "Reply", hint: "per reply" },
   { key: "followAmount", label: "Follow", hint: "per follow" },
-  { key: "quoteAmount", label: "Quote tweet", hint: "per QT" },
-  { key: "superTipAmount", label: "Super-tip 🐂", hint: "when 🐂 in reply/QT" },
+  { key: "quoteAmount", label: "QT", hint: "per quote tweet" },
+  { key: "superTipAmount", label: "🐂 Super tip", hint: "when 🐂 in reply/QT" },
 ];
 
 export function TipSettingsForm({
@@ -50,7 +50,9 @@ export function TipSettingsForm({
       const data = await res.json();
       if (!data.ok) {
         setError(
-          typeof data.error === "string" ? data.error : "Failed to save settings"
+          typeof data.error === "string"
+            ? data.error
+            : "Couldn’t save tip amounts — try again."
         );
         return;
       }
@@ -88,9 +90,11 @@ export function TipSettingsForm({
       <div className="grid gap-3 sm:grid-cols-2">
         {fields.map((f) => (
           <label key={f.key} className="block text-sm">
-            <span className="mb-1 block text-muted">
+            <span className="label-mono mb-1 block text-[0.62rem]">
               {f.label}{" "}
-              <span className="text-xs opacity-70">({f.hint})</span>
+              <span className="normal-case tracking-normal text-muted opacity-80">
+                ({f.hint})
+              </span>
             </span>
             <input
               className="input font-mono"
@@ -106,7 +110,11 @@ export function TipSettingsForm({
         ))}
       </div>
 
-      <button type="submit" className="btn-primary w-full sm:w-auto" disabled={loading}>
+      <button
+        type="submit"
+        className="btn-primary w-full sm:w-auto"
+        disabled={loading}
+      >
         {loading ? "Saving…" : "Save amounts"}
       </button>
       {saved && <p className="text-sm text-bull">Saved.</p>}

@@ -82,7 +82,7 @@ export default async function DashboardPage() {
     <div className="mx-auto max-w-6xl px-4 py-10">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="badge">Tipper cockpit</p>
+          <p className="badge">Tipper dashboard</p>
           <h1 className="stadium-banner mt-2 text-3xl sm:text-4xl">
             @{tipperName}
           </h1>
@@ -107,19 +107,19 @@ export default async function DashboardPage() {
       <div className="mt-8 grid gap-4 lg:grid-cols-3">
         <BalanceCard title="Tipper balance" balance={balance} />
         <div className="card p-5 lg:col-span-2">
-          <p className="label-mono text-accent">How it runs</p>
+          <p className="label-mono text-accent">How tipping works</p>
           <ul className="mt-3 space-y-2 text-sm text-muted">
             <li>• You like / reply / follow / QT → they get $ansem.</li>
-            <li>• Drop 🐂 in a reply or QT → super-tip.</li>
+            <li>• Drop 🐂 in a reply or QT → super tip.</li>
             <li>• Same action never tips twice.</li>
-            <li>• Recipients withdraw when they&apos;re ready.</li>
+            <li>• People cash out from the withdraw page when they’re ready.</li>
           </ul>
         </div>
       </div>
 
       {emptyCockpit && (
         <div className="empty-state mt-6">
-          <p className="empty-title">Cockpit is quiet</p>
+          <p className="empty-title">Quiet for now</p>
           <p className="empty-body">
             Deposit $ansem on onboard, set tip amounts, then go touch some
             tweets. Tips show up here.

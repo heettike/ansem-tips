@@ -16,7 +16,7 @@ function decimalsFactor(): number {
 export function createSolanaClient(): SolanaTransferClient {
   return {
     async getTokenBalance(owner: string) {
-      if (config.demoMode) return 420.69;
+      if (config.demoMode) return 0;
       try {
         const { Connection, PublicKey } = await import("@solana/web3.js");
         const {

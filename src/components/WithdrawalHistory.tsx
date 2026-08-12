@@ -26,7 +26,7 @@ export function WithdrawalHistory({
     <div className="card overflow-hidden">
       <div className="panel-head">
         <h3>Withdrawal history</h3>
-        <p className="mt-1 text-xs text-muted">
+        <p className="mt-1 font-mono text-[0.62rem] uppercase tracking-[0.12em] text-muted">
           Past cash-outs · verify on Solscan
         </p>
       </div>
@@ -38,7 +38,7 @@ export function WithdrawalHistory({
           >
             <div className="min-w-0 flex-1">
               <p className="text-sm">
-                <span className="font-semibold text-foreground">
+                <span className="font-semibold gold-glow">
                   {(w.amountUsd ?? w.amount).toFixed(2)}
                 </span>{" "}
                 <span className="text-muted">
