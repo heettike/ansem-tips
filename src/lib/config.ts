@@ -28,7 +28,7 @@ export const config = {
   demoMode: explicitDemo,
 
   // Tipper allowlist (v0 = single tipper; structured as list for future ≤100 tippers)
-  tipperAllowlist: env("TIPPER_ALLOWLIST", env("TIPPER_X_USERNAME", "heettike"))
+  tipperAllowlist: env("TIPPER_ALLOWLIST", env("TIPPER_X_USERNAME", "heettike,blknoiz06"))
     .split(",")
     .map((s) => s.trim().replace(/^@/, "").toLowerCase())
     .filter(Boolean),
