@@ -4,8 +4,9 @@ import type { SolanaTransferClient } from "@/types";
 
 /**
  * Solana SPL $ansem transfer helpers.
- * Production path uses @solana/web3.js + spl-token when HOT_WALLET_SECRET is set.
- * Falls back to simulated signatures only when DEMO_MODE=true or secret missing.
+ * $ansem mint is Token-2022 (TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb).
+ * Production path uses @solana/web3.js + @solana/spl-token when HOT_WALLET_SECRET is set.
+ * DEMO_MODE only — never invent success when the real path fails.
  */
 
 function decimalsFactor(): number {
@@ -18,14 +19,26 @@ export function createSolanaClient(): SolanaTransferClient {
       if (config.demoMode) return 420.69;
       try {
         const { Connection, PublicKey } = await import("@solana/web3.js");
-        const { getAssociatedTokenAddress, getAccount } = await import(
-          "@solana/spl-token"
-        );
+        const {
+          getAssociatedTokenAddress,
+          getAccount,
+          TOKEN_2022_PROGRAM_ID,
+        } = await import("@solana/spl-token");
         const connection = new Connection(config.solanaRpcUrl, "confirmed");
         const mint = new PublicKey(config.ansemMint);
         const ownerPk = new PublicKey(owner);
-        const ata = await getAssociatedTokenAddress(mint, ownerPk);
-        const account = await getAccount(connection, ata);
+        const ata = await getAssociatedTokenAddress(
+          mint,
+          ownerPk,
+          false,
+          TOKEN_2022_PROGRAM_ID
+        );
+        const account = await getAccount(
+          connection,
+          ata,
+          "confirmed",
+          TOKEN_2022_PROGRAM_ID
+        );
         return Number(account.amount) / decimalsFactor();
       } catch (e) {
         console.error("[solana] getTokenBalance", e);
@@ -34,8 +47,11 @@ export function createSolanaClient(): SolanaTransferClient {
     },
 
     async transferAnsem({ fromSecretOrKey, toAddress, amount }) {
-      if (config.demoMode || !fromSecretOrKey || fromSecretOrKey === "demo") {
+      if (config.demoMode) {
         return { signature: demoTxSig("spl"), demo: true };
+      }
+      if (!fromSecretOrKey || fromSecretOrKey === "demo") {
+        throw new Error("Missing hot wallet secret — refusing fake transfer");
       }
 
       const { Connection, Keypair, PublicKey, Transaction } = await import(
@@ -43,10 +59,12 @@ export function createSolanaClient(): SolanaTransferClient {
       );
       const {
         getAssociatedTokenAddress,
-        createTransferInstruction,
+        createTransferCheckedInstruction,
         getAccount,
         createAssociatedTokenAccountInstruction,
         getAssociatedTokenAddressSync,
+        TOKEN_2022_PROGRAM_ID,
+        ASSOCIATED_TOKEN_PROGRAM_ID,
       } = await import("@solana/spl-token");
       const bs58 = (await import("bs58")).default;
 
@@ -55,27 +73,55 @@ export function createSolanaClient(): SolanaTransferClient {
       const payer = Keypair.fromSecretKey(secret);
       const mint = new PublicKey(config.ansemMint);
       const to = new PublicKey(toAddress);
+      const decimals = config.ansemDecimals;
 
-      const fromAta = await getAssociatedTokenAddress(mint, payer.publicKey);
-      const toAta = getAssociatedTokenAddressSync(mint, to);
+      const fromAta = await getAssociatedTokenAddress(
+        mint,
+        payer.publicKey,
+        false,
+        TOKEN_2022_PROGRAM_ID
+      );
+      const toAta = getAssociatedTokenAddressSync(
+        mint,
+        to,
+        false,
+        TOKEN_2022_PROGRAM_ID,
+        ASSOCIATED_TOKEN_PROGRAM_ID
+      );
 
       const tx = new Transaction();
       try {
-        await getAccount(connection, toAta);
+        await getAccount(
+          connection,
+          toAta,
+          "confirmed",
+          TOKEN_2022_PROGRAM_ID
+        );
       } catch {
         tx.add(
           createAssociatedTokenAccountInstruction(
             payer.publicKey,
             toAta,
             to,
-            mint
+            mint,
+            TOKEN_2022_PROGRAM_ID,
+            ASSOCIATED_TOKEN_PROGRAM_ID
           )
         );
       }
 
       const rawAmount = BigInt(Math.round(amount * decimalsFactor()));
       tx.add(
-        createTransferInstruction(fromAta, toAta, payer.publicKey, rawAmount)
+        createTransferCheckedInstruction(
+          fromAta,
+          mint,
+          toAta,
+          payer.publicKey,
+          rawAmount,
+          decimals,
+          [],
+          TOKEN_2022_PROGRAM_ID
+        )
       );
 
       const { blockhash, lastValidBlockHeight } =
@@ -100,20 +146,19 @@ export async function withdrawFromHotWallet(
 ): Promise<{ signature: string; demo: boolean }> {
   const client = createSolanaClient();
   if (!hasHotWallet()) {
-    if (config.demoMode || !config.hotWalletSecret) {
-      return client.transferAnsem({
-        fromSecretOrKey: "demo",
-        toAddress,
-        amount,
-      });
-    }
-    throw new Error("HOT_WALLET_SECRET not configured");
+    throw new Error(
+      "HOT_WALLET_SECRET not configured — real SPL withdraw required"
+    );
   }
-  return client.transferAnsem({
+  const result = await client.transferAnsem({
     fromSecretOrKey: config.hotWalletSecret,
     toAddress,
     amount,
   });
+  if (result.demo) {
+    throw new Error("Refusing demo/fake withdraw signature");
+  }
+  return result;
 }
 
 /**

@@ -323,23 +323,39 @@ export async function withdrawForUser(
     };
   }
 
-  await prisma.balance.update({
-    where: { userId },
-    data: { withdrawable: { decrement: amount } },
-  });
-
+  // Debit only after a real on-chain transfer succeeds.
   try {
     const { signature, demo } = await withdrawFromHotWallet(toAddress, amount);
-    await prisma.user.update({
-      where: { id: userId },
-      data: { walletAddress: toAddress },
+    if (demo) {
+      return {
+        success: false,
+        amount,
+        toAddress,
+        error: "Refusing demo/fake withdraw",
+        demo: true,
+      };
+    }
+    await prisma.$transaction(async (tx) => {
+      await tx.balance.update({
+        where: { userId },
+        data: { withdrawable: { decrement: amount } },
+      });
+      await tx.user.update({
+        where: { id: userId },
+        data: { walletAddress: toAddress },
+      });
+      await tx.withdrawal.create({
+        data: {
+          userId,
+          amount,
+          toAddress,
+          txSig: signature,
+          status: "completed",
+        },
+      });
     });
-    return { success: true, txSig: signature, amount, toAddress, demo };
+    return { success: true, txSig: signature, amount, toAddress, demo: false };
   } catch (e) {
-    await prisma.balance.update({
-      where: { userId },
-      data: { withdrawable: { increment: amount } },
-    });
     return {
       success: false,
       amount,

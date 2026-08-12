@@ -3,10 +3,6 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { withdrawForUser } from "@/lib/tips";
 import { config } from "@/lib/config";
-import {
-  DEMO_RECIPIENT_BALANCE,
-  demoTxSig,
-} from "@/lib/demo";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,11 +16,18 @@ const bodySchema = z.object({
 
 /**
  * POST /api/withdraw
- * SPL transfer path from custody hot wallet → recipient personal Solana address.
- * In DEMO_MODE, simulates tx signatures.
+ * Real SPL transfer from custody hot wallet → recipient personal Solana address.
+ * No demo/fake success paths.
  */
 export async function POST(req: NextRequest) {
   try {
+    if (config.demoMode) {
+      return NextResponse.json(
+        { ok: false, error: "DEMO_MODE is on — disable it for real withdraws" },
+        { status: 400 }
+      );
+    }
+
     const json = await req.json();
     const parsed = bodySchema.safeParse(json);
     if (!parsed.success) {
@@ -36,25 +39,6 @@ export async function POST(req: NextRequest) {
 
     const { toAddress, amount, userId, xUsername } = parsed.data;
 
-    // DEMO short-circuit without DB if nothing seeded
-    if (config.demoMode && !userId && !xUsername) {
-      return NextResponse.json({
-        ok: true,
-        demoMode: true,
-        result: {
-          success: true,
-          txSig: demoTxSig("withdraw"),
-          amount,
-          toAddress,
-          demo: true,
-          balanceAfter:
-            DEMO_RECIPIENT_BALANCE.withdrawable - amount > 0
-              ? DEMO_RECIPIENT_BALANCE.withdrawable - amount
-              : 0,
-        },
-      });
-    }
-
     let uid = userId;
     if (!uid && xUsername) {
       const user = await prisma.user.findFirst({
@@ -62,19 +46,13 @@ export async function POST(req: NextRequest) {
           username: xUsername.replace(/^@/, "").toLowerCase(),
         },
       });
-      // Case-insensitive fallback
-      const user2 =
-        user ||
-        (await prisma.user.findFirst({
-          where: { username: { equals: xUsername.replace(/^@/, "") } },
-        }));
-      if (!user2) {
+      if (!user) {
         return NextResponse.json(
           { ok: false, error: "User not found" },
           { status: 404 }
         );
       }
-      uid = user2.id;
+      uid = user.id;
     }
 
     if (!uid) {
@@ -87,7 +65,7 @@ export async function POST(req: NextRequest) {
     const result = await withdrawForUser(uid, toAddress, amount);
     return NextResponse.json({
       ok: result.success,
-      demoMode: config.demoMode,
+      demoMode: false,
       result,
     });
   } catch (e) {

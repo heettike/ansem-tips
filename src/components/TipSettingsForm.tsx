@@ -13,12 +13,11 @@ const fields: { key: keyof TipAmountSettings; label: string; hint: string }[] = 
 
 export function TipSettingsForm({
   initial,
-  minTip = 1,
+  minTip = 0.01,
   authToken,
 }: {
   initial: TipAmountSettings;
   minTip?: number;
-  /** Privy access token or demo:username bearer */
   authToken?: string | null;
 }) {
   const [settings, setSettings] = useState(initial);
@@ -36,22 +35,22 @@ export function TipSettingsForm({
     setLoading(true);
     setError(null);
     try {
+      if (!authToken) {
+        setError("Log in with X first, then save tip amounts.");
+        return;
+      }
       const res = await fetch("/api/tips/settings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {
-            Authorization: "Bearer demo:heettike",
-          }),
+          Authorization: `Bearer ${authToken}`,
         },
         body: JSON.stringify(settings),
       });
       const data = await res.json();
       if (!data.ok) {
         setError(
-          typeof data.error === "string"
-            ? data.error
-            : "Failed to save settings"
+          typeof data.error === "string" ? data.error : "Failed to save settings"
         );
         return;
       }
@@ -76,7 +75,7 @@ export function TipSettingsForm({
             type="checkbox"
             checked={settings.enabled}
             onChange={(e) => update("enabled", e.target.checked)}
-            className="size-4 accent-[#1d9bf0]"
+            className="size-4 accent-[#b6ff3b]"
           />
           Enabled
         </label>
@@ -106,9 +105,7 @@ export function TipSettingsForm({
       <button type="submit" className="btn-primary w-full sm:w-auto" disabled={loading}>
         {loading ? "Saving…" : "Save settings"}
       </button>
-      {saved && (
-        <p className="text-sm text-bull">Saved to tipper settings.</p>
-      )}
+      {saved && <p className="text-sm text-bull">Saved to tipper settings.</p>}
       {error && <p className="text-sm text-danger">{error}</p>}
     </form>
   );

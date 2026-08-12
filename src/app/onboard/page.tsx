@@ -1,32 +1,54 @@
 import Link from "next/link";
-import { TipSettingsForm } from "@/components/TipSettingsForm";
+import { LiveTipSettingsForm } from "@/components/LiveTipSettingsForm";
 import { LoginButton } from "@/components/LoginButton";
 import { config, isAllowlistedTipper } from "@/lib/config";
-import { DEMO_SETTINGS, DEMO_TIPPER } from "@/lib/demo";
-import { explorerTokenUrl, resolveHotWalletAddress } from "@/lib/solana";
+import { DEMO_SETTINGS } from "@/lib/demo";
+import { prisma } from "@/lib/db";
+import { explorerTokenUrl } from "@/lib/solana";
 
 export const dynamic = "force-dynamic";
 
 export default async function OnboardPage() {
   const tipper = config.tipperAllowlist[0] || "heettike";
   const allowed = isAllowlistedTipper(tipper);
-  const hotWallet = await resolveHotWalletAddress();
+  const user = await prisma.user.findFirst({
+    where: { username: tipper },
+    include: { tipSettings: true, balance: true },
+  });
+  const wallet =
+    user?.walletAddress ||
+    "Log in with X — Privy will show your Solana deposit address";
+  const initial = user?.tipSettings
+    ? {
+        likeAmount: user.tipSettings.likeAmount,
+        commentAmount: user.tipSettings.commentAmount,
+        followAmount: user.tipSettings.followAmount,
+        quoteAmount: user.tipSettings.quoteAmount,
+        superTipAmount: user.tipSettings.superTipAmount,
+        enabled: user.tipSettings.enabled,
+      }
+    : {
+        ...DEMO_SETTINGS,
+        likeAmount: config.minTipUsd,
+        commentAmount: config.minTipUsd,
+        followAmount: config.minTipUsd,
+        quoteAmount: config.minTipUsd,
+        superTipAmount: Math.max(1, config.minTipUsd),
+      };
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <p className="badge">Tipper onboarding</p>
-      <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+      <p className="badge badge-bull">Tipper onboarding</p>
+      <h1 className="mt-3 text-3xl font-bold tracking-tighter sm:text-5xl">
         Connect X → deposit → tip
       </h1>
       <p className="mt-3 text-muted">
         Trial allowlist: <strong className="text-foreground">@{tipper}</strong>.
-        Future prod tipper: @{config.prodTipperFuture}. Structure supports up to
-        100 community tippers via{" "}
-        <code className="text-accent">TIPPER_ALLOWLIST</code>.
+        Prod later: @{config.prodTipperFuture}. Herd starts here.
       </p>
 
       {!allowed && (
-        <div className="mt-6 rounded-xl border border-danger/40 bg-danger/10 p-4 text-sm">
+        <div className="mt-6 border border-danger/40 bg-danger/10 p-4 text-sm">
           You are not on the tipper allowlist.
         </div>
       )}
@@ -36,17 +58,12 @@ export default async function OnboardPage() {
           <p className="text-xs uppercase tracking-wide text-muted">Step 1</p>
           <h2 className="mt-1 font-semibold">X OAuth via Privy</h2>
           <p className="mt-2 text-sm text-muted">
-            Sign in with X. Privy creates an embedded Solana wallet when{" "}
-            <code className="text-accent">NEXT_PUBLIC_PRIVY_APP_ID</code> is set.
+            Sign in with X. Privy creates an embedded Solana wallet for deposits
+            and tips.
           </p>
           <div className="mt-4">
             <LoginButton label="Continue with X" />
           </div>
-          {config.demoMode && (
-            <p className="mt-2 font-mono text-xs text-muted">
-              DEMO_MODE identity: @{DEMO_TIPPER.username} · {DEMO_TIPPER.privyDid}
-            </p>
-          )}
         </li>
 
         <li className="card p-5">
@@ -55,8 +72,11 @@ export default async function OnboardPage() {
             Deposit min ${config.minDepositUsd} $ansem
           </h2>
           <p className="mt-2 text-sm text-muted">
-            Send SPL $ansem to the custody hot wallet. Tips debit your deposited
-            ledger. Mint:
+            Send SPL $ansem to <strong>your</strong> Privy wallet below. Ledger
+            deposited:{" "}
+            <span className="font-mono text-foreground">
+              ${user?.balance?.deposited?.toFixed?.(2) ?? "0.00"}
+            </span>
           </p>
           <a
             href={explorerTokenUrl(config.ansemMint)}
@@ -64,13 +84,10 @@ export default async function OnboardPage() {
             target="_blank"
             rel="noreferrer"
           >
-            {config.ansemMint}
+            mint {config.ansemMint}
           </a>
-          <div className="mt-4 rounded-lg border border-dashed border-card-border bg-black/30 p-3 font-mono text-xs text-muted">
-            Deposit address:{" "}
-            {hotWallet ||
-              DEMO_TIPPER.walletAddress +
-                " (set HOT_WALLET_SECRET / HOT_WALLET_ADDRESS)"}
+          <div className="mt-4 border border-dashed border-card-border bg-black/30 p-3 font-mono text-xs break-all">
+            Deposit address: {wallet}
           </div>
         </li>
 
@@ -78,7 +95,7 @@ export default async function OnboardPage() {
           <p className="mb-2 text-xs uppercase tracking-wide text-muted">
             Step 3
           </p>
-          <TipSettingsForm initial={DEMO_SETTINGS} minTip={config.minTipUsd} />
+          <LiveTipSettingsForm initial={initial} minTip={config.minTipUsd} />
         </li>
       </ol>
 

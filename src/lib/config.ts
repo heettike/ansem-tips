@@ -34,7 +34,7 @@ export const config = {
     .filter(Boolean),
 
   trialTipper: "heettike",
-  prodTipperFuture: "blknoiz6",
+  prodTipperFuture: "blknoiz06",
 
   // $ansem
   ansemMint: env(
@@ -53,8 +53,8 @@ export const config = {
   hotWalletAddress: env("HOT_WALLET_ADDRESS", ""),
 
   // Limits
-  minDepositUsd: envFloat("MIN_DEPOSIT_USD", 100),
-  minTipUsd: envFloat("MIN_TIP_USD", 1),
+  minDepositUsd: envFloat("MIN_DEPOSIT_USD", 1),
+  minTipUsd: envFloat("MIN_TIP_USD", 0.01),
 
   // Auth
   privyAppId: env("NEXT_PUBLIC_PRIVY_APP_ID", ""),

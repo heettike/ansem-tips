@@ -64,7 +64,7 @@ export default async function DashboardPage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="badge">Tipper dashboard</p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight">
+          <h1 className="display-title mt-2 text-3xl">
             @{tipperName}
           </h1>
           <p className="mt-1 text-sm text-muted">

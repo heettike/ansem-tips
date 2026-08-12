@@ -15,7 +15,7 @@ export default function PrivyProviders({ children }: { children: ReactNode }) {
         loginMethods: ["twitter"],
         appearance: {
           theme: "dark",
-          accentColor: "#1d9bf0",
+          accentColor: "#b6ff3b",
         },
         embeddedWallets: {
           solana: {

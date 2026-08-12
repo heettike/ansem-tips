@@ -1,14 +1,14 @@
-// Ansem Tips — Prisma schema (SQLite for local; swap provider to postgresql for prod)
+// Ansem Tips — Prisma schema (Postgres on Vercel/Neon; DATABASE_URL from env)
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-// SQLite: store enums as strings (tipper|recipient, action types, tip statuses)
+// Enums stored as strings (tipper|recipient, action types, tip statuses)
 model User {
   id            String   @id @default(cuid())
   xId           String   @unique
@@ -23,6 +23,7 @@ model User {
   tipsSent     Tip[]         @relation("TipsSent")
   tipsReceived Tip[]         @relation("TipsReceived")
   balance      Balance?
+  withdrawals  Withdrawal[]
 }
 
 /// Per-tipper tip amounts (USD-notional $ansem). Structured for future multi-tipper (up to 100).
@@ -73,6 +74,21 @@ model Balance {
   lifetimeSent     Float    @default(0)
   lifetimeReceived Float    @default(0)
   updatedAt        DateTime @updatedAt
+}
+
+/// Recipient SPL withdrawals from custody hot wallet
+model Withdrawal {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Float
+  toAddress String
+  txSig     String   @unique
+  status    String   @default("completed")
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
 }
 
 /// Dedupe store — never double-process an X action
