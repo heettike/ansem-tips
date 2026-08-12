@@ -28,13 +28,10 @@ function LoginInner({ label, className, onAuthed }: Props) {
         setBusy(true);
         const token = await getAccessToken();
         const twitter = user.twitter as { username?: string } | undefined;
-        const sol =
-          user.wallet?.address ||
-          (user.linkedAccounts || []).find(
-            (a: { type?: string; address?: string }) =>
-              a.type === "wallet" && a.address
-          )?.address ||
-          null;
+        const linkedWallet = (user.linkedAccounts || []).find(
+          (a) => a.type === "wallet" && "address" in a
+        ) as { address?: string } | undefined;
+        const sol = user.wallet?.address || linkedWallet?.address || null;
         await fetch("/api/auth/sync", {
           method: "POST",
           headers: {
