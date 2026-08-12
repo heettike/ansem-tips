@@ -141,7 +141,7 @@ export default function PrivyLoginButton(props: Props) {
   if (!appId) {
     return (
       <button type="button" className={props.className} disabled>
-        Privy not configured
+        Sign-in not configured
       </button>
     );
   }

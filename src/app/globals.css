@@ -272,9 +272,27 @@ body::after {
   color: var(--accent);
   text-shadow: 0 0 22px rgba(182, 255, 59, 0.35);
 }
+.stadium-banner .line-accent::after {
+  content: "█";
+  margin-left: 0.14em;
+  font-weight: 400;
+  color: var(--accent);
+  animation: blink-cursor 1.05s steps(1, end) infinite;
+}
 .stadium-banner .line-gold {
   color: var(--accent-2);
   text-shadow: 0 0 14px rgba(245, 185, 66, 0.3);
+}
+
+@keyframes blink-cursor {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
 }
 
 /* ── Site nav — solid dark, no backdrop-filter blur ── */
@@ -471,7 +489,14 @@ body::after {
   width: 100%;
   overflow: hidden;
   container-type: size;
-  aspect-ratio: 340 / 290;
+  aspect-ratio: 320 / 270;
+  /* Keep labels readable on narrow phones */
+  min-height: 220px;
+}
+@media (max-width: 400px) {
+  .tip-flow {
+    min-height: 240px;
+  }
 }
 .tip-flow-svg {
   display: block;
@@ -672,8 +697,12 @@ body::after {
   .stadium-in-delay-2,
   .stadium-in-delay-3,
   .flow-path,
-  .site-nav-strip .pulse-dot {
+  .site-nav-strip .pulse-dot,
+  .stadium-banner .line-accent::after {
     animation: none !important;
+  }
+  .stadium-banner .line-accent::after {
+    opacity: 1;
   }
   .stadium-in,
   .stadium-in-delay-1,

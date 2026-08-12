@@ -13,7 +13,8 @@
 
 - Nav labels shortened: Home / Tipper / Dash / Cash out.
 - `.site-nav` solid `#050505` — no `backdrop-filter` blur (perf + sharper CRT read).
-- Tip-flow mobile readability (larger target rects/fonts) + stadium H1 blink cursor.
+- Tip-flow mobile readability (tighter viewBox, larger target rects/fonts, square nodes) + stadium H1 blink cursor.
+- Scrubbed “Privy not configured” edge copy → “Sign-in not configured”.
 
 ## Known gaps
 
