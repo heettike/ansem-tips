@@ -1,0 +1,87 @@
+// Ansem Tips — Prisma schema (SQLite for local; swap provider to postgresql for prod)
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// SQLite: store enums as strings (tipper|recipient, action types, tip statuses)
+model User {
+  id            String   @id @default(cuid())
+  xId           String   @unique
+  username      String
+  privyDid      String?  @unique
+  walletAddress String?
+  role          String   @default("recipient")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tipSettings  TipSettings?
+  tipsSent     Tip[]         @relation("TipsSent")
+  tipsReceived Tip[]         @relation("TipsReceived")
+  balance      Balance?
+}
+
+/// Per-tipper tip amounts (USD-notional $ansem). Structured for future multi-tipper (up to 100).
+model TipSettings {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likeAmount     Float    @default(1)
+  commentAmount  Float    @default(1)
+  followAmount   Float    @default(1)
+  quoteAmount    Float    @default(1)
+  superTipAmount Float    @default(5)
+  enabled        Boolean  @default(true)
+  updatedAt      DateTime @updatedAt
+}
+
+model Tip {
+  id          String   @id @default(cuid())
+  actionType  String
+  actionId    String   @unique
+  fromUserId  String
+  fromUser    User     @relation("TipsSent", fields: [fromUserId], references: [id])
+  toUserId    String?
+  toUser      User?    @relation("TipsReceived", fields: [toUserId], references: [id])
+  toXUsername String
+  toXId       String?
+  amount      Float
+  txSig       String?
+  status      String   @default("pending")
+  metadata    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([fromUserId])
+  @@index([toUserId])
+  @@index([status])
+}
+
+model Balance {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Tipper deposited $ansem available to tip (ledger)
+  deposited        Float    @default(0)
+  /// Recipient withdrawable earned $ansem (ledger)
+  withdrawable     Float    @default(0)
+  /// Lifetime tips sent / received
+  lifetimeSent     Float    @default(0)
+  lifetimeReceived Float    @default(0)
+  updatedAt        DateTime @updatedAt
+}
+
+/// Dedupe store — never double-process an X action
+model ProcessedAction {
+  id          String   @id @default(cuid())
+  actionId    String   @unique
+  actionType  String
+  tipperXId   String
+  processedAt DateTime @default(now())
+
+  @@index([tipperXId])
+}

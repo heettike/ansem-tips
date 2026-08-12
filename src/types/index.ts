@@ -1,0 +1,77 @@
+export type ActionType = "like" | "comment" | "follow" | "quote" | "super_tip";
+export type TipStatus = "pending" | "processing" | "completed" | "failed";
+export type UserRole = "tipper" | "recipient";
+
+export interface TwitterAction {
+  actionId: string;
+  actionType: Exclude<ActionType, "super_tip"> | "comment" | "quote";
+  tipperXId: string;
+  tipperUsername: string;
+  targetXId?: string;
+  targetUsername: string;
+  text?: string;
+  createdAt: string;
+  /** True when 🐂 appears in comment/QT text → upgrade to super_tip */
+  hasBullEmoji?: boolean;
+}
+
+export interface TipAmountSettings {
+  likeAmount: number;
+  commentAmount: number;
+  followAmount: number;
+  quoteAmount: number;
+  superTipAmount: number;
+  enabled: boolean;
+}
+
+export interface BalanceView {
+  deposited: number;
+  withdrawable: number;
+  lifetimeSent: number;
+  lifetimeReceived: number;
+  walletAddress?: string | null;
+}
+
+export interface ProcessTipResult {
+  tipId: string;
+  status: TipStatus;
+  txSig?: string;
+  error?: string;
+  onChain?: boolean;
+}
+
+export interface WithdrawResult {
+  success: boolean;
+  txSig?: string;
+  amount: number;
+  toAddress: string;
+  error?: string;
+  demo?: boolean;
+}
+
+export interface TwitterClient {
+  getUserByUsername(username: string): Promise<{ id: string; username: string } | null>;
+  listRecentLikes(userId: string, sinceId?: string): Promise<TwitterAction[]>;
+  listRecentReplies(userId: string, sinceId?: string): Promise<TwitterAction[]>;
+  listRecentQuotes(userId: string, sinceId?: string): Promise<TwitterAction[]>;
+  listRecentFollows(userId: string): Promise<TwitterAction[]>;
+  /** Stub / live DM when tipper balance is low */
+  pingLowBalance(username: string, balance: number): Promise<void>;
+}
+
+export interface PrivyClientLike {
+  verifyAuthToken(token: string): Promise<{ userId: string; walletAddress?: string } | null>;
+  getSolanaWallet(privyDid: string): Promise<string | null>;
+  getUserTwitter?(
+    privyDid: string
+  ): Promise<{ username: string; subject: string } | null>;
+}
+
+export interface SolanaTransferClient {
+  getTokenBalance(owner: string): Promise<number>;
+  transferAnsem(params: {
+    fromSecretOrKey: string;
+    toAddress: string;
+    amount: number;
+  }): Promise<{ signature: string; demo: boolean }>;
+}

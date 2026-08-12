@@ -1,0 +1,200 @@
+import { config, hasTwitterCreds } from "@/lib/config";
+import { demoTwitterActions } from "@/lib/demo";
+import type { TwitterAction, TwitterClient } from "@/types";
+
+const BULL = "🐂";
+
+function hasBullEmoji(text?: string): boolean {
+  return Boolean(text && text.includes(BULL));
+}
+
+/**
+ * X API v2 client. Live polling when TWITTER_BEARER_TOKEN is set and DEMO_MODE
+ * is not true. Otherwise returns deterministic demo actions.
+ */
+export function createTwitterClient(): TwitterClient {
+  if (!hasTwitterCreds()) {
+    return createDemoTwitterClient();
+  }
+  return createLiveTwitterClient(config.twitterBearerToken);
+}
+
+function createDemoTwitterClient(): TwitterClient {
+  return {
+    async getUserByUsername(username) {
+      const u = username.replace(/^@/, "").toLowerCase();
+      return { id: `demo_x_${u}`, username: u };
+    },
+    async listRecentLikes() {
+      return demoTwitterActions().filter((a) => a.actionType === "like");
+    },
+    async listRecentReplies() {
+      return demoTwitterActions().filter((a) => a.actionType === "comment");
+    },
+    async listRecentQuotes() {
+      return demoTwitterActions().filter((a) => a.actionType === "quote");
+    },
+    async listRecentFollows() {
+      return demoTwitterActions().filter((a) => a.actionType === "follow");
+    },
+    async pingLowBalance(username, balance) {
+      console.warn(
+        `[DEMO][X-BOT] Low balance ping → @${username}: deposited=${balance}`
+      );
+    },
+  };
+}
+
+function createLiveTwitterClient(bearer: string): TwitterClient {
+  const headers = {
+    Authorization: `Bearer ${bearer}`,
+    "Content-Type": "application/json",
+  };
+
+  async function xGet<T>(path: string): Promise<T> {
+    const res = await fetch(`https://api.twitter.com/2${path}`, {
+      headers,
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      const body = await res.text();
+      throw new Error(`X API ${res.status}: ${body}`);
+    }
+    return res.json() as Promise<T>;
+  }
+
+  return {
+    async getUserByUsername(username) {
+      const u = username.replace(/^@/, "");
+      const data = await xGet<{ data?: { id: string; username: string } }>(
+        `/users/by/username/${encodeURIComponent(u)}?user.fields=username`
+      );
+      return data.data ?? null;
+    },
+
+    async listRecentLikes(userId) {
+      const qs = new URLSearchParams({
+        max_results: "20",
+        "tweet.fields": "author_id,created_at",
+        expansions: "author_id",
+      });
+      const data = await xGet<{
+        data?: Array<{ id: string; author_id?: string; created_at?: string }>;
+        includes?: { users?: Array<{ id: string; username: string }> };
+      }>(`/users/${userId}/liked_tweets?${qs}`);
+
+      const users = new Map(
+        (data.includes?.users ?? []).map((u) => [u.id, u.username])
+      );
+      return (data.data ?? []).map((t) => ({
+        actionId: `like_${t.id}`,
+        actionType: "like" as const,
+        tipperXId: userId,
+        tipperUsername: "",
+        targetXId: t.author_id,
+        targetUsername: (t.author_id && users.get(t.author_id)) || "unknown",
+        createdAt: t.created_at ?? new Date().toISOString(),
+      }));
+    },
+
+    async listRecentReplies(userId) {
+      const data = await xGet<{
+        data?: Array<{
+          id: string;
+          text: string;
+          created_at?: string;
+          in_reply_to_user_id?: string;
+        }>;
+        includes?: { users?: Array<{ id: string; username: string }> };
+      }>(
+        `/tweets/search/recent?query=from:${userId} is:reply&tweet.fields=created_at,in_reply_to_user_id,text&expansions=in_reply_to_user_id&max_results=20`
+      );
+      const users = new Map(
+        (data.includes?.users ?? []).map((u) => [u.id, u.username])
+      );
+      return (data.data ?? []).map((t) => {
+        const text = t.text ?? "";
+        return {
+          actionId: `comment_${t.id}`,
+          actionType: "comment" as const,
+          tipperXId: userId,
+          tipperUsername: "",
+          targetXId: t.in_reply_to_user_id,
+          targetUsername:
+            (t.in_reply_to_user_id && users.get(t.in_reply_to_user_id)) ||
+            "unknown",
+          text,
+          hasBullEmoji: hasBullEmoji(text),
+          createdAt: t.created_at ?? new Date().toISOString(),
+        } satisfies TwitterAction;
+      });
+    },
+
+    async listRecentQuotes(userId) {
+      const data = await xGet<{
+        data?: Array<{
+          id: string;
+          text: string;
+          created_at?: string;
+          referenced_tweets?: Array<{ type: string; id: string }>;
+        }>;
+        includes?: {
+          tweets?: Array<{ id: string; author_id?: string }>;
+          users?: Array<{ id: string; username: string }>;
+        };
+      }>(
+        `/tweets/search/recent?query=from:${userId} is:quote&tweet.fields=created_at,text,referenced_tweets&expansions=referenced_tweets.id.author_id&user.fields=username&max_results=20`
+      );
+      const users = new Map(
+        (data.includes?.users ?? []).map((u) => [u.id, u.username])
+      );
+      const tweets = new Map(
+        (data.includes?.tweets ?? []).map((t) => [t.id, t])
+      );
+      return (data.data ?? []).map((t) => {
+        const text = t.text ?? "";
+        const quoted = t.referenced_tweets?.find((r) => r.type === "quoted");
+        const quotedTweet = quoted ? tweets.get(quoted.id) : undefined;
+        const targetXId = quotedTweet?.author_id;
+        return {
+          actionId: `quote_${t.id}`,
+          actionType: "quote" as const,
+          tipperXId: userId,
+          tipperUsername: "",
+          targetXId,
+          targetUsername: (targetXId && users.get(targetXId)) || "unknown",
+          text,
+          hasBullEmoji: hasBullEmoji(text),
+          createdAt: t.created_at ?? new Date().toISOString(),
+        } satisfies TwitterAction;
+      });
+    },
+
+    async listRecentFollows(userId) {
+      const data = await xGet<{
+        data?: Array<{ id: string; username: string }>;
+      }>(`/users/${userId}/following?max_results=20`);
+      return (data.data ?? []).map((u) => ({
+        actionId: `follow_${userId}_${u.id}`,
+        actionType: "follow" as const,
+        tipperXId: userId,
+        tipperUsername: "",
+        targetXId: u.id,
+        targetUsername: u.username,
+        createdAt: new Date().toISOString(),
+      }));
+    },
+
+    async pingLowBalance(username, balance) {
+      // Wire to X bot DM when user-context tokens + TWITTER_BOT_USER_ID exist
+      console.warn(
+        `[X-BOT] Low balance alert for @${username}: ${balance} $ansem. ` +
+          (config.twitterBotUserId
+            ? `bot=${config.twitterBotUserId}`
+            : "Configure TWITTER_BOT_USER_ID + user auth for DMs.")
+      );
+    },
+  };
+}
+
+export { hasBullEmoji, BULL };
