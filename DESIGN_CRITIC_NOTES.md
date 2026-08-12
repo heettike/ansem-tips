@@ -17,10 +17,17 @@
 1. Stronger CRT scanline/vignette + larger stadium H1; mobile nav 44px tap rows + green hairline drawer.
 2. Tip-flow readability: larger square nodes/fonts (12px labels), tighter viewBox, taller min-height under ~400px.
 
+## Production verify
+
+- Force-redeploy commits land on `main` until https://ansem-tips.vercel.app HTML contains stadium copy: “Like someone. They get $ansem”.
+- No fake landing stats. Privy remains lazy (empty `Providers`; LoginButton dynamic import only).
+- Atmosphere photo stays low-opacity background — not a meme gallery.
+
 ## Known gaps
 
 - Tip-flow is illustrative (not wired to live tip events).
 - Atmosphere + CRT can still feel dense on tiny phones — further opacity tuning possible.
 - Deposit address needs a one-tap copy control once wallet exists.
 - Allowlist tippers only (`heettike` + `blknoiz06`).
+- `MintChip` remains on hero (used) — label is “$ansem mint”, not jargon.
 - No visual regression tests for hero/tip-flow composition.

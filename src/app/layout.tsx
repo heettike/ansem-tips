@@ -40,7 +40,7 @@ export default function RootLayout({
           <main className="flex-1">{children}</main>
           <footer className="site-footer py-6 text-center">
             <div className="mx-auto flex max-w-6xl flex-col items-center gap-1 px-4 sm:flex-row sm:justify-between">
-              <span>ansem.tips // tip $ansem // the black bull</span>
+              <span>ansem.tips // tip $ansem // the black bull // stadium</span>
               <span className="text-muted/70">not financial advice</span>
             </div>
           </footer>

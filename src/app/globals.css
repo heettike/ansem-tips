@@ -296,10 +296,12 @@ body::after {
   }
 }
 
-/* ── Site nav — solid dark, green hairline, no blur ── */
+/* ── Site nav — solid dark, green hairline, NO backdrop-filter blur ── */
 .site-nav {
   border-bottom: 1px solid rgba(182, 255, 59, 0.35);
-  background: #050505;
+  background: #050505; /* solid — never blur / translucent glass */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 .site-nav-strip {
   border-bottom: 1px solid rgba(182, 255, 59, 0.22);
