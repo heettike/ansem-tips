@@ -1,5 +1,7 @@
 "use client";
 
+import { publicEnv } from "@/lib/publicEnv";
+
 import dynamic from "next/dynamic";
 import type { TipAmountSettings } from "@/types";
 import { TipSettingsForm } from "./TipSettingsForm";
@@ -18,8 +20,8 @@ export function LiveTipSettingsForm({
   initial: TipAmountSettings;
   minTip?: number;
 }) {
-  const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
-  const forceDemo = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+  const appId = publicEnv.privyAppId;
+  const forceDemo = publicEnv.demoMode;
 
   if (!appId || forceDemo) {
     return (

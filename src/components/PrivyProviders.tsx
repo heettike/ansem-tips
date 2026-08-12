@@ -1,12 +1,14 @@
 "use client";
 
+import { publicEnv } from "@/lib/publicEnv";
+
 import { PrivyProvider, type PrivyClientConfig } from "@privy-io/react-auth";
 import { type ReactNode, useMemo } from "react";
 import { ClientErrorBoundary } from "@/components/ClientErrorBoundary";
 
 /** Isolated so the main Providers tree can load without Privy when app id is unset. */
 export default function PrivyProviders({ children }: { children: ReactNode }) {
-  const appId = (process.env.NEXT_PUBLIC_PRIVY_APP_ID || "").trim();
+  const appId = publicEnv.privyAppId;
 
   const config = useMemo<PrivyClientConfig>(
     () => ({

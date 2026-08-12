@@ -1,5 +1,7 @@
 "use client";
 
+import { publicEnv } from "@/lib/publicEnv";
+
 import { PrivyProvider, usePrivy } from "@privy-io/react-auth";
 import { useEffect, useMemo, useState } from "react";
 import { ClientErrorBoundary } from "@/components/ClientErrorBoundary";
@@ -72,7 +74,7 @@ function LoginInner({ label, className, onAuthed }: Props) {
 }
 
 export default function PrivyLoginButton(props: Props) {
-  const appId = (process.env.NEXT_PUBLIC_PRIVY_APP_ID || "").trim();
+  const appId = publicEnv.privyAppId;
   const config = useMemo(
     () => ({
       loginMethods: ["twitter"] as ("twitter")[],
