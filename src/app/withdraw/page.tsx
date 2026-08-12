@@ -197,8 +197,7 @@ export default function WithdrawPage() {
         <div className="empty-state mt-8">
           <p className="empty-title">Nothing to withdraw yet</p>
           <p className="empty-body">
-            Tips show up after someone engages you — like, reply, follow, QT, or
-            drops 🐂.
+            Tips show up after a tipper likes, replies, follows, or QTs you.
           </p>
         </div>
       )}

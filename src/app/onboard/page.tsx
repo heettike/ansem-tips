@@ -86,7 +86,9 @@ export default async function OnboardPage() {
             </p>
             <p className="mt-3 font-mono text-sm">
               Deposited:{" "}
-              <span className="gold-glow">{deposited.toFixed(2)} $ansem</span>
+              <span className="gold-glow">
+                {deposited > 0 ? `${deposited.toFixed(2)} $ansem` : "Empty for now"}
+              </span>
             </p>
 
             {hasDepositAddress && wallet ? (
@@ -95,11 +97,9 @@ export default async function OnboardPage() {
                 {wallet}
               </div>
             ) : (
-              <div className="empty-state mt-4">
-                <p className="empty-title">No deposit address yet</p>
-                <p className="empty-body">
-                  Sign in with X first — your deposit address shows up here.
-                </p>
+              <div className="deposit-box mt-4">
+                <span className="deposit-label">Your deposit address</span>
+                Empty for now — sign in with X first.
               </div>
             )}
           </div>

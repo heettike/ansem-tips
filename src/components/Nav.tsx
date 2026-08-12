@@ -17,7 +17,7 @@ export function Nav() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="site-nav sticky top-0 z-40 bg-background/90">
+    <header className="site-nav sticky top-0 z-40">
       <div className="site-nav-strip px-4 py-1.5">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
           <span className="flex items-center gap-2">

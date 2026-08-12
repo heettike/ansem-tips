@@ -14,7 +14,7 @@
   --glow: rgba(182, 255, 59, 0.28);
   --glow-strong: rgba(182, 255, 59, 0.45);
   --surface: #0a0a0a;
-  --radius: 2px;
+  --radius: 0px;
 }
 
 @theme inline {
@@ -30,12 +30,12 @@
   --color-surface: var(--surface);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --radius-sm: 2px;
-  --radius-md: 2px;
-  --radius-lg: 2px;
-  --radius-xl: 2px;
-  --radius-2xl: 2px;
-  --radius-full: 2px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-full: 0px;
 }
 
 /* ── Base ── */
@@ -260,10 +260,11 @@ body::after {
   text-shadow: 0 0 16px rgba(182, 255, 59, 0.3);
 }
 
-/* ── Stadium banner H1 ── */
+/* ── Stadium banner H1 — scoreboard, not soft marketing ── */
 .stadium-banner {
+  font-family: var(--font-mono), ui-monospace, monospace;
   font-weight: 900;
-  letter-spacing: -0.055em;
+  letter-spacing: -0.04em;
   line-height: 0.88;
   text-transform: uppercase;
   font-stretch: condensed;
@@ -295,13 +296,13 @@ body::after {
   }
 }
 
-/* ── Site nav — solid dark, no backdrop-filter blur ── */
+/* ── Site nav — solid dark, green hairline, no blur ── */
 .site-nav {
-  border-bottom: 1px solid var(--card-border);
+  border-bottom: 1px solid rgba(182, 255, 59, 0.35);
   background: #050505;
 }
 .site-nav-strip {
-  border-bottom: 1px solid rgba(182, 255, 59, 0.18);
+  border-bottom: 1px solid rgba(182, 255, 59, 0.22);
   background: #080808;
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.62rem;
@@ -604,7 +605,7 @@ body::after {
 }
 
 .deposit-box {
-  border: 1px solid rgba(182, 255, 59, 0.35);
+  border: 1px dashed rgba(182, 255, 59, 0.45);
   background: #050505;
   border-radius: var(--radius);
   padding: 1rem;

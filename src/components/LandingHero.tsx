@@ -48,9 +48,9 @@ export function LandingHero() {
           </div>
         </div>
 
-        <p className="stadium-in stadium-in-delay-1 mt-5 max-w-lg text-base text-muted sm:text-lg">
-          Like someone. They get $ansem. Drop 🐂 — they get more. Tips spread
-          to new wallets.
+        <p className="stadium-in stadium-in-delay-1 mt-5 max-w-xl text-base text-muted sm:text-lg">
+          Like someone. They get $ansem. Reply, follow, QT — same deal. Drop a
+          bull emoji and they get more.
         </p>
 
         <div className="stadium-in stadium-in-delay-2 mt-7 flex flex-wrap gap-3">

@@ -75,22 +75,21 @@ export default async function DashboardPage() {
     fromDb = false;
   }
 
-  const emptyCockpit =
-    fromDb && tips.length === 0 && balance.deposited === 0 && !dbError;
+  const zeroFuel = fromDb && balance.deposited === 0 && !dbError;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="badge">Tipper dashboard</p>
+          <p className="badge">Tipper dash</p>
           <h1 className="stadium-banner mt-2 text-3xl sm:text-4xl">
             @{tipperName}
           </h1>
           <p className="mt-2 text-sm text-muted">
             {dbError
               ? "Balances unavailable right now — try again in a bit."
-              : emptyCockpit
-                ? "Nothing tipped yet. Deposit $ansem, set amounts, then engage."
+              : zeroFuel
+                ? "Deposit $ansem, set amounts, then engage."
                 : fromDb
                   ? "Live balances — what you deposited and sent."
                   : "Loading balances…"}
@@ -117,12 +116,12 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {emptyCockpit && (
+      {zeroFuel && (
         <div className="empty-state mt-6">
-          <p className="empty-title">Quiet for now</p>
+          <p className="empty-title">Zero tip fuel</p>
           <p className="empty-body">
-            Deposit $ansem on onboard, set tip amounts, then go touch some
-            tweets. Tips show up here.
+            Deposit $ansem on Tipper onboard, set tip amounts, then go touch
+            some tweets. Tips show up here.
           </p>
         </div>
       )}
