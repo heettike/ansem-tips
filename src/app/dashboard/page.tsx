@@ -71,62 +71,56 @@ export default async function DashboardPage() {
       }));
     }
   } catch (e) {
-    dbError = e instanceof Error ? e.message : "DB unavailable";
+    dbError = e instanceof Error ? e.message : "db unavailable";
     fromDb = false;
   }
 
-  const zeroFuel = fromDb && balance.deposited === 0 && !dbError;
+  const statusLine = dbError
+    ? "can't load balances right now. try again in a minute."
+    : fromDb && tips.length === 0 && balance.deposited === 0
+      ? "nothing here yet. deposit $ansem and start liking."
+      : fromDb
+        ? "live balances — real numbers only"
+        : "connecting…";
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+    <div className="mx-auto max-w-6xl px-6 py-16">
+      <div className="flex flex-wrap items-end justify-between gap-6">
         <div>
-          <p className="badge">Tipper dash</p>
-          <h1 className="stadium-banner mt-2 text-3xl sm:text-4xl">
-            @{tipperName}
-          </h1>
-          <p className="mt-2 text-sm text-muted">
-            {dbError
-              ? "Balances unavailable right now — try again in a bit."
-              : zeroFuel
-                ? "Deposit $ansem, set amounts, then engage."
-                : fromDb
-                  ? "Live balances — what you deposited and sent."
-                  : "Loading balances…"}
-          </p>
+          <p className="text-sm text-muted">tipper</p>
+          <h1 className="display mt-3 text-4xl sm:text-6xl">@{tipperName}</h1>
+          <p className="mt-4 max-w-md text-muted">{statusLine}</p>
+          {dbError && (
+            <p className="mt-3 max-w-lg break-all text-xs text-danger">
+              {dbError.slice(0, 160)}
+            </p>
+          )}
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <LoginButton label="Sign in with X" className="btn-ghost" />
+        <div className="flex flex-wrap items-center gap-3">
+          <LoginButton label="sign in with x" className="btn-ghost" />
           <Link href="/onboard" className="btn-ghost">
-            Settings / deposit
+            settings
+          </Link>
+          <Link href="/api/cron/poll" className="btn-primary">
+            pull tips
           </Link>
         </div>
       </div>
 
-      <div className="mt-8 grid gap-4 lg:grid-cols-3">
-        <BalanceCard title="Tipper balance" balance={balance} />
-        <div className="card p-5 lg:col-span-2">
-          <p className="label-mono text-accent">How tipping works</p>
-          <ul className="mt-3 space-y-2 text-sm text-muted">
-            <li>• You like / reply / follow / QT → they get $ansem.</li>
-            <li>• Drop 🐂 in a reply or QT → super tip.</li>
-            <li>• Same action never tips twice.</li>
-            <li>• People cash out from the withdraw page when they’re ready.</li>
+      <div className="mt-16 grid gap-10 lg:grid-cols-[1fr_1.4fr]">
+        <BalanceCard title="tipper balance" balance={balance} />
+        <div>
+          <p className="text-sm text-muted">what&apos;s running</p>
+          <ul className="mt-5 space-y-3 text-lg text-muted">
+            <li>we watch likes, replies, qts, and follows.</li>
+            <li>same action never tips twice.</li>
+            <li>🐂 in a comment or qt = super tip.</li>
+            <li>empty means nothing tipped yet — not fake numbers.</li>
           </ul>
         </div>
       </div>
 
-      {zeroFuel && (
-        <div className="empty-state mt-6">
-          <p className="empty-title">Zero tip fuel</p>
-          <p className="empty-body">
-            Deposit $ansem on Tipper onboard, set tip amounts, then go touch
-            some tweets. Tips show up here.
-          </p>
-        </div>
-      )}
-
-      <div className="mt-6">
+      <div className="mt-16">
         <TipsTable tips={tips} />
       </div>
     </div>

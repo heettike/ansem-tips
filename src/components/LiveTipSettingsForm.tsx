@@ -9,9 +9,7 @@ import { TipSettingsForm } from "./TipSettingsForm";
 const PrivyTipSettingsForm = dynamic(() => import("./PrivyTipSettingsForm"), {
   ssr: false,
   loading: () => (
-    <div className="card p-5 font-mono text-xs uppercase tracking-[0.12em] text-muted">
-      Loading tip amounts…
-    </div>
+    <div className="py-6 text-sm text-muted">loading tip amounts…</div>
   ),
 });
 

@@ -30,24 +30,6 @@ const EMPTY_BALANCE: BalanceView = {
   walletAddress: null,
 };
 
-function friendlyWithdrawError(raw: unknown): string {
-  const msg = typeof raw === "string" ? raw : "";
-  if (!msg) return "Withdraw didn’t go through. Try again in a bit.";
-  if (/demo/i.test(msg)) {
-    return "Demo mode is on — withdraws are paused right now.";
-  }
-  if (/insufficient|too low|balance is 0|nothing to withdraw/i.test(msg)) {
-    return "Nothing to withdraw yet — your tip balance is 0 (or too low for that amount).";
-  }
-  if (/not found|sign in|userId|xUsername/i.test(msg)) {
-    return "Sign in with X first, then withdraw.";
-  }
-  if (/address|amount|validation|looks off|flatten/i.test(msg)) {
-    return "Check your wallet address and amount — something looks off.";
-  }
-  return msg;
-}
-
 export default function WithdrawPage() {
   const [toAddress, setToAddress] = useState("");
   const [amount, setAmount] = useState(0);
@@ -61,7 +43,6 @@ export default function WithdrawPage() {
   const [withdrawals, setWithdrawals] = useState<WithdrawalRow[]>([]);
   const [totalWithdrawn, setTotalWithdrawn] = useState(0);
   const [livePriceUsd, setLivePriceUsd] = useState<number | null>(null);
-  const [authed, setAuthed] = useState(false);
 
   async function refreshBalance(u: string) {
     const res = await fetch(
@@ -117,7 +98,6 @@ export default function WithdrawPage() {
 
   async function onWithdraw(e: React.FormEvent) {
     e.preventDefault();
-    if (balance.withdrawable <= 0) return;
     setLoading(true);
     setStatusHtml(null);
     setStatusError(null);
@@ -137,7 +117,7 @@ export default function WithdrawPage() {
         const sig = data.result.txSig as string;
         const url = `https://solscan.io/tx/${sig}`;
         setStatusHtml(
-          `Withdraw submitted — <a href="${url}" target="_blank" rel="noreferrer" class="text-accent hover:underline">View on Solscan</a>`
+          `sent — <a href="${url}" target="_blank" rel="noreferrer" class="text-accent hover:underline">view receipt</a>`
         );
         if (username) {
           await refreshAll(username);
@@ -151,14 +131,12 @@ export default function WithdrawPage() {
         setAmount(0);
       } else {
         setStatusError(
-          friendlyWithdrawError(data.result?.error || data.error)
+          data.result?.error || data.error || "withdraw failed. try again."
         );
       }
     } catch (err) {
       setStatusError(
-        friendlyWithdrawError(
-          err instanceof Error ? err.message : "Request failed"
-        )
+        err instanceof Error ? err.message : "network blip — try again."
       );
     } finally {
       setLoading(false);
@@ -166,23 +144,21 @@ export default function WithdrawPage() {
   }
 
   const lifetime = balance.lifetimeReceived || 0;
-  const canWithdraw = balance.withdrawable > 0 && !loading;
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10">
-      <p className="badge badge-bull">Recipient</p>
-      <h1 className="stadium-banner mt-3 text-3xl sm:text-4xl">
-        Withdraw <span className="line-gold">$ansem</span>
+    <div className="mx-auto max-w-2xl px-6 py-16">
+      <p className="text-sm text-muted">recipient</p>
+      <h1 className="display mt-4 text-4xl sm:text-6xl">
+        withdraw <span className="gold">$ansem</span>
       </h1>
-      <p className="mt-2 text-muted">
-        Sign in with X. See what you earned. Cash out to your wallet.
+      <p className="mt-5 text-muted">
+        log in with x. see what you earned. cash out to your wallet.
       </p>
 
-      <div className="mt-6">
+      <div className="mt-10">
         <LoginButton
-          label="Sign in with X"
+          label="sign in with x"
           onAuthed={async (info) => {
-            setAuthed(true);
             if (info.username) {
               setUsername(info.username);
               await refreshAll(info.username);
@@ -191,91 +167,80 @@ export default function WithdrawPage() {
             setUserId(null);
           }}
         />
+        {!username && (
+          <p className="mt-4 text-sm text-muted">
+            not signed in yet — balances stay empty until you log in.
+          </p>
+        )}
       </div>
 
-      {authed && balance.withdrawable <= 0 && (
-        <div className="empty-state mt-8">
-          <p className="empty-title">Nothing to withdraw yet</p>
-          <p className="empty-body">
-            Tips show up after a tipper likes, replies, follows, or QTs you.
-          </p>
-        </div>
-      )}
-
-      <div className="mt-8 grid gap-3 sm:grid-cols-3">
-        <div className="card p-4">
-          <p className="label-mono">Lifetime earned</p>
-          <p className="mt-1 font-mono text-xl font-semibold gold-glow">
-            {lifetime.toFixed(2)}{" "}
-            <span className="text-sm text-accent-2">$ansem</span>
-          </p>
+      <div className="mt-16 grid gap-10 sm:grid-cols-3">
+        <div>
+          <p className="text-sm text-muted">lifetime</p>
+          <p className="display mt-2 text-3xl gold">${lifetime.toFixed(2)}</p>
           {livePriceUsd != null && (
-            <p className="mt-0.5 font-mono text-[10px] text-muted">
-              ≈ ${(lifetime * livePriceUsd).toFixed(6)}
+            <p className="mt-2 text-xs text-muted">
+              spot ≈ ${(lifetime * livePriceUsd).toFixed(6)}
             </p>
           )}
         </div>
-        <div className="card p-4">
-          <p className="label-mono">Withdrawable</p>
-          <p className="mt-1 font-mono text-xl font-semibold text-accent-2">
-            {balance.withdrawable.toFixed(2)}{" "}
-            <span className="text-sm">$ansem</span>
+        <div>
+          <p className="text-sm text-muted">withdrawable</p>
+          <p className="display mt-2 text-3xl gold">
+            ${balance.withdrawable.toFixed(2)}
           </p>
         </div>
-        <div className="card p-4">
-          <p className="label-mono">Withdrawn</p>
-          <p className="mt-1 font-mono text-xl font-semibold">
-            {totalWithdrawn.toFixed(2)}{" "}
-            <span className="text-sm text-accent-2">$ansem</span>
-          </p>
+        <div>
+          <p className="text-sm text-muted">withdrawn</p>
+          <p className="display mt-2 text-3xl">${totalWithdrawn.toFixed(2)}</p>
         </div>
       </div>
 
-      <div className="mt-6">
+      <div className="mt-16">
         <BalanceCard
-          title="Earned balance"
+          title="earned balance"
           balance={balance}
           highlight="withdrawable"
         />
       </div>
 
-      <div className="mt-6">
+      <div className="mt-16">
         <ReceivedTipsFeed tips={tips} />
       </div>
 
-      <div className="mt-6">
+      <div className="mt-16">
         <WithdrawalHistory withdrawals={withdrawals} />
       </div>
 
-      <form onSubmit={onWithdraw} className="card mt-6 space-y-4 p-5">
-        <p className="label-mono text-accent">Cash out</p>
-        <label className="block text-sm">
-          <span className="mb-1 block text-muted">Destination wallet</span>
+      <form onSubmit={onWithdraw} className="mt-16 space-y-6 border-t border-[#222] pt-12">
+        <p className="display text-3xl">cash out</p>
+        <label className="block">
+          <span className="mb-2 block text-sm text-muted">
+            destination wallet
+          </span>
           <input
-            className="input font-mono"
-            placeholder="Your wallet address"
+            className="input"
+            placeholder="your wallet address"
             value={toAddress}
             onChange={(e) => setToAddress(e.target.value)}
             required
             minLength={32}
-            disabled={balance.withdrawable <= 0}
           />
         </label>
 
-        <label className="block text-sm">
-          <div className="mb-1 flex items-center justify-between gap-2">
-            <span className="text-muted">Amount ($ansem)</span>
+        <label className="block">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <span className="text-sm text-muted">amount ($ansem)</span>
             <button
               type="button"
-              className="font-mono text-xs font-semibold uppercase tracking-wide text-accent hover:underline disabled:opacity-40"
+              className="text-sm text-accent hover:underline"
               onClick={() => setAmount(Number(balance.withdrawable) || 0)}
-              disabled={balance.withdrawable <= 0}
             >
-              Max ({balance.withdrawable.toFixed(2)})
+              max ({balance.withdrawable.toFixed(2)})
             </button>
           </div>
           <input
-            className="input font-mono"
+            className="input"
             type="number"
             min={0.01}
             step="0.01"
@@ -283,16 +248,11 @@ export default function WithdrawPage() {
             value={amount}
             onChange={(e) => setAmount(Number(e.target.value))}
             required
-            disabled={balance.withdrawable <= 0}
           />
         </label>
 
-        <button type="submit" className="btn-primary" disabled={!canWithdraw}>
-          {loading
-            ? "Sending…"
-            : balance.withdrawable <= 0
-              ? "Nothing to withdraw"
-              : "Withdraw"}
+        <button type="submit" className="btn-primary" disabled={loading}>
+          {loading ? "sending…" : "withdraw"}
         </button>
 
         {statusHtml && (
@@ -302,7 +262,9 @@ export default function WithdrawPage() {
           />
         )}
         {statusError && (
-          <p className="break-all text-sm text-danger">{statusError}</p>
+          <p className="break-all border border-danger p-3 text-sm text-danger">
+            {statusError}
+          </p>
         )}
       </form>
     </div>

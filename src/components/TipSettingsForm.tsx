@@ -4,11 +4,11 @@ import { useState } from "react";
 import type { TipAmountSettings } from "@/types";
 
 const fields: { key: keyof TipAmountSettings; label: string; hint: string }[] = [
-  { key: "likeAmount", label: "Like", hint: "per like" },
-  { key: "commentAmount", label: "Reply", hint: "per reply" },
-  { key: "followAmount", label: "Follow", hint: "per follow" },
-  { key: "quoteAmount", label: "QT", hint: "per quote tweet" },
-  { key: "superTipAmount", label: "🐂 Super tip", hint: "when 🐂 in reply/QT" },
+  { key: "likeAmount", label: "like", hint: "per like" },
+  { key: "commentAmount", label: "comment", hint: "per reply" },
+  { key: "followAmount", label: "follow", hint: "per follow" },
+  { key: "quoteAmount", label: "quote tweet", hint: "per qt" },
+  { key: "superTipAmount", label: "super tip 🐂", hint: "when 🐂 in comment/qt" },
 ];
 
 export function TipSettingsForm({
@@ -36,7 +36,7 @@ export function TipSettingsForm({
     setError(null);
     try {
       if (!authToken) {
-        setError("Sign in with X first, then save tip amounts.");
+        setError("log in with x first, then save tip amounts.");
         return;
       }
       const res = await fetch("/api/tips/settings", {
@@ -52,52 +52,48 @@ export function TipSettingsForm({
         setError(
           typeof data.error === "string"
             ? data.error
-            : "Couldn’t save tip amounts — try again."
+            : "couldn't save. try again."
         );
         return;
       }
       setSettings(data.settings);
       setSaved(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Save failed");
+      setError(err instanceof Error ? err.message : "save failed");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <form onSubmit={onSave} className="card space-y-4 p-5">
+    <form onSubmit={onSave} className="space-y-5">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h3 className="font-mono text-xs font-extrabold uppercase tracking-[0.14em]">
-            Tip amounts
-          </h3>
+          <h3 className="text-2xl font-bold tracking-tight">tip amounts</h3>
           <p className="mt-1 text-sm text-muted">
-            Min ${minTip} $ansem per action
+            min ${minTip} $ansem per action
           </p>
         </div>
-        <label className="flex items-center gap-2 font-mono text-xs uppercase tracking-wide">
+        <label className="flex items-center gap-2 text-sm">
           <input
             type="checkbox"
             checked={settings.enabled}
             onChange={(e) => update("enabled", e.target.checked)}
             className="size-4 accent-[#b6ff3b]"
           />
-          On
+          on
         </label>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         {fields.map((f) => (
-          <label key={f.key} className="block text-sm">
-            <span className="label-mono mb-1 block text-[0.62rem]">
+          <label key={f.key} className="block">
+            <span className="mb-2 block text-sm text-muted">
               {f.label}{" "}
-              <span className="normal-case tracking-normal text-muted opacity-80">
-                ({f.hint})
-              </span>
+              <span className="opacity-70">({f.hint})</span>
             </span>
             <input
-              className="input font-mono"
+              className="input"
               type="number"
               min={minTip}
               step="0.01"
@@ -112,13 +108,15 @@ export function TipSettingsForm({
 
       <button
         type="submit"
-        className="btn-primary w-full sm:w-auto"
+        className="btn-primary"
         disabled={loading}
       >
-        {loading ? "Saving…" : "Save amounts"}
+        {loading ? "saving…" : "save amounts"}
       </button>
-      {saved && <p className="text-sm text-bull">Saved.</p>}
-      {error && <p className="text-sm text-danger">{error}</p>}
+      {saved && <p className="text-sm mark">saved.</p>}
+      {error && (
+        <p className="border border-danger p-3 text-sm text-danger">{error}</p>
+      )}
     </form>
   );
 }

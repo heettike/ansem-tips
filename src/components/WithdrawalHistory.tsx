@@ -23,29 +23,24 @@ export function WithdrawalHistory({
   withdrawals: WithdrawalRow[];
 }) {
   return (
-    <div className="card overflow-hidden">
-      <div className="panel-head">
-        <h3>Withdrawal history</h3>
-        <p className="mt-1 font-mono text-[0.62rem] uppercase tracking-[0.12em] text-muted">
-          Past cash-outs · verify on Solscan
-        </p>
-      </div>
-      <ul className="divide-y divide-card-border/70">
+    <div>
+      <p className="text-sm text-muted">past withdrawals</p>
+      <ul className="mt-6 divide-y divide-[#222] border-y border-[#222]">
         {withdrawals.map((w) => (
           <li
             key={w.id}
-            className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"
+            className="flex flex-wrap items-center justify-between gap-3 py-5"
           >
             <div className="min-w-0 flex-1">
-              <p className="text-sm">
-                <span className="font-semibold gold-glow">
-                  {(w.amountUsd ?? w.amount).toFixed(2)}
+              <p>
+                <span className="font-bold gold">
+                  ${(w.amountUsd ?? w.amount).toFixed(2)}
                 </span>{" "}
                 <span className="text-muted">
                   · {w.amount.toFixed(2)} $ansem
                 </span>
               </p>
-              <p className="mt-1 font-mono text-xs text-muted">
+              <p className="mt-1 text-xs text-muted">
                 {new Date(w.createdAt).toLocaleString()} · to{" "}
                 <a
                   href={
@@ -64,21 +59,14 @@ export function WithdrawalHistory({
               href={w.solscanUrl}
               target="_blank"
               rel="noreferrer"
-              className="badge badge-bull shrink-0 hover:underline"
+              className="text-sm text-white underline underline-offset-4 hover:text-accent"
             >
-              Solscan ↗
+              receipt →
             </a>
           </li>
         ))}
         {withdrawals.length === 0 && (
-          <li className="px-5 py-6">
-            <div className="empty-state">
-              <p className="empty-title">No withdrawals yet</p>
-              <p className="empty-body">
-                When you cash out, the history lands here.
-              </p>
-            </div>
-          </li>
+          <li className="py-10 text-sm text-muted">no withdrawals yet.</li>
         )}
       </ul>
     </div>
