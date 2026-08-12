@@ -19,29 +19,29 @@ export function LandingHero() {
           priority
         />
       </div>
-      <div className="pointer-events-none absolute inset-0 grid-noise opacity-50" />
+      <div className="pointer-events-none absolute inset-0 grid-noise opacity-65" />
       <div className="pointer-events-none absolute inset-0 vignette" />
 
       <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-10 sm:pt-14">
-        <div className="stadium-in flex flex-wrap items-end gap-5">
+        <div className="stadium-in flex flex-wrap items-end gap-4 sm:gap-6">
           <div className="crt-bull-frame">
             <Image
               src="/brand/ansem.png"
               alt="ansem — The Black Bull"
               width={96}
               height={96}
-              className="size-20 object-cover sm:size-24"
+              className="size-[72px] object-cover sm:size-24"
               priority
             />
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <p className="label-mono text-accent text-glow">The Black Bull</p>
-            <h1 className="stadium-banner mt-2 max-w-4xl text-[clamp(2.75rem,12vw,6.5rem)]">
-              <span className="block">ansem.tips</span>
-              <span className="line-gold mt-1 block text-[0.55em]">
+            <h1 className="stadium-banner mt-2 max-w-4xl text-[clamp(2.9rem,13vw,7rem)]">
+              <span className="block text-glow">ansem.tips</span>
+              <span className="line-gold mt-1 block text-[0.52em]">
                 Tip $ansem on every like.
               </span>
-              <span className="line-accent mt-1 block text-[0.5em]">
+              <span className="line-accent mt-1 block text-[0.48em]">
                 Super tip on 🐂.
               </span>
             </h1>

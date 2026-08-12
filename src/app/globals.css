@@ -49,7 +49,7 @@ body {
   min-height: 100vh;
 }
 
-/* Light CRT scanlines — full-page atmosphere (no heavy filters) */
+/* CRT scanlines — stronger stadium intensity, still lightweight */
 .crt-scanlines,
 body::before {
   content: "";
@@ -61,20 +61,20 @@ body::before {
     0deg,
     transparent,
     transparent 2px,
-    rgba(0, 0, 0, 0.1) 2px,
-    rgba(0, 0, 0, 0.1) 4px
+    rgba(0, 0, 0, 0.14) 2px,
+    rgba(0, 0, 0, 0.14) 4px
   );
-  opacity: 0.28;
+  opacity: 0.4;
 }
 
-/* Soft CRT vignette */
+/* CRT vignette */
 body::after {
   content: "";
   pointer-events: none;
   position: fixed;
   inset: 0;
   z-index: 79;
-  background: radial-gradient(ellipse 75% 70% at 50% 45%, transparent 40%, rgba(0, 0, 0, 0.5) 100%);
+  background: radial-gradient(ellipse 72% 68% at 50% 42%, transparent 35%, rgba(0, 0, 0, 0.62) 100%);
 }
 
 .grid-noise {
@@ -361,23 +361,32 @@ body::after {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--card-border);
+  border: 1px solid rgba(182, 255, 59, 0.4);
   border-radius: var(--radius);
-  background: transparent;
+  background: rgba(182, 255, 59, 0.04);
   color: var(--accent);
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.65rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  padding: 0.45rem 0.7rem;
+  padding: 0.55rem 0.85rem;
+  min-height: 40px;
 }
 .nav-drawer {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  border-top: 1px solid var(--card-border);
-  padding: 0.75rem 1rem 1rem;
-  background: #080808;
+  gap: 0.35rem;
+  border-top: 1px solid rgba(182, 255, 59, 0.28);
+  padding: 0.85rem 1rem 1.1rem;
+  background: #050505;
+}
+.nav-drawer .nav-link {
+  display: block;
+  width: 100%;
+  padding: 0.85rem 0.9rem;
+  min-height: 44px;
+  border: 1px solid rgba(182, 255, 59, 0.18);
+  font-size: 0.75rem;
 }
 @media (min-width: 720px) {
   .nav-drawer {
