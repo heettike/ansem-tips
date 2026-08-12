@@ -59,12 +59,25 @@ export interface TwitterClient {
   pingLowBalance(username: string, balance: number): Promise<void>;
 }
 
+export interface TwitterOAuthTokens {
+  accessToken: string;
+  refreshToken?: string | null;
+  expiresAt?: Date | null;
+}
+
 export interface PrivyClientLike {
   verifyAuthToken(token: string): Promise<{ userId: string; walletAddress?: string } | null>;
   getSolanaWallet(privyDid: string): Promise<string | null>;
   getUserTwitter?(
     privyDid: string
   ): Promise<{ username: string; subject: string } | null>;
+  /**
+   * Best-effort: Privy server-auth does NOT return provider OAuth tokens today.
+   * Tokens must come from client useOAuthTokens → /api/auth/sync.
+   */
+  getUserTwitterOAuthTokens?(
+    privyDid: string
+  ): Promise<TwitterOAuthTokens | null>;
 }
 
 export interface SolanaTransferClient {
@@ -74,4 +87,13 @@ export interface SolanaTransferClient {
     toAddress: string;
     amount: number;
   }): Promise<{ signature: string; demo: boolean }>;
+}
+
+export interface DepositWatchResult {
+  username: string;
+  walletAddress: string;
+  onchain: number;
+  previous: number | null;
+  credited: number;
+  deposited: number | null;
 }

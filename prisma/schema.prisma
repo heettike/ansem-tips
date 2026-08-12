@@ -16,6 +16,12 @@ model User {
   privyDid      String?  @unique
   walletAddress String?
   role          String   @default("recipient")
+  /// X OAuth 2.0 user-context tokens (from Privy useOAuthTokens → /api/auth/sync). Never paste manually.
+  twitterAccessToken      String?
+  twitterRefreshToken     String?
+  twitterTokenExpiresAt   DateTime?
+  /// Last observed SPL $ansem balance on tipper Privy Solana wallet (deposit watcher baseline)
+  lastSeenTokenBalance    Float?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 

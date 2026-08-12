@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { config } from "@/lib/config";
 import { pollAndEnqueueTips, processPendingTips } from "@/lib/tips";
+import { watchTipperDeposits } from "@/lib/deposits";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
  * GET/POST /api/cron/poll
- * Poll tipper likes/replies/QTs/follows → enqueue tips → process pending.
+ * 1) Credit tipper wallet deposits (SPL $ansem deltas)
+ * 2) Poll tipper likes/replies/QTs/follows with stored user OAuth tokens
+ * 3) Process pending tips
+ *
+ * Vercel Hobby: one cron/day — deposits run here so we don't need a second cron.
  * Auth via Authorization: Bearer $CRON_SECRET (or ?secret=).
  */
 async function handle(req: NextRequest) {
@@ -20,16 +25,33 @@ async function handle(req: NextRequest) {
   }
 
   try {
-    const tipper =
-      req.nextUrl.searchParams.get("tipper") || config.tipperAllowlist[0];
-    const poll = await pollAndEnqueueTips(tipper);
+    const tipperParam = req.nextUrl.searchParams.get("tipper");
+    const tippers = tipperParam
+      ? [tipperParam.replace(/^@/, "").toLowerCase()]
+      : config.tipperAllowlist;
+
+    const deposits = await watchTipperDeposits(tippers);
+
+    const polls = [];
+    for (const tipper of tippers) {
+      try {
+        polls.push({ tipper, ...(await pollAndEnqueueTips(tipper)) });
+      } catch (e) {
+        polls.push({
+          tipper,
+          error: e instanceof Error ? e.message : "poll failed",
+        });
+      }
+    }
+
     const processed = await processPendingTips();
 
     return NextResponse.json({
       ok: true,
       demoMode: config.demoMode,
-      tipper,
-      poll,
+      tippers,
+      deposits,
+      polls,
       processed,
     });
   } catch (e) {

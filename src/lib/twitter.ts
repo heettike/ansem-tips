@@ -1,6 +1,6 @@
 import { config, hasTwitterCreds } from "@/lib/config";
 import { demoTwitterActions } from "@/lib/demo";
-import type { TwitterAction, TwitterClient } from "@/types";
+import type { TwitterAction, TwitterClient, TwitterOAuthTokens } from "@/types";
 
 const BULL = "🐂";
 
@@ -9,14 +9,18 @@ function hasBullEmoji(text?: string): boolean {
 }
 
 /**
- * X API v2 client. Live polling when TWITTER_BEARER_TOKEN is set and DEMO_MODE
- * is not true. Otherwise returns deterministic demo actions.
+ * X API v2 client.
+ * Prefer per-tipper user-context OAuth access tokens (stored after Privy login)
+ * for liked_tweets / following. Fall back to app bearer where the API allows.
  */
-export function createTwitterClient(): TwitterClient {
+export function createTwitterClient(userAccessToken?: string | null): TwitterClient {
+  if (userAccessToken) {
+    return createLiveTwitterClient(userAccessToken, "user");
+  }
   if (!hasTwitterCreds()) {
     return createDemoTwitterClient();
   }
-  return createLiveTwitterClient(config.twitterBearerToken);
+  return createLiveTwitterClient(config.twitterBearerToken, "app");
 }
 
 function createDemoTwitterClient(): TwitterClient {
@@ -45,7 +49,10 @@ function createDemoTwitterClient(): TwitterClient {
   };
 }
 
-function createLiveTwitterClient(bearer: string): TwitterClient {
+function createLiveTwitterClient(
+  bearer: string,
+  mode: "user" | "app"
+): TwitterClient {
   const headers = {
     Authorization: `Bearer ${bearer}`,
     "Content-Type": "application/json",
@@ -58,7 +65,7 @@ function createLiveTwitterClient(bearer: string): TwitterClient {
     });
     if (!res.ok) {
       const body = await res.text();
-      throw new Error(`X API ${res.status}: ${body}`);
+      throw new Error(`X API ${res.status} (${mode}): ${body}`);
     }
     return res.json() as Promise<T>;
   }
@@ -73,6 +80,7 @@ function createLiveTwitterClient(bearer: string): TwitterClient {
     },
 
     async listRecentLikes(userId) {
+      // liked_tweets requires user-context OAuth (like.read). App bearer often 403s.
       const qs = new URLSearchParams({
         max_results: "20",
         "tweet.fields": "author_id,created_at",
@@ -186,7 +194,6 @@ function createLiveTwitterClient(bearer: string): TwitterClient {
     },
 
     async pingLowBalance(username, balance) {
-      // Wire to X bot DM when user-context tokens + TWITTER_BOT_USER_ID exist
       console.warn(
         `[X-BOT] Low balance alert for @${username}: ${balance} $ansem. ` +
           (config.twitterBotUserId
@@ -195,6 +202,61 @@ function createLiveTwitterClient(bearer: string): TwitterClient {
       );
     },
   };
+}
+
+/**
+ * Refresh an X OAuth 2.0 user access token using TWITTER_CLIENT_ID/SECRET.
+ * Returns null if refresh is not configured or fails.
+ */
+export async function refreshTwitterUserToken(
+  refreshToken: string
+): Promise<TwitterOAuthTokens | null> {
+  const clientId = process.env.TWITTER_CLIENT_ID || "";
+  const clientSecret = process.env.TWITTER_CLIENT_SECRET || "";
+  if (!clientId || !refreshToken) return null;
+
+  try {
+    const body = new URLSearchParams({
+      grant_type: "refresh_token",
+      refresh_token: refreshToken,
+      client_id: clientId,
+    });
+    const headers: Record<string, string> = {
+      "Content-Type": "application/x-www-form-urlencoded",
+    };
+    if (clientSecret) {
+      headers.Authorization =
+        "Basic " + Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
+    }
+    const res = await fetch("https://api.twitter.com/2/oauth2/token", {
+      method: "POST",
+      headers,
+      body,
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("[twitter] refresh failed", res.status, text.slice(0, 200));
+      return null;
+    }
+    const data = (await res.json()) as {
+      access_token?: string;
+      refresh_token?: string;
+      expires_in?: number;
+    };
+    if (!data.access_token) return null;
+    return {
+      accessToken: data.access_token,
+      refreshToken: data.refresh_token ?? refreshToken,
+      expiresAt:
+        typeof data.expires_in === "number"
+          ? new Date(Date.now() + data.expires_in * 1000)
+          : null,
+    };
+  } catch (e) {
+    console.error("[twitter] refresh error", e);
+    return null;
+  }
 }
 
 export { hasBullEmoji, BULL };

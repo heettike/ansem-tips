@@ -119,7 +119,8 @@ Without X/Privy/hot-wallet credentials, those subsystems fall back to mocks auto
 
 | Route | Method | Auth | Description |
 |-------|--------|------|-------------|
-| /api/cron/poll | GET/POST | Bearer CRON_SECRET (skipped in DEMO_MODE) | Poll X, enqueue, process tips |
+| /api/cron/poll | GET/POST | Bearer CRON_SECRET (skipped in DEMO_MODE) | Deposits + poll X + process tips |
+| /api/cron/deposits | GET/POST | Bearer CRON_SECRET | Credit tipper Privy wallet  deltas |
 | /api/tips/process | GET/POST | none | Process pending tips |
 | /api/tips/settings | GET/POST | Privy bearer | Read/save tipper amounts |
 | /api/balance | GET | none | Ledger balances |
@@ -146,7 +147,7 @@ Call the cron route with an Authorization Bearer header equal to CRON_SECRET.
 2. Configure Privy with Twitter login and Solana embedded wallets.
 3. Fund hot wallet with ansem token + SOL for fees; set HOT_WALLET_SECRET.
 4. Set X API bearer with liked tweets / recent search / following access.
-5. Schedule cron against /api/cron/poll every 1 to 5 minutes.
+5. Keep vercel.json daily cron on /api/cron/poll (Hobby 1/day); overnight agent may hit poll+deposits more often.
 6. Keep DEMO_MODE unset or false.
 
 ---
@@ -154,3 +155,16 @@ Call the cron route with an Authorization Bearer header equal to CRON_SECRET.
 ## Stack
 
 Next.js 16 · React 19 · Prisma · Privy · Solana web3.js + spl-token · Tailwind 4 · Zod
+
+## One-login tipper flow (no pasted X tokens)
+
+1. Tipper (e.g. @blknoiz06) clicks Continue with X on /onboard.
+2. Privy X OAuth runs. Client useOAuthTokens captures access+refresh tokens and POSTs them to /api/auth/sync with the Privy bearer. Never ask the tipper to paste X user tokens.
+3. Server stores twitterAccessToken / twitterRefreshToken / twitterTokenExpiresAt on User, plus Privy Solana walletAddress.
+4. Tipper sends SPL $ansem (Token-2022) to their Privy wallet. /api/cron/deposits (or daily /api/cron/poll) credits Balance.deposited for positive deltas.
+5. Poller uses stored user-context tokens for liked_tweets; falls back to app bearer where allowed.
+6. Recipient withdraws use HOT_WALLET_* only — fund hot wallet with $ansem + SOL for fees; no fake withdraws.
+
+**Privy dashboard (required):** Login Methods → Twitter → custom OAuth creds + toggle **Return OAuth tokens**. Scopes: tweet.read users.read like.read offline.access follows.read. Server-auth getUser does **not** return provider tokens today.
+
+**Vercel Hobby cron (1/day):** /api/cron/poll at `30 20 * * *` also runs deposits. Overnight agent can hit /api/cron/deposits and poll more often — do not add */5 Hobby crons.

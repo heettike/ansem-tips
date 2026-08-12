@@ -1,6 +1,10 @@
 import { prisma } from "@/lib/db";
 import { config } from "@/lib/config";
-import { createTwitterClient, hasBullEmoji } from "@/lib/twitter";
+import {
+  createTwitterClient,
+  hasBullEmoji,
+  refreshTwitterUserToken,
+} from "@/lib/twitter";
 import {
   tipTransferFromHotWallet,
   withdrawFromHotWallet,
@@ -58,6 +62,8 @@ export async function pollAndEnqueueTips(tipperUsername?: string): Promise<{
   enqueued: number;
   skipped: number;
   actions: string[];
+  authMode: "user" | "bearer" | "demo";
+  tokenRefreshed?: boolean;
 }> {
   const username = (
     tipperUsername ||
@@ -65,7 +71,44 @@ export async function pollAndEnqueueTips(tipperUsername?: string): Promise<{
     "heettike"
   ).replace(/^@/, "");
 
-  const twitter = createTwitterClient();
+  // Load tipper row early so we can use stored Privy-captured X user tokens.
+  const existingTipper = await prisma.user.findFirst({
+    where: { username: username.toLowerCase() },
+  });
+
+  let authMode: "user" | "bearer" | "demo" = "demo";
+  let userAccess: string | null = existingTipper?.twitterAccessToken ?? null;
+  let tokenRefreshed = false;
+
+  if (userAccess) {
+    authMode = "user";
+    const expiresAt = existingTipper?.twitterTokenExpiresAt;
+    const needsRefresh =
+      Boolean(existingTipper?.twitterRefreshToken) &&
+      (!expiresAt || expiresAt.getTime() < Date.now() + 60_000);
+    if (needsRefresh && existingTipper?.twitterRefreshToken) {
+      const refreshed = await refreshTwitterUserToken(
+        existingTipper.twitterRefreshToken
+      );
+      if (refreshed?.accessToken) {
+        userAccess = refreshed.accessToken;
+        tokenRefreshed = true;
+        await prisma.user.update({
+          where: { id: existingTipper.id },
+          data: {
+            twitterAccessToken: refreshed.accessToken,
+            twitterRefreshToken:
+              refreshed.refreshToken ?? existingTipper.twitterRefreshToken,
+            twitterTokenExpiresAt: refreshed.expiresAt ?? null,
+          },
+        });
+      }
+    }
+  } else if (config.twitterBearerToken && !config.demoMode) {
+    authMode = "bearer";
+  }
+
+  const twitter = createTwitterClient(userAccess);
   const tipperUser = await twitter.getUserByUsername(username);
   if (!tipperUser) {
     throw new Error(`Tipper @${username} not found on X`);
@@ -89,14 +132,35 @@ export async function pollAndEnqueueTips(tipperUsername?: string): Promise<{
   });
 
   if (!tipper.tipSettings?.enabled) {
-    return { polled: 0, enqueued: 0, skipped: 0, actions: [] };
+    return { polled: 0, enqueued: 0, skipped: 0, actions: [], authMode, tokenRefreshed };
+  }
+
+  async function safeList<T>(label: string, fn: () => Promise<T[]>, fallback: T[] = []): Promise<T[]> {
+    try {
+      return await fn();
+    } catch (e) {
+      // liked_tweets / following often need user context; fall back to app bearer for search endpoints.
+      console.warn(`[tips] ${label} failed (${authMode}):`, e instanceof Error ? e.message : e);
+      if (authMode === "user" && config.twitterBearerToken && !config.demoMode) {
+        try {
+          const appClient = createTwitterClient(null);
+          if (label === "likes") return (await appClient.listRecentLikes(tipperUser!.id)) as T[];
+          if (label === "follows") return (await appClient.listRecentFollows(tipperUser!.id)) as T[];
+          if (label === "replies") return (await appClient.listRecentReplies(tipperUser!.id)) as T[];
+          if (label === "quotes") return (await appClient.listRecentQuotes(tipperUser!.id)) as T[];
+        } catch (e2) {
+          console.warn(`[tips] ${label} bearer fallback failed`, e2 instanceof Error ? e2.message : e2);
+        }
+      }
+      return fallback;
+    }
   }
 
   const [likes, replies, quotes, follows] = await Promise.all([
-    twitter.listRecentLikes(tipperUser.id),
-    twitter.listRecentReplies(tipperUser.id),
-    twitter.listRecentQuotes(tipperUser.id),
-    twitter.listRecentFollows(tipperUser.id),
+    safeList("likes", () => twitter.listRecentLikes(tipperUser.id)),
+    safeList("replies", () => twitter.listRecentReplies(tipperUser.id)),
+    safeList("quotes", () => twitter.listRecentQuotes(tipperUser.id)),
+    safeList("follows", () => twitter.listRecentFollows(tipperUser.id)),
   ]);
 
   const all = [...likes, ...replies, ...quotes, ...follows].map((a) => ({
@@ -190,7 +254,7 @@ export async function pollAndEnqueueTips(tipperUsername?: string): Promise<{
     );
   }
 
-  return { polled: all.length, enqueued, skipped, actions };
+  return { polled: all.length, enqueued, skipped, actions, authMode, tokenRefreshed };
 }
 
 /**

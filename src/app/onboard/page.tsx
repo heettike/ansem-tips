@@ -58,8 +58,9 @@ export default async function OnboardPage() {
           <p className="text-xs uppercase tracking-wide text-muted">Step 1</p>
           <h2 className="mt-1 font-semibold">X OAuth via Privy</h2>
           <p className="mt-2 text-sm text-muted">
-            Sign in with X. Privy creates an embedded Solana wallet for deposits
-            and tips.
+            Sign in with X once via Privy. OAuth tokens are stored server-side
+            for liked_tweets polling — never paste X tokens. Privy creates your
+            Solana deposit wallet.
           </p>
           <div className="mt-4">
             <LoginButton label="Continue with X" />

@@ -2,8 +2,8 @@
 
 import { publicEnv } from "@/lib/publicEnv";
 
-import { PrivyProvider, usePrivy } from "@privy-io/react-auth";
-import { useEffect, useMemo, useState } from "react";
+import { PrivyProvider, useOAuthTokens, usePrivy } from "@privy-io/react-auth";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ClientErrorBoundary } from "@/components/ClientErrorBoundary";
 
 type Props = {
@@ -16,48 +16,98 @@ type Props = {
   }) => void;
 };
 
+type CapturedOAuth = {
+  provider: string;
+  accessToken: string;
+  refreshToken?: string | null;
+  accessTokenExpiresInSeconds?: number | null;
+};
+
 function LoginInner({ label, className, onAuthed }: Props) {
   const { ready, authenticated, user, login, getAccessToken } = usePrivy();
   const [busy, setBusy] = useState(false);
+  const oauthRef = useRef<CapturedOAuth | null>(null);
+  const syncedFor = useRef<string | null>(null);
 
-  useEffect(() => {
-    if (!ready || !authenticated || !user) return;
-    let cancelled = false;
-    (async () => {
+  const syncAccount = useCallback(
+    async (oauth?: CapturedOAuth | null) => {
+      if (!user) return;
+      setBusy(true);
       try {
-        setBusy(true);
         const token = await getAccessToken();
         const twitter = user.twitter as { username?: string } | undefined;
         const linkedWallet = (user.linkedAccounts || []).find(
           (a) => a.type === "wallet" && "address" in a
         ) as { address?: string } | undefined;
-        const primaryWallet = user.wallet as { address?: string } | null | undefined;
+        const primaryWallet = user.wallet as
+          | { address?: string }
+          | null
+          | undefined;
         const sol = primaryWallet?.address || linkedWallet?.address || null;
+
+        const tokens = oauth || oauthRef.current;
         await fetch("/api/auth/sync", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ role: "tipper" }),
+          body: JSON.stringify({
+            role: "tipper",
+            walletAddress: sol,
+            ...(tokens
+              ? {
+                  oauthTokens: {
+                    provider: tokens.provider,
+                    accessToken: tokens.accessToken,
+                    refreshToken: tokens.refreshToken ?? null,
+                    accessTokenExpiresInSeconds:
+                      tokens.accessTokenExpiresInSeconds ?? null,
+                  },
+                }
+              : {}),
+          }),
         }).catch(() => null);
-        if (!cancelled) {
-          onAuthed?.({
-            privyDid: user.id,
-            username: twitter?.username,
-            walletAddress: sol ?? null,
-          });
-        }
+
+        syncedFor.current = user.id;
+        onAuthed?.({
+          privyDid: user.id,
+          username: twitter?.username,
+          walletAddress: sol ?? null,
+        });
       } catch (e) {
         console.error("[PrivyLoginButton] sync failed", e);
       } finally {
-        if (!cancelled) setBusy(false);
+        setBusy(false);
       }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [ready, authenticated, user, getAccessToken, onAuthed]);
+    },
+    [user, getAccessToken, onAuthed]
+  );
+
+  // Must stay mounted on the page the user returns to after X OAuth.
+  // Requires Privy dashboard: custom Twitter credentials + "Return OAuth tokens".
+  useOAuthTokens({
+    onOAuthTokenGrant: ({ oAuthTokens }) => {
+      if (oAuthTokens.provider !== "twitter") {
+        return;
+      }
+      const captured: CapturedOAuth = {
+        provider: oAuthTokens.provider,
+        accessToken: oAuthTokens.accessToken,
+        refreshToken: oAuthTokens.refreshToken ?? null,
+        accessTokenExpiresInSeconds:
+          oAuthTokens.accessTokenExpiresInSeconds ?? null,
+      };
+      oauthRef.current = captured;
+      void syncAccount(captured);
+    },
+  });
+
+  useEffect(() => {
+    if (!ready || !authenticated || !user) return;
+    if (syncedFor.current === user.id && !oauthRef.current) return;
+    void syncAccount(oauthRef.current);
+  }, [ready, authenticated, user, syncAccount]);
 
   return (
     <button
