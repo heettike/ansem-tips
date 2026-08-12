@@ -2,25 +2,25 @@
 
 ## What shipped (v1 → live)
 
-- **CT-native look**: acid green `#b6ff3b` + black `#050505` + gold `#f5b942`, square edges (`--radius: 0`), mono labels, stadium-banner H1, CRT scanlines / grid-noise.
-- **Landing**: brand-first stadium hero, subtle `/brand/1_photo.jpg` atmosphere (not meme dump), CT copy (“Like someone. They get $ansem…”), tipper + withdraw paths.
-- **SpreadStory + TipFlowAnim**: SVG/CSS tipper → like / reply / follow / QT / 🐂 nodes + herd tape. No WebGL/canvas.
-- **Nav / footer**: square bull mark, terminal strip, mono uppercase links, mobile menu.
-- **Onboard / Dash / Withdraw**: plain-English steps and empty states; withdraw disabled at 0; no cron/API docs for tippers.
-- **Product intact**: `Providers` empty; Privy mounts only on LoginButton click path; real balances only.
+- **CT-native look**: acid green `#b6ff3b` + black `#050505` + gold `#f5b942`, square edges (`--radius: 0px`), mono labels, stadium-banner H1 (mono/uppercase/scoreboard), CRT scanlines / grid-noise.
+- **Landing**: brand-first stadium hero, subtle `/brand/1_photo.jpg` atmosphere (not meme dump).
+- **Hero copy (exact)**: “Like someone. They get $ansem. Reply, follow, QT — same deal. Drop a bull emoji and they get more.”
+- **SpreadStory + TipFlowAnim**: SVG/CSS tipper → LIKE / REPLY / FOLLOW / QT / 🐂 SUPER square nodes + tip-particle drift. Herd tape: `like → tip · reply → tip · 🐂 → super tip · herd growing`. No WebGL/canvas.
+- **Nav**: Home / Tipper / Dash / Cash out — mono uppercase, solid dark strip, green hairline, square `/brand/ansem.png` mark, mobile menu.
+- **Onboard**: 3 step-rail cards — Sign in with X → Deposit (dashed address box + “Empty for now”) → Tip amounts.
+- **Dashboard**: no Run poll / cron docs; “Zero tip fuel” when deposited=0.
+- **Withdraw**: empty state “Nothing to withdraw yet — tips show up after a tipper likes, replies, follows, or QTs you.” Button disabled at 0.
+- **Product intact**: `Providers` empty; Privy only on LoginButton dynamic import path; real balances only.
 
-## v2 polish (this pass)
+## v2 polish
 
-- Nav labels shortened: Home / Tipper / Dash / Cash out.
-- `.site-nav` solid `#050505` — no `backdrop-filter` blur (perf + sharper CRT read).
-- Tip-flow mobile readability (tighter viewBox, larger target rects/fonts, square nodes) + stadium H1 blink cursor.
-- Scrubbed “Privy not configured” edge copy → “Sign-in not configured”.
+1. Stronger CRT scanline/vignette + larger stadium H1; mobile nav 44px tap rows + green hairline drawer.
+2. Tip-flow readability: larger square nodes/fonts (12px labels), tighter viewBox, taller min-height under ~400px.
 
 ## Known gaps
 
-- Tip-flow is still illustrative (not wired to live tip events).
-- Atmosphere photo + CRT overlay can feel dense on very small phones; may need a lighter mobile opacity pass.
-- Deposit address UX depends on tipper sign-in — empty state is clear, but copy/paste affordance could be stronger.
-- Allowlist tippers only (`heettike` + `blknoiz06`); product copy should stay honest about that.
-- No automated visual regression tests for the hero/tip-flow composition.
-- `PrivyLoginButton` edge states should stay jargon-free if config is missing.
+- Tip-flow is illustrative (not wired to live tip events).
+- Atmosphere + CRT can still feel dense on tiny phones — further opacity tuning possible.
+- Deposit address needs a one-tap copy control once wallet exists.
+- Allowlist tippers only (`heettike` + `blknoiz06`).
+- No visual regression tests for hero/tip-flow composition.

@@ -11,31 +11,33 @@ const TARGETS: {
   dur: string;
   gold?: boolean;
 }[] = [
-  { id: "like", label: "LIKE", x: 210, y: 22, delay: "0s", dur: "2.6s" },
-  { id: "reply", label: "REPLY", x: 210, y: 68, delay: "0.35s", dur: "2.7s" },
-  { id: "follow", label: "FOLLOW", x: 210, y: 114, delay: "0.7s", dur: "2.8s" },
-  { id: "qt", label: "QT", x: 210, y: 160, delay: "1.05s", dur: "2.9s" },
+  { id: "like", label: "LIKE", x: 198, y: 18, delay: "0s", dur: "2.6s" },
+  { id: "reply", label: "REPLY", x: 198, y: 62, delay: "0.35s", dur: "2.7s" },
+  { id: "follow", label: "FOLLOW", x: 198, y: 106, delay: "0.7s", dur: "2.8s" },
+  { id: "qt", label: "QT", x: 198, y: 150, delay: "1.05s", dur: "2.9s" },
   {
     id: "bull",
     label: "🐂 SUPER",
-    x: 210,
-    y: 206,
+    x: 198,
+    y: 194,
     delay: "1.4s",
     dur: "3s",
     gold: true,
   },
 ];
 
-const NODE_W = 96;
-const NODE_H = 30;
+const NODE_W = 108;
+const NODE_H = 32;
+const VB_W = 320;
+const VB_H = 256;
 
-/** CSS/SVG tip flow: tipper → engagement wallets. No WebGL / heavy blur. */
+/** CSS/SVG tip flow: tipper → engagement wallets. No WebGL / canvas / heavy blur. */
 export function TipFlowAnim() {
   return (
     <div className="tip-flow card-terminal" aria-hidden="true">
       <svg
         className="tip-flow-svg"
-        viewBox="0 0 320 270"
+        viewBox={`0 0 ${VB_W} ${VB_H}`}
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         role="img"
@@ -47,37 +49,37 @@ export function TipFlowAnim() {
             <path d="M16 0H0V16" stroke="rgba(182,255,59,0.07)" strokeWidth="1" />
           </pattern>
         </defs>
-        <rect width="320" height="270" fill="url(#tip-grid)" />
+        <rect width={VB_W} height={VB_H} fill="url(#tip-grid)" />
 
         {/* Tipper — square node */}
         <rect
           className="tip-node-pulse"
-          x="18"
-          y="112"
-          width="72"
-          height="46"
+          x="14"
+          y="100"
+          width="78"
+          height="52"
           fill="#0a0a0a"
           stroke="#b6ff3b"
-          strokeWidth="1.75"
+          strokeWidth="2"
         />
         <text
-          x="54"
-          y="130"
+          x="53"
+          y="120"
           textAnchor="middle"
           fill="#9ca3af"
           fontFamily="ui-monospace, monospace"
-          fontSize="9"
+          fontSize="10"
           letterSpacing="1.2"
         >
           TIPPER
         </text>
         <text
-          x="54"
-          y="146"
+          x="53"
+          y="138"
           textAnchor="middle"
           fill="#b6ff3b"
           fontFamily="ui-monospace, monospace"
-          fontSize="13"
+          fontSize="14"
           fontWeight="700"
         >
           YOU
@@ -87,12 +89,12 @@ export function TipFlowAnim() {
           <g key={t.id}>
             <line
               className="flow-path"
-              x1="90"
-              y1="135"
+              x1="92"
+              y1="126"
               x2={t.x - 2}
               y2={t.y + NODE_H / 2}
-              stroke={t.gold ? "rgba(245,185,66,0.55)" : "rgba(182,255,59,0.35)"}
-              strokeWidth="1.25"
+              stroke={t.gold ? "rgba(245,185,66,0.55)" : "rgba(182,255,59,0.4)"}
+              strokeWidth="1.5"
               strokeDasharray="4 3"
               style={{ animationDelay: t.delay }}
             />
@@ -103,17 +105,17 @@ export function TipFlowAnim() {
               height={NODE_H}
               fill="#0a0a0a"
               stroke={t.gold ? "#f5b942" : "#b6ff3b"}
-              strokeWidth="1.5"
+              strokeWidth="1.75"
             />
             <text
               x={t.x + NODE_W / 2}
-              y={t.y + 20}
+              y={t.y + 21}
               textAnchor="middle"
               fill={t.gold ? "#f5b942" : "#b6ff3b"}
               fontFamily="ui-monospace, monospace"
-              fontSize="11"
+              fontSize="12"
               fontWeight="700"
-              letterSpacing="0.8"
+              letterSpacing="0.9"
             >
               {t.label}
             </text>
@@ -121,13 +123,13 @@ export function TipFlowAnim() {
         ))}
 
         <text
-          x="160"
-          y="258"
+          x={VB_W / 2}
+          y={VB_H - 10}
           textAnchor="middle"
           fill="#9ca3af"
           fontFamily="ui-monospace, monospace"
-          fontSize="10"
-          letterSpacing="1.4"
+          fontSize="11"
+          letterSpacing="1.5"
         >
           ONE TIPPER → MANY WALLETS
         </text>
@@ -139,10 +141,10 @@ export function TipFlowAnim() {
           className={`tip-particle${t.gold ? " gold" : ""}`}
           style={
             {
-              left: "16.9%",
-              top: "50%",
-              "--dx": `${((t.x + NODE_W / 2 - 54) / 320) * 100}cqw`,
-              "--dy": `${((t.y + NODE_H / 2 - 135) / 270) * 100}cqh`,
+              left: "16.6%",
+              top: "49%",
+              "--dx": `${((t.x + NODE_W / 2 - 53) / VB_W) * 100}cqw`,
+              "--dy": `${((t.y + NODE_H / 2 - 126) / VB_H) * 100}cqh`,
               "--delay": t.delay,
               "--dur": t.dur,
             } as CSSProperties

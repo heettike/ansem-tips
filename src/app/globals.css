@@ -499,13 +499,16 @@ body::after {
   width: 100%;
   overflow: hidden;
   container-type: size;
-  aspect-ratio: 320 / 270;
+  aspect-ratio: 320 / 256;
   /* Keep labels readable on narrow phones */
-  min-height: 220px;
+  min-height: 230px;
 }
 @media (max-width: 400px) {
   .tip-flow {
-    min-height: 240px;
+    min-height: 260px;
+  }
+  .tip-flow-svg {
+    min-height: 260px;
   }
 }
 .tip-flow-svg {
