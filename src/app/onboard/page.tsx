@@ -14,9 +14,9 @@ export default async function OnboardPage() {
     where: { username: tipper },
     include: { tipSettings: true, balance: true },
   });
-  const hasDepositAddress = Boolean(user?.walletAddress);
-  const wallet = user?.walletAddress || null;
-  const deposited = user?.balance?.deposited ?? 0;
+  const wallet =
+    user?.walletAddress ||
+    "log in with x — your deposit address shows up here";
   const initial = user?.tipSettings
     ? {
         likeAmount: user.tipSettings.likeAmount,
@@ -36,92 +36,74 @@ export default async function OnboardPage() {
       };
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10">
-      <p className="badge badge-bull">Tipper onboard</p>
-      <h1 className="stadium-banner mt-3 text-3xl sm:text-5xl">
-        Sign in → deposit → tip
+    <div className="mx-auto max-w-2xl px-6 py-16">
+      <p className="text-sm text-muted">tipper</p>
+      <h1 className="display mt-4 text-4xl sm:text-6xl">
+        connect → fund → tip
       </h1>
-      <p className="mt-3 text-muted">
-        Tippers right now:{" "}
-        <strong className="text-foreground">
-          {config.tipperAllowlist.map((t) => `@${t}`).join(" · ")}
-        </strong>
+      <p className="mt-5 max-w-md text-muted">
+        allowlist: <span className="text-white">@{tipper}</span>
+        {config.tipperAllowlist.length > 1 && (
+          <>
+            {" "}
+            (+{" "}
+            {config.tipperAllowlist
+              .slice(1)
+              .map((t) => `@${t}`)
+              .join(", ")}
+            )
+          </>
+        )}
       </p>
 
       {!allowed && (
-        <div className="empty-state mt-6">
-          <p className="empty-title">Not on the tipper list</p>
-          <p className="empty-body">
-            Only listed tippers can run tips right now. Ask to get added.
-          </p>
+        <div className="mt-8 border border-danger p-4 text-sm text-danger">
+          you&apos;re not on the tipper list. ask whoever runs this.
         </div>
       )}
 
-      <ol className="step-rail mt-10">
-        <li className="step-rail-item">
-          <div className="card p-5">
-            <p className="step-num">Step 1</p>
-            <h2 className="mt-1 text-lg font-bold tracking-tight">
-              Sign in with X
-            </h2>
-            <p className="mt-2 text-sm text-muted">
-              One login. We remember your tipper account so tips can fire when
-              you engage.
-            </p>
-            <div className="mt-4">
-              <LoginButton label="Sign in with X" />
-            </div>
+      <ol className="mt-16 space-y-12">
+        <li>
+          <p className="text-sm text-muted">01</p>
+          <h2 className="mt-2 text-2xl font-bold tracking-tight">
+            log in with x
+          </h2>
+          <p className="mt-3 text-muted">
+            one login. we create your tip deposit wallet. don&apos;t paste keys.
+          </p>
+          <div className="mt-5">
+            <LoginButton label="continue with x" />
           </div>
         </li>
 
-        <li className="step-rail-item">
-          <div className="card p-5">
-            <p className="step-num">Step 2</p>
-            <h2 className="mt-1 text-lg font-bold tracking-tight">
-              Send $ansem to your deposit address
-            </h2>
-            <p className="mt-2 text-sm text-muted">
-              Send at least ${config.minDepositUsd} of $ansem here. Balance
-              updates after the deposit lands.
-            </p>
-            <p className="mt-3 font-mono text-sm">
-              Deposited:{" "}
-              <span className="gold-glow">
-                {deposited > 0 ? `${deposited.toFixed(2)} $ansem` : "Empty for now"}
-              </span>
-            </p>
-
-            {hasDepositAddress && wallet ? (
-              <div className="deposit-box mt-4">
-                <span className="deposit-label">Your deposit address</span>
-                {wallet}
-              </div>
-            ) : (
-              <div className="deposit-box mt-4">
-                <span className="deposit-label">Your deposit address</span>
-                Empty for now — sign in with X first.
-              </div>
-            )}
+        <li>
+          <p className="text-sm text-muted">02</p>
+          <h2 className="mt-2 text-2xl font-bold tracking-tight">
+            deposit min ${config.minDepositUsd} $ansem
+          </h2>
+          <p className="mt-3 text-muted">
+            send $ansem to your deposit address. funded so far:{" "}
+            <span className="gold">
+              ${(user?.balance?.deposited ?? 0).toFixed(2)}
+            </span>
+          </p>
+          <div className="mt-5 border border-[#222] p-4 text-sm break-all text-muted">
+            {wallet}
           </div>
         </li>
 
-        <li className="step-rail-item">
-          <div>
-            <p className="step-num mb-2">Step 3</p>
-            <h2 className="mb-3 text-lg font-bold tracking-tight">
-              Set tip amounts
-            </h2>
-            <LiveTipSettingsForm initial={initial} minTip={config.minTipUsd} />
-          </div>
+        <li>
+          <p className="mb-3 text-sm text-muted">03</p>
+          <LiveTipSettingsForm initial={initial} minTip={config.minTipUsd} />
         </li>
       </ol>
 
-      <div className="mt-8 flex flex-wrap gap-3">
+      <div className="mt-16 flex flex-wrap gap-3">
         <Link href="/dashboard" className="btn-primary">
-          Go to dashboard
+          open dash
         </Link>
         <Link href="/" className="btn-ghost">
-          Back home
+          home
         </Link>
       </div>
     </div>

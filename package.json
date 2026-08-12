@@ -7,6 +7,7 @@
     "build": "prisma generate && prisma db push && next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "node scripts/check-ui-voice.mjs",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "poll": "tsx scripts/poll-actions.ts",

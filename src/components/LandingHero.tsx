@@ -1,109 +1,55 @@
 import Image from "next/image";
 import Link from "next/link";
-import { MintChip } from "@/components/MintChip";
-import { SpreadStory } from "@/components/SpreadStory";
-import { config } from "@/lib/config";
+import { TipSpreadStory } from "@/components/TipSpreadStory";
 
 export function LandingHero() {
-  const tippers = config.tipperAllowlist;
-
   return (
-    <section className="relative overflow-hidden">
-      <div className="hero-atmosphere">
+    <div>
+      {/* one type lockup */}
+      <section className="px-6 pb-8 pt-20 sm:pt-28">
+        <div className="mx-auto max-w-6xl">
+          <p className="text-sm text-muted">the black bull</p>
+
+          <h1 className="display mt-6 text-[clamp(4.5rem,18vw,11rem)]">
+            ansem
+            <span className="mark">.tips</span>
+          </h1>
+
+          <p className="mt-8 max-w-xl text-2xl font-bold tracking-tight text-muted sm:text-3xl">
+            tip <span className="gold">$ansem</span>. grow the herd.
+          </p>
+
+          <div className="mt-12 flex flex-wrap items-center gap-8 text-lg font-bold">
+            <Link
+              href="/onboard"
+              className="text-white underline decoration-white underline-offset-8 hover:text-accent hover:decoration-accent"
+            >
+              start tipping
+            </Link>
+            <Link
+              href="/withdraw"
+              className="text-muted underline decoration-[#333] underline-offset-8 hover:text-white hover:decoration-white"
+            >
+              got tipped?
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* one large bull image */}
+      <section className="relative mt-4 h-[90vh] min-h-[560px] w-full overflow-hidden sm:h-screen">
         <Image
           src="/brand/1_photo.jpg"
-          alt=""
+          alt="black bull"
           fill
-          className="object-cover"
-          sizes="100vw"
           priority
+          className="object-cover object-center"
+          sizes="100vw"
         />
-      </div>
-      <div className="pointer-events-none absolute inset-0 grid-noise opacity-65" />
-      <div className="pointer-events-none absolute inset-0 vignette" />
+      </section>
 
-      <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-10 sm:pt-14">
-        <div className="stadium-in flex flex-wrap items-end gap-4 sm:gap-6">
-          <div className="crt-bull-frame">
-            <Image
-              src="/brand/ansem.png"
-              alt="ansem — The Black Bull"
-              width={96}
-              height={96}
-              className="size-[72px] object-cover sm:size-24"
-              priority
-            />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="label-mono text-accent text-glow">The Black Bull</p>
-            <h1 className="stadium-banner mt-2 max-w-4xl text-[clamp(2.9rem,13vw,7rem)]">
-              <span className="block text-glow">ansem.tips</span>
-              <span className="line-gold mt-1 block text-[0.52em]">
-                Tip $ansem on every like.
-              </span>
-              <span className="line-accent mt-1 block text-[0.48em]">
-                Super tip on 🐂.
-              </span>
-            </h1>
-          </div>
-        </div>
-
-        <p className="stadium-in stadium-in-delay-1 mt-5 max-w-xl text-base text-muted sm:text-lg">
-          Like someone. They get $ansem. Reply, follow, QT — same deal. Drop a
-          bull emoji and they get more.
-        </p>
-
-        <div className="stadium-in stadium-in-delay-2 mt-7 flex flex-wrap gap-3">
-          <Link href="/onboard" className="btn-primary">
-            Start tipping
-          </Link>
-          <Link href="/withdraw" className="btn-ghost">
-            Got tipped → withdraw
-          </Link>
-        </div>
-
-        <div className="stadium-in stadium-in-delay-2 mt-5 flex flex-wrap items-center gap-2">
-          <MintChip mint={config.ansemMint} />
-          <div className="chip">
-            <span className="text-muted">Tippers</span>
-            <span className="text-foreground">
-              {tippers.map((t) => `@${t}`).join(" · ")}
-            </span>
-          </div>
-        </div>
-
-        <div className="stadium-in stadium-in-delay-3 mt-10">
-          <SpreadStory />
-        </div>
-
-        <div className="mt-12 grid gap-6 border-t border-card-border pt-10 sm:grid-cols-2">
-          <div>
-            <p className="step-num">Tipper path</p>
-            <h2 className="mt-2 text-xl font-bold tracking-tight">
-              Sign in. Deposit. Set amounts.
-            </h2>
-            <p className="mt-2 text-sm text-muted">
-              When you like, reply, follow, or QT — they get tipped. 🐂 ups the
-              size.
-            </p>
-            <Link href="/onboard" className="btn-primary mt-5">
-              Onboard as tipper
-            </Link>
-          </div>
-          <div>
-            <p className="step-num">Withdraw path</p>
-            <h2 className="mt-2 text-xl font-bold tracking-tight">
-              Got engaged? Cash out.
-            </h2>
-            <p className="mt-2 text-sm text-muted">
-              Sign in with X. See what landed. Send $ansem to your wallet.
-            </p>
-            <Link href="/withdraw" className="btn-ghost mt-5">
-              Open withdraw
-            </Link>
-          </div>
-        </div>
-      </div>
-    </section>
+      {/* one idea object — network effects */}
+      <TipSpreadStory />
+    </div>
   );
 }

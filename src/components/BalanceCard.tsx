@@ -12,40 +12,34 @@ export function BalanceCard({
   const main =
     highlight === "withdrawable" ? balance.withdrawable : balance.deposited;
   return (
-    <div className="card p-5">
-      <p className="label-mono">{title}</p>
-      <p className="mt-2 font-mono text-3xl font-semibold tracking-tight gold-glow">
-        {main.toLocaleString(undefined, { maximumFractionDigits: 2 })}{" "}
-        <span className="text-base text-accent-2">$ansem</span>
+    <div>
+      <p className="text-sm text-muted">{title}</p>
+      <p className="display mt-3 text-5xl">
+        <span className="gold">
+          {main.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+        </span>
       </p>
-      <div className="mt-4 grid grid-cols-2 gap-3 text-sm text-muted">
+      <p className="mt-2 text-sm text-muted">$ansem</p>
+      <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-4 text-sm">
         <div>
-          <p className="label-mono text-[0.6rem]">Deposited</p>
-          <p className="mt-0.5 font-mono text-foreground">
-            {balance.deposited.toFixed(2)}
-          </p>
+          <dt className="text-muted">deposited</dt>
+          <dd className="mt-1">{balance.deposited.toFixed(2)}</dd>
         </div>
         <div>
-          <p className="label-mono text-[0.6rem]">Withdrawable</p>
-          <p className="mt-0.5 font-mono text-accent-2">
-            {balance.withdrawable.toFixed(2)}
-          </p>
+          <dt className="text-muted">withdrawable</dt>
+          <dd className="mt-1">{balance.withdrawable.toFixed(2)}</dd>
         </div>
         <div>
-          <p className="label-mono text-[0.6rem]">Lifetime sent</p>
-          <p className="mt-0.5 font-mono text-foreground">
-            {balance.lifetimeSent.toFixed(2)}
-          </p>
+          <dt className="text-muted">sent</dt>
+          <dd className="mt-1">{balance.lifetimeSent.toFixed(2)}</dd>
         </div>
         <div>
-          <p className="label-mono text-[0.6rem]">Lifetime received</p>
-          <p className="mt-0.5 font-mono text-foreground">
-            {balance.lifetimeReceived.toFixed(2)}
-          </p>
+          <dt className="text-muted">received</dt>
+          <dd className="mt-1">{balance.lifetimeReceived.toFixed(2)}</dd>
         </div>
-      </div>
+      </dl>
       {balance.walletAddress && (
-        <p className="mt-3 truncate font-mono text-xs text-muted">
+        <p className="mt-6 truncate text-xs text-muted">
           wallet: {balance.walletAddress}
         </p>
       )}

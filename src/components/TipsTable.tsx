@@ -10,56 +10,43 @@ type TipRow = {
 
 export function TipsTable({ tips }: { tips: TipRow[] }) {
   return (
-    <div className="card overflow-hidden">
-      <div className="panel-head">
-        <h3>Recent tips</h3>
-      </div>
-      <div className="overflow-x-auto">
+    <div>
+      <p className="text-sm text-muted">recent tips</p>
+      <div className="mt-6 overflow-x-auto">
         <table className="w-full min-w-[560px] text-left text-sm">
-          <thead className="bg-white/[0.02] font-mono text-[0.62rem] uppercase tracking-[0.12em] text-muted">
-            <tr>
-              <th className="px-5 py-3 font-medium">Action</th>
-              <th className="px-5 py-3 font-medium">To</th>
-              <th className="px-5 py-3 font-medium">Amount</th>
-              <th className="px-5 py-3 font-medium">Status</th>
-              <th className="px-5 py-3 font-medium">When</th>
+          <thead className="text-muted">
+            <tr className="border-b border-[#222]">
+              <th className="pb-3 pr-4 font-medium">action</th>
+              <th className="pb-3 pr-4 font-medium">to</th>
+              <th className="pb-3 pr-4 font-medium">amount</th>
+              <th className="pb-3 pr-4 font-medium">status</th>
+              <th className="pb-3 font-medium">when</th>
             </tr>
           </thead>
           <tbody>
             {tips.map((t) => (
-              <tr key={t.id} className="border-t border-card-border/70">
-                <td className="px-5 py-3">
-                  <span
-                    className={
-                      t.actionType === "super_tip"
-                        ? "badge badge-bull"
-                        : "badge"
-                    }
-                  >
-                    {t.actionType === "super_tip" ? "🐂 super tip" : t.actionType}
-                  </span>
+              <tr key={t.id} className="border-b border-[#222]">
+                <td className="py-4 pr-4">
+                  {t.actionType === "super_tip" ? (
+                    <span className="mark">🐂 super</span>
+                  ) : (
+                    t.actionType
+                  )}
                 </td>
-                <td className="px-5 py-3">@{t.toXUsername}</td>
-                <td className="px-5 py-3 font-mono">
-                  <span className="gold-glow">{t.amount}</span>{" "}
-                  <span className="text-accent-2">$ansem</span>
+                <td className="py-4 pr-4">@{t.toXUsername}</td>
+                <td className="py-4 pr-4 gold">
+                  {t.amount} $ansem
                 </td>
-                <td className="px-5 py-3 capitalize text-muted">{t.status}</td>
-                <td className="px-5 py-3 font-mono text-xs text-muted">
+                <td className="py-4 pr-4 text-muted">{t.status}</td>
+                <td className="py-4 text-muted">
                   {new Date(t.createdAt).toLocaleString()}
                 </td>
               </tr>
             ))}
             {tips.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-5 py-6">
-                  <div className="empty-state">
-                    <p className="empty-title">No tips yet</p>
-                    <p className="empty-body">
-                      Go touch some tweets. Likes, replies, follows, QTs — and
-                      🐂 for a super tip.
-                    </p>
-                  </div>
+                <td colSpan={5} className="py-12 text-muted">
+                  no tips yet — go touch grass (and tweets).
                 </td>
               </tr>
             )}

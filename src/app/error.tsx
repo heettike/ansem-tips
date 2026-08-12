@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 export default function Error({
   error,
   reset,
@@ -8,24 +10,24 @@ export default function Error({
   reset: () => void;
 }) {
   return (
-    <div className="mx-auto max-w-lg px-4 py-20 text-center">
-      <p className="label-mono text-accent">oops</p>
-      <p className="stadium-banner mt-2 text-3xl">This page couldn’t load</p>
-      <p className="mt-3 text-sm text-muted">
-        Reload to try again, or head back home.
+    <div className="mx-auto max-w-lg px-6 py-24 text-center">
+      <p className="text-sm text-muted">error</p>
+      <p className="display mt-4 text-4xl sm:text-5xl">
+        page couldn&apos;t load
       </p>
-      {error.message && (
-        <p className="mt-4 break-all font-mono text-xs text-danger">
-          {error.message}
-        </p>
-      )}
-      <div className="mt-8 flex justify-center gap-3">
+      <p className="mt-4 text-muted">
+        reload and try again. if it keeps happening, come back later.
+      </p>
+      <p className="mt-6 break-all border border-danger p-3 text-xs text-danger">
+        {error.message}
+      </p>
+      <div className="mt-10 flex justify-center gap-3">
         <button type="button" className="btn-primary" onClick={() => reset()}>
-          Reload
+          reload
         </button>
-        <a href="/" className="btn-ghost">
-          Back home
-        </a>
+        <Link href="/" className="btn-ghost">
+          home
+        </Link>
       </div>
     </div>
   );
