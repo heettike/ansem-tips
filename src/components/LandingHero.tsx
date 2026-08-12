@@ -14,25 +14,6 @@ export function LandingHero() {
       <div className="pointer-events-none absolute inset-0 vignette" />
 
       {/* Atmosphere: acid-green bull art — not a meme dump */}
-      <div className="pointer-events-none absolute -right-8 top-10 hidden h-[420px] w-[320px] opacity-[0.22] blur-[1px] sm:block lg:right-4 lg:opacity-[0.28]">
-        <Image
-          src="/brand/1_photo.jpg"
-          alt=""
-          fill
-          className="object-contain object-right"
-          sizes="320px"
-          priority
-        />
-      </div>
-      <div className="pointer-events-none absolute -left-16 bottom-0 hidden h-[280px] w-[240px] opacity-[0.14] blur-[0.5px] md:block">
-        <Image
-          src="/brand/7_photo.jpg"
-          alt=""
-          fill
-          className="object-contain object-left"
-          sizes="240px"
-        />
-      </div>
 
       <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-14 sm:pt-20">
         <div className="flex flex-col gap-10 lg:flex-row lg:items-center lg:gap-12">
@@ -99,7 +80,7 @@ export function LandingHero() {
           </div>
 
           <div className="relative mx-auto w-full max-w-[280px] shrink-0 sm:max-w-[320px] lg:mx-0">
-            <div className="absolute -inset-6 rounded-full bg-accent/10 blur-3xl" />
+            <div className="absolute -inset-6 rounded-full bg-accent/10" />
             <div className="card card-glow relative overflow-hidden p-2">
               <div className="relative aspect-square overflow-hidden rounded-[0.85rem] bg-black">
                 <Image
