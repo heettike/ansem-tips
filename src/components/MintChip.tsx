@@ -17,8 +17,13 @@ export function MintChip({ mint }: { mint: string }) {
   }
 
   return (
-    <button type="button" onClick={copy} className="chip hover:border-accent/60" title={mint}>
-      <span className="text-muted">Mint</span>
+    <button
+      type="button"
+      onClick={copy}
+      className="chip hover:border-accent/60"
+      title={mint}
+    >
+      <span className="text-muted">$ansem mint</span>
       <span className="text-accent text-glow">{short}</span>
       <span className="text-muted">{copied ? "Copied" : "Copy"}</span>
     </button>

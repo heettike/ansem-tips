@@ -24,10 +24,10 @@ export function WithdrawalHistory({
 }) {
   return (
     <div className="card overflow-hidden">
-      <div className="border-b border-card-border px-5 py-3">
-        <h3 className="font-semibold">Withdrawal history</h3>
-        <p className="text-xs text-muted">
-          On-chain SPL sends from custody · verify on Solscan
+      <div className="panel-head">
+        <h3>Withdrawal history</h3>
+        <p className="mt-1 text-xs text-muted">
+          Past cash-outs · verify on Solscan
         </p>
       </div>
       <ul className="divide-y divide-card-border/70">
@@ -39,13 +39,13 @@ export function WithdrawalHistory({
             <div className="min-w-0 flex-1">
               <p className="text-sm">
                 <span className="font-semibold text-foreground">
-                  ${(w.amountUsd ?? w.amount).toFixed(2)}
+                  {(w.amountUsd ?? w.amount).toFixed(2)}
                 </span>{" "}
                 <span className="text-muted">
                   · {w.amount.toFixed(2)} $ansem
                 </span>
               </p>
-              <p className="mt-1 text-xs text-muted">
+              <p className="mt-1 font-mono text-xs text-muted">
                 {new Date(w.createdAt).toLocaleString()} · to{" "}
                 <a
                   href={
@@ -54,7 +54,7 @@ export function WithdrawalHistory({
                   }
                   target="_blank"
                   rel="noreferrer"
-                  className="font-mono text-accent hover:underline"
+                  className="text-accent hover:underline"
                 >
                   {shortAddr(w.toAddress)}
                 </a>
@@ -71,8 +71,13 @@ export function WithdrawalHistory({
           </li>
         ))}
         {withdrawals.length === 0 && (
-          <li className="px-5 py-8 text-center text-sm text-muted">
-            No withdrawals yet.
+          <li className="px-5 py-6">
+            <div className="empty-state">
+              <p className="empty-title">No withdrawals yet</p>
+              <p className="empty-body">
+                When you cash out, the history lands here.
+              </p>
+            </div>
           </li>
         )}
       </ul>

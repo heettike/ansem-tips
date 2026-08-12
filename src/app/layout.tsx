@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "ansem.tips — tip $ansem · The Black Bull",
   description:
-    "Tip $ansem on Solana when you like, reply, follow, or QT. Super-tip on 🐂. Inspired by Black Bull / @blknoiz06 culture.",
+    "Like someone. They get $ansem. Drop 🐂 — they get more. Tip on likes, replies, follows, QTs. Inspired by Black Bull / @blknoiz06 culture.",
   icons: {
     icon: "/brand/ansem.png",
     apple: "/brand/ansem.png",
@@ -38,8 +38,11 @@ export default function RootLayout({
         <Providers>
           <Nav />
           <main className="flex-1">{children}</main>
-          <footer className="border-t border-card-border py-8 text-center text-xs text-muted">
-            ansem.tips · tip $ansem · The Black Bull · not financial advice
+          <footer className="site-footer py-6 text-center">
+            <div className="mx-auto flex max-w-6xl flex-col items-center gap-1 px-4 sm:flex-row sm:justify-between">
+              <span>ansem.tips // tip $ansem // the black bull</span>
+              <span className="text-muted/70">not financial advice</span>
+            </div>
           </footer>
         </Providers>
       </body>

@@ -5,10 +5,10 @@ import type { TipAmountSettings } from "@/types";
 
 const fields: { key: keyof TipAmountSettings; label: string; hint: string }[] = [
   { key: "likeAmount", label: "Like", hint: "per like" },
-  { key: "commentAmount", label: "Comment", hint: "per reply" },
+  { key: "commentAmount", label: "Reply", hint: "per reply" },
   { key: "followAmount", label: "Follow", hint: "per follow" },
   { key: "quoteAmount", label: "Quote tweet", hint: "per QT" },
-  { key: "superTipAmount", label: "Super-tip 🐂", hint: "when 🐂 in comment/QT" },
+  { key: "superTipAmount", label: "Super-tip 🐂", hint: "when 🐂 in reply/QT" },
 ];
 
 export function TipSettingsForm({
@@ -36,7 +36,7 @@ export function TipSettingsForm({
     setError(null);
     try {
       if (!authToken) {
-        setError("Log in with X first, then save tip amounts.");
+        setError("Sign in with X first, then save tip amounts.");
         return;
       }
       const res = await fetch("/api/tips/settings", {
@@ -67,17 +67,21 @@ export function TipSettingsForm({
     <form onSubmit={onSave} className="card space-y-4 p-5">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h3 className="font-semibold">Tip amounts</h3>
-          <p className="text-sm text-muted">Min ${minTip} $ansem per action</p>
+          <h3 className="font-mono text-xs font-extrabold uppercase tracking-[0.14em]">
+            Tip amounts
+          </h3>
+          <p className="mt-1 text-sm text-muted">
+            Min ${minTip} $ansem per action
+          </p>
         </div>
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex items-center gap-2 font-mono text-xs uppercase tracking-wide">
           <input
             type="checkbox"
             checked={settings.enabled}
             onChange={(e) => update("enabled", e.target.checked)}
             className="size-4 accent-[#b6ff3b]"
           />
-          Enabled
+          On
         </label>
       </div>
 
@@ -103,9 +107,9 @@ export function TipSettingsForm({
       </div>
 
       <button type="submit" className="btn-primary w-full sm:w-auto" disabled={loading}>
-        {loading ? "Saving…" : "Save settings"}
+        {loading ? "Saving…" : "Save amounts"}
       </button>
-      {saved && <p className="text-sm text-bull">Saved to tipper settings.</p>}
+      {saved && <p className="text-sm text-bull">Saved.</p>}
       {error && <p className="text-sm text-danger">{error}</p>}
     </form>
   );

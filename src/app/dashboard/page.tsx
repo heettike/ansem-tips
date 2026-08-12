@@ -75,20 +75,25 @@ export default async function DashboardPage() {
     fromDb = false;
   }
 
+  const emptyCockpit =
+    fromDb && tips.length === 0 && balance.deposited === 0 && !dbError;
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="badge">Tipper dashboard</p>
-          <h1 className="display-title mt-2 text-3xl">@{tipperName}</h1>
-          <p className="mt-1 text-sm text-muted">
+          <p className="badge">Tipper cockpit</p>
+          <h1 className="stadium-banner mt-2 text-3xl sm:text-4xl">
+            @{tipperName}
+          </h1>
+          <p className="mt-2 text-sm text-muted">
             {dbError
-              ? `Ledger unavailable — ${dbError.slice(0, 120)}`
-              : fromDb && tips.length === 0 && balance.deposited === 0
-                ? "Real ledger (empty). Deposit + run poll to see tips."
+              ? "Balances unavailable right now — try again in a bit."
+              : emptyCockpit
+                ? "Nothing tipped yet. Deposit $ansem, set amounts, then engage."
                 : fromDb
-                  ? "Live ledger — real balances only"
-                  : "Connecting to ledger…"}
+                  ? "Live balances — what you deposited and sent."
+                  : "Loading balances…"}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -96,29 +101,31 @@ export default async function DashboardPage() {
           <Link href="/onboard" className="btn-ghost">
             Settings / deposit
           </Link>
-          <Link href="/api/cron/poll" className="btn-primary">
-            Run poll
-          </Link>
         </div>
       </div>
 
       <div className="mt-8 grid gap-4 lg:grid-cols-3">
         <BalanceCard title="Tipper balance" balance={balance} />
         <div className="card p-5 lg:col-span-2">
-          <h3 className="font-semibold">Pipeline</h3>
+          <p className="label-mono text-accent">How it runs</p>
           <ul className="mt-3 space-y-2 text-sm text-muted">
-            <li>• Cron polls likes, replies, quote-tweets, and follows.</li>
-            <li>• Each action_id is processed once (deduped forever).</li>
-            <li>• 🐂 in a comment or QT upgrades to super-tip.</li>
-            <li>• Ledger debit → recipient credit → real SPL on withdraw.</li>
-            <li>• No demo balances — empty means nothing on-chain/ledger yet.</li>
+            <li>• You like / reply / follow / QT → they get $ansem.</li>
+            <li>• Drop 🐂 in a reply or QT → super-tip.</li>
+            <li>• Same action never tips twice.</li>
+            <li>• Recipients withdraw when they&apos;re ready.</li>
           </ul>
-          <p className="mt-4 text-xs text-muted">
-            Poll: <code className="text-accent">GET /api/cron/poll</code> with{" "}
-            <code className="text-accent">Authorization: Bearer $CRON_SECRET</code>
-          </p>
         </div>
       </div>
+
+      {emptyCockpit && (
+        <div className="empty-state mt-6">
+          <p className="empty-title">Cockpit is quiet</p>
+          <p className="empty-body">
+            Deposit $ansem on onboard, set tip amounts, then go touch some
+            tweets. Tips show up here.
+          </p>
+        </div>
+      )}
 
       <div className="mt-6">
         <TipsTable tips={tips} />

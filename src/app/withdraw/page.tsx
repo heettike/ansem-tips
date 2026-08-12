@@ -43,6 +43,7 @@ export default function WithdrawPage() {
   const [withdrawals, setWithdrawals] = useState<WithdrawalRow[]>([]);
   const [totalWithdrawn, setTotalWithdrawn] = useState(0);
   const [livePriceUsd, setLivePriceUsd] = useState<number | null>(null);
+  const [authed, setAuthed] = useState(false);
 
   async function refreshBalance(u: string) {
     const res = await fetch(
@@ -98,6 +99,7 @@ export default function WithdrawPage() {
 
   async function onWithdraw(e: React.FormEvent) {
     e.preventDefault();
+    if (balance.withdrawable <= 0) return;
     setLoading(true);
     setStatusHtml(null);
     setStatusError(null);
@@ -140,21 +142,23 @@ export default function WithdrawPage() {
   }
 
   const lifetime = balance.lifetimeReceived || 0;
+  const canWithdraw = balance.withdrawable > 0 && !loading;
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
       <p className="badge badge-bull">Recipient</p>
-      <h1 className="mt-3 text-3xl font-bold tracking-tighter sm:text-4xl">
-        Withdraw <span className="text-accent-2">$ansem</span>
+      <h1 className="stadium-banner mt-3 text-3xl sm:text-4xl">
+        Withdraw <span className="line-gold">$ansem</span>
       </h1>
       <p className="mt-2 text-muted">
-        Log in with X. See what you earned. Cash out SPL $ansem to your wallet.
+        Sign in with X. See what you earned. Cash out to your wallet.
       </p>
 
       <div className="mt-6">
         <LoginButton
           label="Sign in with X"
           onAuthed={async (info) => {
+            setAuthed(true);
             if (info.username) {
               setUsername(info.username);
               await refreshAll(info.username);
@@ -165,44 +169,41 @@ export default function WithdrawPage() {
         />
       </div>
 
+      {authed && balance.withdrawable <= 0 && (
+        <div className="empty-state mt-8">
+          <p className="empty-title">Nothing to withdraw yet</p>
+          <p className="empty-body">
+            Tips show up after someone engages you — like, reply, follow, QT, or
+            drops 🐂.
+          </p>
+        </div>
+      )}
+
       <div className="mt-8 grid gap-3 sm:grid-cols-3">
         <div className="card p-4">
-          <p className="text-xs uppercase tracking-wide text-muted">
-            Lifetime earned
-          </p>
+          <p className="label-mono">Lifetime earned</p>
           <p className="mt-1 font-mono text-xl font-semibold">
-            ${lifetime.toFixed(2)}
+            {lifetime.toFixed(2)}{" "}
+            <span className="text-sm text-accent-2">$ansem</span>
           </p>
-          <p className="mt-0.5 text-xs text-muted font-mono">
-            {lifetime.toFixed(2)} $ansem
-            {livePriceUsd != null && (
-              <span className="block text-[10px] opacity-80">
-                spot ≈ ${(lifetime * livePriceUsd).toFixed(6)} @ $
-                {livePriceUsd.toPrecision(4)}
-              </span>
-            )}
-          </p>
+          {livePriceUsd != null && (
+            <p className="mt-0.5 font-mono text-[10px] text-muted">
+              ≈ ${(lifetime * livePriceUsd).toFixed(6)}
+            </p>
+          )}
         </div>
         <div className="card p-4">
-          <p className="text-xs uppercase tracking-wide text-muted">
-            Withdrawable
-          </p>
+          <p className="label-mono">Withdrawable</p>
           <p className="mt-1 font-mono text-xl font-semibold text-accent-2">
-            ${balance.withdrawable.toFixed(2)}
-          </p>
-          <p className="mt-0.5 text-xs text-muted font-mono">
-            {balance.withdrawable.toFixed(2)} $ansem
+            {balance.withdrawable.toFixed(2)}{" "}
+            <span className="text-sm">$ansem</span>
           </p>
         </div>
         <div className="card p-4">
-          <p className="text-xs uppercase tracking-wide text-muted">
-            Withdrawn
-          </p>
+          <p className="label-mono">Withdrawn</p>
           <p className="mt-1 font-mono text-xl font-semibold">
-            ${totalWithdrawn.toFixed(2)}
-          </p>
-          <p className="mt-0.5 text-xs text-muted font-mono">
-            {totalWithdrawn.toFixed(2)} $ansem
+            {totalWithdrawn.toFixed(2)}{" "}
+            <span className="text-sm text-accent-2">$ansem</span>
           </p>
         </div>
       </div>
@@ -224,25 +225,28 @@ export default function WithdrawPage() {
       </div>
 
       <form onSubmit={onWithdraw} className="card mt-6 space-y-4 p-5">
+        <p className="label-mono text-accent">Cash out</p>
         <label className="block text-sm">
-          <span className="mb-1 block text-muted">Destination Solana wallet</span>
+          <span className="mb-1 block text-muted">Destination wallet</span>
           <input
             className="input font-mono"
-            placeholder="Your Solana address"
+            placeholder="Your wallet address"
             value={toAddress}
             onChange={(e) => setToAddress(e.target.value)}
             required
             minLength={32}
+            disabled={balance.withdrawable <= 0}
           />
         </label>
 
         <label className="block text-sm">
           <div className="mb-1 flex items-center justify-between gap-2">
-            <span className="text-muted">Amount ($ansem / USD-notional)</span>
+            <span className="text-muted">Amount ($ansem)</span>
             <button
               type="button"
-              className="text-xs font-semibold uppercase tracking-wide text-accent hover:underline"
+              className="font-mono text-xs font-semibold uppercase tracking-wide text-accent hover:underline disabled:opacity-40"
               onClick={() => setAmount(Number(balance.withdrawable) || 0)}
+              disabled={balance.withdrawable <= 0}
             >
               Max ({balance.withdrawable.toFixed(2)})
             </button>
@@ -256,11 +260,16 @@ export default function WithdrawPage() {
             value={amount}
             onChange={(e) => setAmount(Number(e.target.value))}
             required
+            disabled={balance.withdrawable <= 0}
           />
         </label>
 
-        <button type="submit" className="btn-primary" disabled={loading}>
-          {loading ? "Sending…" : "Withdraw"}
+        <button type="submit" className="btn-primary" disabled={!canWithdraw}>
+          {loading
+            ? "Sending…"
+            : balance.withdrawable <= 0
+              ? "Nothing to withdraw"
+              : "Withdraw"}
         </button>
 
         {statusHtml && (

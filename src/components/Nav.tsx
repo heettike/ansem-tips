@@ -1,5 +1,9 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 const links = [
   { href: "/", label: "Home" },
@@ -9,41 +13,92 @@ const links = [
 ];
 
 export function Nav() {
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+
   return (
-    <header className="sticky top-0 z-40 border-b border-card-border/80 bg-background/80 backdrop-blur-xl">
+    <header className="site-nav sticky top-0 z-40">
+      <div className="site-nav-strip px-4 py-1.5">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
+          <span className="flex items-center gap-2">
+            <span className="pulse-dot" />
+            <span>ansem.tips // live</span>
+          </span>
+          <span className="hidden text-accent/80 sm:inline">
+            tip $ansem · the black bull
+          </span>
+        </div>
+      </div>
+
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
         <Link href="/" className="group flex items-center gap-2.5 font-semibold tracking-tight">
-          <span className="relative size-8 overflow-hidden rounded-full ring-1 ring-accent/40 shadow-[0_0_16px_rgba(182,255,59,0.25)]">
+          <span className="nav-mark relative">
             <Image
               src="/brand/ansem.png"
               alt="$ansem — The Black Bull"
-              width={32}
-              height={32}
-              className="size-8 object-cover"
+              width={34}
+              height={34}
+              className="size-[34px] object-cover"
               priority
             />
           </span>
           <span className="leading-none">
-            <span className="block text-[15px] sm:text-base">
+            <span className="block font-mono text-[13px] uppercase tracking-[0.08em] sm:text-sm">
               🐂 ansem<span className="text-accent">.tips</span>
             </span>
-            <span className="mt-0.5 block text-[10px] font-medium uppercase tracking-[0.14em] text-muted group-hover:text-accent/80">
+            <span className="mt-0.5 block font-mono text-[9px] font-medium uppercase tracking-[0.16em] text-muted group-hover:text-accent/80">
               The Black Bull
             </span>
           </span>
         </Link>
-        <nav className="flex flex-wrap items-center gap-1 text-sm">
-          {links.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="rounded-full px-3 py-1.5 text-muted hover:bg-white/5 hover:text-accent"
-            >
-              {l.label}
-            </Link>
-          ))}
+
+        <nav className="nav-links-desktop items-center gap-1" aria-label="Primary">
+          {links.map((l) => {
+            const active =
+              l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
+            return (
+              <Link
+                key={l.href}
+                href={l.href}
+                className="nav-link"
+                aria-current={active ? "page" : undefined}
+              >
+                {l.label}
+              </Link>
+            );
+          })}
         </nav>
+
+        <button
+          type="button"
+          className="nav-menu-btn"
+          aria-expanded={open}
+          aria-controls="mobile-nav"
+          onClick={() => setOpen((v) => !v)}
+        >
+          {open ? "Close" : "Menu"}
+        </button>
       </div>
+
+      {open && (
+        <nav id="mobile-nav" className="nav-drawer" aria-label="Mobile">
+          {links.map((l) => {
+            const active =
+              l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
+            return (
+              <Link
+                key={l.href}
+                href={l.href}
+                className="nav-link"
+                aria-current={active ? "page" : undefined}
+                onClick={() => setOpen(false)}
+              >
+                {l.label}
+              </Link>
+            );
+          })}
+        </nav>
+      )}
     </header>
   );
 }

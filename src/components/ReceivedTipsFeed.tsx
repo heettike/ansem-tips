@@ -24,10 +24,10 @@ const ACTION_LABEL: Record<string, string> = {
 export function ReceivedTipsFeed({ tips }: { tips: ReceivedTip[] }) {
   return (
     <div className="card overflow-hidden">
-      <div className="border-b border-card-border px-5 py-3">
-        <h3 className="font-semibold">Tips you earned</h3>
-        <p className="text-xs text-muted">
-          What tippers did + how much landed (USD-notional $ansem)
+      <div className="panel-head">
+        <h3>Tips you earned</h3>
+        <p className="mt-1 text-xs text-muted">
+          What tippers did + how much $ansem landed
         </p>
       </div>
       <ul className="divide-y divide-card-border/70">
@@ -60,15 +60,15 @@ export function ReceivedTipsFeed({ tips }: { tips: ReceivedTip[] }) {
                     </>
                   )}
                 </p>
-                <p className="mt-1 text-xs text-muted">
+                <p className="mt-1 font-mono text-xs text-muted">
                   {new Date(t.createdAt).toLocaleString()} · {t.status}
                 </p>
               </div>
               <div className="shrink-0 text-right">
                 <span className="badge badge-bull font-mono">
-                  + ${usd.toFixed(2)}
+                  +{usd.toFixed(2)}
                 </span>
-                <p className="mt-1 text-xs text-muted font-mono">
+                <p className="mt-1 font-mono text-xs text-muted">
                   {t.amount.toFixed(2)} $ansem
                 </p>
               </div>
@@ -76,8 +76,13 @@ export function ReceivedTipsFeed({ tips }: { tips: ReceivedTip[] }) {
           );
         })}
         {tips.length === 0 && (
-          <li className="px-5 py-8 text-center text-sm text-muted">
-            No tips yet. Go be tippable.
+          <li className="px-5 py-6">
+            <div className="empty-state">
+              <p className="empty-title">No tips yet</p>
+              <p className="empty-body">
+                Tips show up after someone engages you.
+              </p>
+            </div>
           </li>
         )}
       </ul>
