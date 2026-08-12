@@ -80,7 +80,7 @@ export async function pollAndEnqueueTips(tipperUsername?: string): Promise<{
       tipSettings: { create: {} },
       balance: {
         create: {
-          deposited: config.demoMode ? 420.69 : 0,
+          deposited: 0,
         },
       },
     },
