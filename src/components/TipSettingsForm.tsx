@@ -1,14 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { TipAmountSettings } from "@/types";
 
 const fields: { key: keyof TipAmountSettings; label: string; hint: string }[] = [
-  { key: "likeAmount", label: "like", hint: "per like" },
-  { key: "commentAmount", label: "comment", hint: "per reply" },
-  { key: "followAmount", label: "follow", hint: "per follow" },
-  { key: "quoteAmount", label: "quote tweet", hint: "per qt" },
-  { key: "superTipAmount", label: "super tip 🐂", hint: "when 🐂 in comment/qt" },
+  {
+    key: "likeAmount",
+    label: "like",
+    hint: "this much leaves your wallet when you like",
+  },
+  {
+    key: "commentAmount",
+    label: "reply",
+    hint: "this much leaves your wallet when you reply",
+  },
+  {
+    key: "followAmount",
+    label: "follow",
+    hint: "this much leaves your wallet when you follow",
+  },
+  {
+    key: "quoteAmount",
+    label: "qt",
+    hint: "this much leaves your wallet when you qt",
+  },
+  {
+    key: "superTipAmount",
+    label: "super tip 🐂",
+    hint: "this much leaves your wallet when 🐂 is in a reply or qt",
+  },
 ];
 
 export function TipSettingsForm({
@@ -24,6 +44,33 @@ export function TipSettingsForm({
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!authToken) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/tips/settings", {
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+        const data = await res.json();
+        if (cancelled || !data.ok || !data.settings) return;
+        setSettings({
+          likeAmount: data.settings.likeAmount,
+          commentAmount: data.settings.commentAmount,
+          followAmount: data.settings.followAmount,
+          quoteAmount: data.settings.quoteAmount,
+          superTipAmount: data.settings.superTipAmount,
+          enabled: data.settings.enabled,
+        });
+      } catch {
+        /* keep defaults until save */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [authToken]);
 
   function update(key: keyof TipAmountSettings, value: number | boolean) {
     setSettings((s) => ({ ...s, [key]: value }));
@@ -71,7 +118,7 @@ export function TipSettingsForm({
         <div>
           <h3 className="text-2xl font-bold tracking-tight">tip amounts</h3>
           <p className="mt-1 text-sm text-muted">
-            min ${minTip} $ansem per action
+            this much $ansem leaves your wallet. min {minTip} $ansem.
           </p>
         </div>
         <label className="flex items-center gap-2 text-sm">

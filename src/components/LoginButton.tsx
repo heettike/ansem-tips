@@ -19,17 +19,18 @@ const PrivyLoginButton = dynamic(() => import("./PrivyLoginButton"), {
 });
 
 /**
- * Privy X login button. Demo path when app id missing; live Privy otherwise.
+ * Privy X login. Demo impersonation only when NEXT_PUBLIC_DEMO_MODE=true.
+ * Missing app id must not silently log in as heettike.
  */
 export function LoginButton({
-  label = "Sign in with X",
+  label = "log in with x",
   className = "btn-primary",
   onAuthed,
 }: Props) {
   const appId = publicEnv.privyAppId;
   const forceDemo = publicEnv.demoMode;
 
-  if (!appId || forceDemo) {
+  if (forceDemo) {
     return (
       <button
         type="button"
@@ -51,6 +52,14 @@ export function LoginButton({
         }}
       >
         {label} (demo)
+      </button>
+    );
+  }
+
+  if (!appId) {
+    return (
+      <button type="button" className={className} disabled>
+        {label}
       </button>
     );
   }

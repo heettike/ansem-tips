@@ -69,6 +69,14 @@ const css = readFileSync("src/app/globals.css", "utf8");
 const layout = readFileSync("src/app/layout.tsx", "utf8");
 const nav = readFileSync("src/components/Nav.tsx", "utf8");
 const providers = readFileSync("src/components/Providers.tsx", "utf8");
+const onboard = readFileSync("src/app/onboard/page.tsx", "utf8");
+const fund = readFileSync("src/components/OnboardFund.tsx", "utf8");
+const anim = readFileSync("src/components/LikeTipAnim.tsx", "utf8");
+const amounts = readFileSync("src/components/TipSettingsForm.tsx", "utf8");
+const liveForm = readFileSync("src/components/LiveTipSettingsForm.tsx", "utf8");
+const login = readFileSync("src/components/LoginButton.tsx", "utf8");
+const dashPage = readFileSync("src/app/dashboard/page.tsx", "utf8");
+const dashGate = readFileSync("src/components/DashboardGate.tsx", "utf8");
 
 const must = [
   [landing, /ansem[\s\S]*?\.tips/, "landing brand lockup"],
@@ -101,6 +109,57 @@ const must = [
   [layout, /from "next\/font\/google"/, "no next/font google flex", true],
   [layout, /crt-shell/i, "no crt-shell on body", true],
   [providers, /return <>\{children\}<\/>/, "privy not at root"],
+  [onboard, /LikeTipAnim/, "onboard mounts like-tip animation"],
+  [
+    onboard,
+    /from your wallet to theirs/,
+    "onboard states wallet-to-wallet mechanic",
+  ],
+  [onboard, /like \/ reply \/ follow \/ qt/, "onboard names the five actions"],
+  [onboard, /from ["']@\/lib\/db["']|prisma/, "onboard must not ssr a tipper row", true],
+  [onboard, /findFirst/, "onboard must not load first allowlisted tipper", true],
+  [
+    fund,
+    /log in with x — your deposit address shows up here/,
+    "deposit placeholder until login",
+  ],
+  [fund, /onAuthed/, "deposit waits for the visitor's x login"],
+  [fund, /heettike|blknoiz06/, "fund must not hardcode another tipper", true],
+  [anim, /@you/, "anim tipper node"],
+  [anim, /@them/, "anim recipient node"],
+  [anim, /\$ansem/, "anim $ansem chip"],
+  [anim, /like/, "anim shows a like"],
+  [anim, /scanline|crt|mp4/i, "anim is css poster not crt/video", true],
+  [anim, /animateTransform/, "chip travels in svg user units"],
+  [anim, /prefers-reduced-motion/, "anim reads reduced motion"],
+  [
+    amounts,
+    /leaves your wallet when you like/,
+    "amount hint is money leaving on like",
+  ],
+  [css, /like-tip-like/, "like-tip like keyframes"],
+  [
+    css,
+    /prefers-reduced-motion: reduce[\s\S]*like-tip-path/,
+    "reduced motion stops like-tip loop",
+  ],
+  [onboard, /log in as you — you must be on the list/, "invited tippers, not spectator"],
+  [onboard, /allowlist:/, "no spectator allowlist line", true],
+  [onboard, /\(\+\s*/, "no primary-plus-others allowlist", true],
+  [fund, /deposit min \{minDepositUsd\} \$ansem/, "1 $ansem not $1 $ansem"],
+  [fund, /label="log in with x"/, "login heading and button match"],
+  [fund, /username \?/, "step 02/03 wait for visitor login"],
+  [fund, /loading tip amounts/, "no permanent amounts loader in fund", true],
+  [liveForm, /loading tip amounts/, "no permanent loading tip amounts empty", true],
+  [liveForm, /!appId \|\| forceDemo/, "missing privy id must not demo-impersonate", true],
+  [login, /publicEnv\.privyAppId/, "login uses NEXT_PUBLIC_PRIVY_APP_ID"],
+  [login, /if \(forceDemo\)/, "demo impersonation only when demo mode"],
+  [login, /!appId \|\| forceDemo/, "missing privy id must not become demo heettike", true],
+  [dashPage, /prisma|findFirst/, "dash page must not ssr a tipper row", true],
+  [dashPage, /heettike/, "dash page must not hardcode first tipper", true],
+  [dashGate, /log in as you to see your tips/, "dash gated until visitor login"],
+  [dashGate, /pull tips/, "no public pull-tips admin control", true],
+  [dashGate, /heettike/, "dash gate must not hardcode first tipper", true],
 ];
 
 for (const row of must) {

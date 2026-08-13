@@ -116,7 +116,7 @@ function LoginInner({ label, className, onAuthed }: Props) {
       disabled={!ready || busy}
       onClick={() => login()}
     >
-      {!ready ? "Loading…" : busy ? "Signing in…" : label}
+      {!ready ? "loading…" : busy ? "logging in…" : label}
     </button>
   );
 }
@@ -141,7 +141,7 @@ export default function PrivyLoginButton(props: Props) {
   if (!appId) {
     return (
       <button type="button" className={props.className} disabled>
-        Sign-in not configured
+        log in with x — not configured
       </button>
     );
   }
@@ -150,7 +150,7 @@ export default function PrivyLoginButton(props: Props) {
     <ClientErrorBoundary
       fallback={
         <button type="button" className={props.className} disabled>
-          Auth unavailable
+          log in with x — unavailable
         </button>
       }
     >
