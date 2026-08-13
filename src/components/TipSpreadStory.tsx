@@ -2,14 +2,19 @@
  * one idea object: tip → herd → mission compounds.
  * visualize value network — not a tip-actions feature list.
  */
+import Image from "next/image";
+import type { CSSProperties } from "react";
+
+const VIEW = { w: 1000, h: 860 } as const;
+const HUB = { x: 500, y: 400, r: 105 } as const;
 
 function herdNodes() {
   const nodes: { cx: number; cy: number; r: number; delay: string }[] = [];
   const rings = [
-    { count: 8, radius: 150, size: 7, baseDelay: 0.15 },
-    { count: 16, radius: 240, size: 5.5, baseDelay: 0.45 },
-    { count: 28, radius: 330, size: 4, baseDelay: 0.85 },
-    { count: 42, radius: 410, size: 3, baseDelay: 1.3 },
+    { count: 8, radius: 200, size: 7, baseDelay: 0.15 },
+    { count: 16, radius: 285, size: 5.5, baseDelay: 0.45 },
+    { count: 28, radius: 365, size: 4, baseDelay: 0.85 },
+    { count: 42, radius: 440, size: 3, baseDelay: 1.3 },
   ];
 
   for (const ring of rings) {
@@ -17,8 +22,8 @@ function herdNodes() {
       const angle = (Math.PI * 2 * i) / ring.count - Math.PI / 2;
       const jitter = ((i % 5) - 2) * 2.2;
       nodes.push({
-        cx: 500 + Math.cos(angle) * (ring.radius + jitter),
-        cy: 400 + Math.sin(angle) * (ring.radius * 0.72 + jitter * 0.4),
+        cx: HUB.x + Math.cos(angle) * (ring.radius + jitter),
+        cy: HUB.y + Math.sin(angle) * (ring.radius * 0.72 + jitter * 0.4),
         r: ring.size,
         delay: `${ring.baseDelay + i * 0.03}s`,
       });
@@ -28,6 +33,29 @@ function herdNodes() {
 }
 
 const NODES = herdNodes();
+const RINGS = [200, 285, 365, 440];
+
+const CHIPS: {
+  amount: string;
+  node: number;
+  tone: "gold" | "acid";
+  delay: string;
+  duration: string;
+}[] = [
+  { amount: "$12", node: 0, tone: "gold", delay: "0s", duration: "6.2s" },
+  { amount: "$19", node: 2, tone: "acid", delay: "3.6s", duration: "5.5s" },
+  { amount: "$28", node: 4, tone: "gold", delay: "0.9s", duration: "5.8s" },
+  { amount: "$47", node: 6, tone: "acid", delay: "1.8s", duration: "6.6s" },
+  { amount: "$64", node: 9, tone: "gold", delay: "2.7s", duration: "7s" },
+  { amount: "$73", node: 14, tone: "acid", delay: "4.4s", duration: "5.4s" },
+  { amount: "$81", node: 19, tone: "gold", delay: "3.2s", duration: "6.8s" },
+  { amount: "$100", node: 24, tone: "acid", delay: "1.3s", duration: "6.1s" },
+];
+
+const TONE = {
+  gold: "#f5b942",
+  acid: "#b6ff3b",
+} as const;
 
 export function TipSpreadStory() {
   return (
@@ -39,19 +67,19 @@ export function TipSpreadStory() {
           <span className="mark">mission compounds</span>
         </h2>
 
-        <div className="mt-14 sm:mt-20">
+        <div className="relative mt-14 sm:mt-20">
           <svg
-            viewBox="0 0 1000 860"
+            viewBox={`0 0 ${VIEW.w} ${VIEW.h}`}
             className="mx-auto h-auto w-full max-w-5xl"
             role="img"
-            aria-label="one tipper sending $ansem into a growing network of wallets"
+            aria-label="ansem sending $ansem from one tipper into a growing network of wallets"
           >
-            {[150, 240, 330, 410].map((radius, i) => (
+            {RINGS.map((radius, i) => (
               <ellipse
                 key={radius}
                 className="vv-ring"
-                cx="500"
-                cy="400"
+                cx={HUB.x}
+                cy={HUB.y}
                 rx={radius}
                 ry={radius * 0.72}
                 fill="none"
@@ -65,8 +93,8 @@ export function TipSpreadStory() {
               <line
                 key={`spoke-${i}`}
                 className="vv-line"
-                x1="500"
-                y1="400"
+                x1={HUB.x}
+                y1={HUB.y}
                 x2={n.cx}
                 y2={n.cy}
                 stroke="#ffffff"
@@ -109,41 +137,19 @@ export function TipSpreadStory() {
               />
             ))}
 
-            <g className="vv-node" style={{ animationDelay: "0s" }}>
-              <circle
-                cx="500"
-                cy="400"
-                r="70"
-                fill="#000"
-                stroke="#ffffff"
-                strokeWidth="3"
-              />
-              <text
-                x="500"
-                y="390"
-                textAnchor="middle"
-                fill="#ffffff"
-                fontSize="20"
-                fontFamily="Helvetica, Arial, sans-serif"
-                fontWeight="700"
-              >
-                tipper
-              </text>
-              <text
-                x="500"
-                y="418"
-                textAnchor="middle"
-                fill="#b6ff3b"
-                fontSize="18"
-                fontFamily="Helvetica, Arial, sans-serif"
-                fontWeight="700"
-              >
-                $ansem
-              </text>
-            </g>
+            <text
+              x={HUB.x}
+              y={HUB.y + HUB.r + 22}
+              textAnchor="middle"
+              fill="#6b6b6b"
+              fontSize="12"
+              fontFamily="Helvetica, Arial, sans-serif"
+            >
+              @blknoiz06
+            </text>
 
             <text
-              x="500"
+              x={HUB.x}
               y="820"
               textAnchor="middle"
               fill="#6b6b6b"
@@ -153,6 +159,46 @@ export function TipSpreadStory() {
               hundreds of wallets. reach keeps increasing.
             </text>
           </svg>
+
+          <div
+            className="pointer-events-none absolute left-1/2 top-0 h-full w-full max-w-5xl -translate-x-1/2"
+            aria-hidden="true"
+          >
+            {CHIPS.map((chip) => {
+              const n = NODES[chip.node];
+              const color = TONE[chip.tone];
+              const style = {
+                "--end-x": `${(n.cx / VIEW.w) * 100}%`,
+                "--end-y": `${(n.cy / VIEW.h) * 100}%`,
+                animationDelay: chip.delay,
+                animationDuration: chip.duration,
+                color,
+                borderColor: color,
+              } as CSSProperties;
+              return (
+                <span key={chip.amount} className="vv-chip" style={style}>
+                  {chip.amount}
+                </span>
+              );
+            })}
+            <div
+              className="absolute aspect-square -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full border-[3px] border-white"
+              style={{
+                left: "50%",
+                top: `${(HUB.y / VIEW.h) * 100}%`,
+                width: `${((HUB.r * 2) / VIEW.w) * 100}%`,
+                zIndex: 2,
+              }}
+            >
+              <Image
+                src="/brand/ansem-pfp.jpg"
+                alt="ansem"
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 21vw, 220px"
+              />
+            </div>
+          </div>
         </div>
 
         <p className="mt-8 max-w-lg text-lg text-muted sm:text-xl">
