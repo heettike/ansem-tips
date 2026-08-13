@@ -2,7 +2,6 @@ import { prisma } from "@/lib/db";
 import { config } from "@/lib/config";
 import {
   createTwitterClient,
-  hasBullEmoji,
   refreshTwitterUserToken,
 } from "@/lib/twitter";
 import {
@@ -10,48 +9,206 @@ import {
   withdrawFromHotWallet,
 } from "@/lib/solana";
 import { demoTxSig } from "@/lib/demo";
+import {
+  enqueueFetchedActions,
+  type EnqueueStore,
+} from "@/lib/enqueue-actions";
+import { floor0, planClawback, type ClawbackTip } from "@/lib/clawback";
 import type {
-  ActionType,
   ProcessTipResult,
   TipAmountSettings,
-  TwitterAction,
   WithdrawResult,
 } from "@/types";
 
 const LOW_BALANCE_THRESHOLD = 10; // $ansem units
 
-function resolveActionType(action: TwitterAction): ActionType {
-  if (
-    (action.actionType === "comment" || action.actionType === "quote") &&
-    (action.hasBullEmoji || hasBullEmoji(action.text))
-  ) {
-    return "super_tip";
-  }
-  return action.actionType;
+function prismaEnqueueStore(): EnqueueStore {
+  return {
+    async hasProcessed(actionId) {
+      const existing = await prisma.processedAction.findUnique({
+        where: { actionId },
+      });
+      return Boolean(existing);
+    },
+    async markProcessed(row) {
+      try {
+        await prisma.processedAction.create({ data: row });
+        return "created";
+      } catch {
+        return "duplicate";
+      }
+    },
+    async upsertRecipient(row) {
+      return prisma.user.upsert({
+        where: { xId: row.xId },
+        create: {
+          xId: row.xId,
+          username: row.username,
+          role: "recipient",
+          balance: { create: {} },
+        },
+        update: { username: row.username },
+        select: { id: true },
+      });
+    },
+    async createTip(row) {
+      await prisma.tip.create({
+        data: {
+          actionType: row.actionType,
+          actionId: row.actionId,
+          fromUserId: row.fromUserId,
+          toUserId: row.toUserId,
+          toXUsername: row.toXUsername,
+          toXId: row.toXId,
+          amount: row.amount,
+          status: "pending",
+          metadata: row.metadata,
+        },
+      });
+    },
+    async setFollowBaselineAt(userId, at) {
+      await prisma.user.updateMany({
+        where: { id: userId, followBaselineAt: null },
+        data: { followBaselineAt: at },
+      });
+    },
+  };
 }
 
-function amountFor(
-  settings: {
-    likeAmount: number;
-    commentAmount: number;
-    followAmount: number;
-    quoteAmount: number;
-    superTipAmount: number;
-  },
-  actionType: ActionType
-): number {
-  switch (actionType) {
-    case "like":
-      return settings.likeAmount;
-    case "comment":
-      return settings.commentAmount;
-    case "follow":
-      return settings.followAmount;
-    case "quote":
-      return settings.quoteAmount;
-    case "super_tip":
-      return settings.superTipAmount;
+/**
+ * Stamp tipsArmedAt once for a tipper who already completed login + Privy wallet
+ * (field added after those users existed). Never overwrites an existing stamp.
+ */
+export async function armTipperIfReady(userId: string): Promise<Date | null> {
+  const now = new Date();
+  const updated = await prisma.user.updateMany({
+    where: {
+      id: userId,
+      tipsArmedAt: null,
+      walletAddress: { not: null },
+      privyDid: { not: null },
+    },
+    data: { tipsArmedAt: now },
+  });
+  if (updated.count > 0) return now;
+  const row = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { tipsArmedAt: true },
+  });
+  return row?.tipsArmedAt ?? null;
+}
+
+/**
+ * Reverse ledger-only first-poll follow dumps. Idempotent.
+ * Does not touch on-chain signatures.
+ */
+export async function clawbackRetroTips(): Promise<{
+  reversed: number;
+  reversedAmount: number;
+  voidedPending: number;
+  reportedOnchain: Array<{ id: string; txSig: string | null; amount: number }>;
+}> {
+  const tips = await prisma.tip.findMany({
+    where: {
+      status: { in: ["completed", "pending", "processing"] },
+    },
+    select: {
+      id: true,
+      fromUserId: true,
+      toUserId: true,
+      actionType: true,
+      status: true,
+      txSig: true,
+      createdAt: true,
+      amount: true,
+    },
+  });
+
+  const tipperIds = [...new Set(tips.map((t) => t.fromUserId))];
+  const tippers = await prisma.user.findMany({
+    where: { id: { in: tipperIds } },
+    select: { id: true, tipsArmedAt: true },
+  });
+  const armedAtByTipper = new Map(
+    tippers.map((u) => [u.id, u.tipsArmedAt] as const)
+  );
+
+  const plan = planClawback(tips as ClawbackTip[], armedAtByTipper);
+
+  let reversed = 0;
+  let reversedAmount = 0;
+  for (const tip of plan.voidLedger) {
+    const did = await reverseLedgerTip(tip.id);
+    if (did) {
+      reversed++;
+      reversedAmount += tip.amount;
+    }
   }
+
+  let voidedPending = 0;
+  if (plan.voidPending.length > 0) {
+    const result = await prisma.tip.updateMany({
+      where: {
+        id: { in: plan.voidPending.map((t) => t.id) },
+        status: { in: ["pending", "processing"] },
+      },
+      data: { status: "skipped_retro" },
+    });
+    voidedPending = result.count;
+  }
+
+  return {
+    reversed,
+    reversedAmount,
+    voidedPending,
+    reportedOnchain: plan.reportOnchain.map((t) => ({
+      id: t.id,
+      txSig: t.txSig,
+      amount: t.amount,
+    })),
+  };
+}
+
+async function reverseLedgerTip(tipId: string): Promise<boolean> {
+  return prisma.$transaction(async (tx) => {
+    const tip = await tx.tip.findUnique({
+      where: { id: tipId },
+      include: {
+        fromUser: { include: { balance: true } },
+        toUser: { include: { balance: true } },
+      },
+    });
+    if (!tip || tip.status !== "completed") return false;
+    if (!tip.txSig?.startsWith("ledger_")) return false;
+
+    const fromBal = tip.fromUser.balance;
+    if (fromBal) {
+      await tx.balance.update({
+        where: { userId: tip.fromUserId },
+        data: {
+          deposited: fromBal.deposited + tip.amount,
+          lifetimeSent: floor0(fromBal.lifetimeSent - tip.amount),
+        },
+      });
+    }
+
+    if (tip.toUserId && tip.toUser?.balance) {
+      const toBal = tip.toUser.balance;
+      await tx.balance.update({
+        where: { userId: tip.toUserId },
+        data: {
+          withdrawable: floor0(toBal.withdrawable - tip.amount),
+          lifetimeReceived: floor0(toBal.lifetimeReceived - tip.amount),
+        },
+      });
+    }
+
+    await tx.tip.update({
+      where: { id: tipId },
+      data: { status: "voided" },
+    });
+    return true;
+  });
 }
 
 /**
@@ -131,9 +288,16 @@ export async function pollAndEnqueueTips(tipperUsername?: string): Promise<{
     include: { tipSettings: true, balance: true },
   });
 
+  const armedAt = await armTipperIfReady(tipper.id);
+  const tipperArmed = await prisma.user.findUnique({
+    where: { id: tipper.id },
+    select: { tipsArmedAt: true, followBaselineAt: true, walletAddress: true },
+  });
+
   if (!tipper.tipSettings?.enabled) {
     return { polled: 0, enqueued: 0, skipped: 0, actions: [], authMode, tokenRefreshed };
   }
+  const tipSettings = tipper.tipSettings;
 
   async function safeList<T>(label: string, fn: () => Promise<T[]>, fallback: T[] = []): Promise<T[]> {
     try {
@@ -169,82 +333,18 @@ export async function pollAndEnqueueTips(tipperUsername?: string): Promise<{
     tipperXId: tipperUser.id,
   }));
 
-  let enqueued = 0;
-  let skipped = 0;
-  const actions: string[] = [];
-
-  for (const action of all) {
-    const existing = await prisma.processedAction.findUnique({
-      where: { actionId: action.actionId },
-    });
-    if (existing) {
-      skipped++;
-      continue;
-    }
-
-    try {
-      await prisma.processedAction.create({
-        data: {
-          actionId: action.actionId,
-          actionType: resolveActionType(action),
-          tipperXId: tipperUser.id,
-        },
-      });
-    } catch {
-      skipped++;
-      continue;
-    }
-
-    const actionType = resolveActionType(action);
-    const amount = Math.max(
-      config.minTipUsd,
-      amountFor(tipper.tipSettings, actionType)
-    );
-
-    let toUserId: string | undefined;
-    if (action.targetXId) {
-      const recipient = await prisma.user.upsert({
-        where: { xId: action.targetXId },
-        create: {
-          xId: action.targetXId,
-          username: action.targetUsername,
-          role: "recipient",
-          balance: { create: {} },
-        },
-        update: { username: action.targetUsername },
-      });
-      toUserId = recipient.id;
-    } else if (action.targetUsername && action.targetUsername !== "unknown") {
-      const recipient = await prisma.user.upsert({
-        where: { xId: `uname_${action.targetUsername.toLowerCase()}` },
-        create: {
-          xId: `uname_${action.targetUsername.toLowerCase()}`,
-          username: action.targetUsername.toLowerCase(),
-          role: "recipient",
-          balance: { create: {} },
-        },
-        update: {},
-      });
-      toUserId = recipient.id;
-    }
-
-    await prisma.tip.create({
-      data: {
-        actionType: actionType,
-        actionId: action.actionId,
-        fromUserId: tipper.id,
-        toUserId,
-        toXUsername: action.targetUsername,
-        toXId: action.targetXId,
-        amount,
-        status: "pending",
-        metadata: JSON.stringify({ text: action.text ?? null }),
-      },
-    });
-
-    enqueued++;
-    actions.push(action.actionId);
-  }
+  const { enqueued, skipped, actions } = await enqueueFetchedActions({
+    tipper: {
+      id: tipper.id,
+      xId: tipperUser.id,
+      walletAddress: tipperArmed?.walletAddress ?? tipper.walletAddress,
+      tipsArmedAt: armedAt ?? tipperArmed?.tipsArmedAt ?? null,
+      followBaselineAt: tipperArmed?.followBaselineAt ?? null,
+      tipSettings,
+    },
+    actions: all,
+    store: prismaEnqueueStore(),
+  });
 
   const bal = tipper.balance?.deposited ?? 0;
   if (bal < LOW_BALANCE_THRESHOLD) {
@@ -273,6 +373,25 @@ export async function processTip(tipId: string): Promise<ProcessTipResult> {
   if (!tip) return { tipId, status: "failed", error: "Tip not found" };
   if (tip.status === "completed") {
     return { tipId, status: "completed", txSig: tip.txSig ?? undefined };
+  }
+  if (tip.status === "voided" || tip.status === "skipped_retro") {
+    return { tipId, status: tip.status };
+  }
+
+  const from = tip.fromUser;
+  const skipRetro =
+    !from.walletAddress ||
+    !from.tipsArmedAt ||
+    tip.createdAt < from.tipsArmedAt ||
+    (tip.actionType === "follow" &&
+      (!from.followBaselineAt || tip.createdAt <= from.followBaselineAt));
+
+  if (skipRetro) {
+    await prisma.tip.update({
+      where: { id: tipId },
+      data: { status: "skipped_retro" },
+    });
+    return { tipId, status: "skipped_retro", error: "never tip for the past" };
   }
 
   await prisma.tip.update({
@@ -353,6 +472,7 @@ export async function processTip(tipId: string): Promise<ProcessTipResult> {
 }
 
 export async function processPendingTips(limit = 25): Promise<ProcessTipResult[]> {
+  await clawbackRetroTips();
   const pending = await prisma.tip.findMany({
     where: { status: "pending" },
     take: limit,

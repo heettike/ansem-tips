@@ -7,11 +7,19 @@
  */
 import { config } from "../src/lib/config";
 import { watchTipperDeposits } from "../src/lib/deposits";
-import { pollAndEnqueueTips, processPendingTips } from "../src/lib/tips";
+import { clawbackRetroTips, pollAndEnqueueTips, processPendingTips } from "../src/lib/tips";
 
 async function main() {
   console.log("[poll-actions] demoMode=", config.demoMode);
   console.log("[poll-actions] tippers=", config.tipperAllowlist.join(", "));
+
+  const clawback = await clawbackRetroTips();
+  console.log("[poll-actions] clawback", {
+    reversed: clawback.reversed,
+    reversedAmount: clawback.reversedAmount,
+    voidedPending: clawback.voidedPending,
+    reportedOnchain: clawback.reportedOnchain.length,
+  });
 
   const deposits = await watchTipperDeposits();
   console.log("[poll-actions] deposits", {
