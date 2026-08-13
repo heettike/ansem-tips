@@ -1,9 +1,8 @@
 import { config, isAllowlistedTipper } from "@/lib/config";
 
 /**
- * Tipper allowlist — v0 single tipper (@heettike).
- * Structure supports up to 100 community tippers later:
- * set TIPPER_ALLOWLIST=user1,user2,... in env.
+ * Tipper allowlist — multi-tipper via TIPPER_ALLOWLIST (comma-separated, lowercase, no @).
+ * Fallback in config is heettike,blknoiz06,srijancse when env is unset.
  */
 export function getTipperAllowlist(): string[] {
   return [...config.tipperAllowlist];

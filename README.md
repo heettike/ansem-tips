@@ -2,8 +2,8 @@
 
 Production Next.js app that tips **$ansem** on Solana when an allowlisted tipper likes, replies, follows, or quote-tweets on X. Comments/QTs containing the bull emoji upgrade to a **super-tip**.
 
+**Tippers:** `@heettike`, `@blknoiz06`, `@srijancse` (via `TIPPER_ALLOWLIST`)
 **Trial tipper:** `@heettike`
-**Future tipper:** `@blknoiz6` (via `TIPPER_ALLOWLIST`)
 **Mint:** `9cRCn9rGT8V2imeM2BaKs13yhMEais3ruM3rPvTGpump`
 **Gratitude wallet:** `G4uHQ85j65KBsypPH6qVqoiSYUBuH9YTAqRpuhjLRJBq`
 
@@ -103,7 +103,7 @@ Required for production:
 
 - DATABASE_URL (SQLite file locally; Postgres in prod)
 - CRON_SECRET (bearer for cron poll route)
-- TIPPER_ALLOWLIST / TIPPER_X_USERNAME (default heettike)
+- TIPPER_ALLOWLIST / TIPPER_X_USERNAME (default heettike,blknoiz06,srijancse)
 - ANSEM_MINT, GRATITUDE_WALLET, SOLANA_RPC_URL
 - HOT_WALLET_SECRET (base58; never commit)
 - NEXT_PUBLIC_PRIVY_APP_ID, PRIVY_APP_SECRET
