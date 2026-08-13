@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 /**
  * POST /api/tips/process
  * Body: { tipId?: string } — process one or all pending tips.
- * Credits recipient ledger / records tip debit.
+ * SPL $ansem to the recipient's provisioned Privy wallet, or withdrawable fallback.
  */
 export async function POST(req: NextRequest) {
   try {

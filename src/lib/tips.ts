@@ -1,14 +1,16 @@
 import { prisma } from "@/lib/db";
-import { config } from "@/lib/config";
+import { config, hasPrivyCreds } from "@/lib/config";
 import {
   createTwitterClient,
   refreshTwitterUserToken,
 } from "@/lib/twitter";
+import { withdrawFromHotWallet } from "@/lib/solana";
 import {
-  tipTransferFromHotWallet,
-  withdrawFromHotWallet,
-} from "@/lib/solana";
-import { demoTxSig } from "@/lib/demo";
+  createPrivyAdmin,
+  ensureRecipientPrivyWallet,
+  type RecipientIdentity,
+} from "@/lib/provision-recipient";
+import { settlePendingTip } from "@/lib/settle-tip";
 import {
   enqueueFetchedActions,
   type EnqueueStore,
@@ -357,10 +359,23 @@ export async function pollAndEnqueueTips(tipperUsername?: string): Promise<{
   return { polled: all.length, enqueued, skipped, actions, authMode, tokenRefreshed };
 }
 
+async function provisionRecipientWallet(identity: RecipientIdentity) {
+  if (!hasPrivyCreds()) {
+    throw new Error("Privy not configured");
+  }
+  return ensureRecipientPrivyWallet(
+    identity,
+    createPrivyAdmin({
+      appId: config.privyAppId,
+      appSecret: config.privyAppSecret,
+    })
+  );
+}
+
 /**
- * Process a pending tip: debit tipper ledger, credit recipient withdrawable.
- * If recipient has a linked Solana wallet and HOT_WALLET_SECRET is set,
- * also perform an immediate SPL transfer from custody.
+ * Process a pending tip: provision a Privy Solana wallet for the recipient,
+ * SPL from hot wallet to that address, debit tipper deposited.
+ * Fail closed to withdrawable if Privy create or SPL fails.
  */
 export async function processTip(tipId: string): Promise<ProcessTipResult> {
   const tip = await prisma.tip.findUnique({
@@ -413,62 +428,88 @@ export async function processTip(tipId: string): Promise<ProcessTipResult> {
     return { tipId, status: "failed", error: "Insufficient tipper balance" };
   }
 
-  let txSig: string | undefined;
-  let onChain = false;
-
-  // Immediate on-chain tip when recipient wallet is known + hot wallet configured
-  if (tip.toUser?.walletAddress && !config.demoMode) {
-    try {
-      const transfer = await tipTransferFromHotWallet(
-        tip.toUser.walletAddress,
-        tip.amount
-      );
-      if (transfer) {
-        txSig = transfer.signature;
-        onChain = !transfer.demo;
-      }
-    } catch (e) {
-      console.error("[tips] on-chain tip transfer failed; keeping ledger credit", e);
+  const settled = await settlePendingTip(
+    {
+      id: tip.id,
+      amount: tip.amount,
+      toXId: tip.toXId,
+      toXUsername: tip.toXUsername,
+      fromDeposited: deposited,
+      toUser: tip.toUser
+        ? {
+            id: tip.toUser.id,
+            xId: tip.toUser.xId,
+            username: tip.toUser.username,
+            privyDid: tip.toUser.privyDid,
+            walletAddress: tip.toUser.walletAddress,
+          }
+        : null,
+    },
+    {
+      provision: provisionRecipientWallet,
+      transfer: withdrawFromHotWallet,
     }
-  }
-
-  if (!txSig) {
-    txSig = config.demoMode ? demoTxSig("tip") : `ledger_${tipId}`;
-  }
+  );
 
   await prisma.$transaction(async (tx) => {
-    await tx.balance.update({
-      where: { userId: tip.fromUserId },
-      data: {
-        deposited: { decrement: tip.amount },
-        lifetimeSent: { increment: tip.amount },
-      },
-    });
-
-    if (tip.toUserId) {
-      // If already paid on-chain, do not leave withdrawable double-claim
-      const withdrawableInc = onChain ? 0 : tip.amount;
-      await tx.balance.upsert({
-        where: { userId: tip.toUserId },
-        create: {
-          userId: tip.toUserId,
-          withdrawable: withdrawableInc,
-          lifetimeReceived: tip.amount,
-        },
-        update: {
-          withdrawable: { increment: withdrawableInc },
-          lifetimeReceived: { increment: tip.amount },
+    if (settled.depositedDec > 0) {
+      await tx.balance.update({
+        where: { userId: tip.fromUserId },
+        data: {
+          deposited: { decrement: settled.depositedDec },
+          lifetimeSent: { increment: settled.lifetimeSentInc },
         },
       });
     }
 
+    if (tip.toUserId && settled.lifetimeReceivedInc > 0) {
+      await tx.balance.upsert({
+        where: { userId: tip.toUserId },
+        create: {
+          userId: tip.toUserId,
+          withdrawable: settled.withdrawableInc,
+          lifetimeReceived: settled.lifetimeReceivedInc,
+        },
+        update: {
+          withdrawable: { increment: settled.withdrawableInc },
+          lifetimeReceived: { increment: settled.lifetimeReceivedInc },
+        },
+      });
+    }
+
+    if (tip.toUserId && settled.walletAddress) {
+      await tx.user.update({
+        where: { id: tip.toUserId },
+        data: { walletAddress: settled.walletAddress },
+      });
+    }
+    if (tip.toUserId && settled.privyDid && !tip.toUser?.privyDid) {
+      try {
+        await tx.user.updateMany({
+          where: { id: tip.toUserId, privyDid: null },
+          data: { privyDid: settled.privyDid },
+        });
+      } catch {
+        // unique privyDid already owned — walletAddress is still stored
+      }
+    }
+
     await tx.tip.update({
       where: { id: tipId },
-      data: { status: "completed", txSig },
+      data: {
+        status: settled.status,
+        txSig: settled.txSig ?? null,
+      },
     });
   });
 
-  return { tipId, status: "completed", txSig, onChain };
+  return {
+    tipId: settled.tipId,
+    status: settled.status,
+    txSig: settled.txSig,
+    onChain: settled.onChain,
+    error: settled.error,
+  };
 }
 
 export async function processPendingTips(limit = 25): Promise<ProcessTipResult[]> {
@@ -525,8 +566,8 @@ export async function withdrawForUser(
         where: { userId },
         data: { withdrawable: { decrement: amount } },
       });
-      await tx.user.update({
-        where: { id: userId },
+      await tx.user.updateMany({
+        where: { id: userId, walletAddress: null },
         data: { walletAddress: toAddress },
       });
       await tx.withdrawal.create({
