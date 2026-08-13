@@ -27,8 +27,8 @@ export const config = {
   /** Explicit DEMO_MODE=true. Subsystems also fall back when their own creds are missing. */
   demoMode: explicitDemo,
 
-  // Tipper allowlist (v0 = single tipper; structured as list for future ≤100 tippers)
-  tipperAllowlist: env("TIPPER_ALLOWLIST", env("TIPPER_X_USERNAME", "heettike,blknoiz06"))
+  // Tipper allowlist (multi-tipper via TIPPER_ALLOWLIST; structured as list for ≤100 tippers)
+  tipperAllowlist: env("TIPPER_ALLOWLIST", env("TIPPER_X_USERNAME", "heettike,blknoiz06,srijancse"))
     .split(",")
     .map((s) => s.trim().replace(/^@/, "").toLowerCase())
     .filter(Boolean),
