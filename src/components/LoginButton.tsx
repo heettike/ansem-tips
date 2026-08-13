@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 type Props = {
   label?: string;
   className?: string;
+  role?: "tipper" | "recipient";
   onAuthed?: (info: {
     privyDid: string;
     username?: string;
@@ -25,6 +26,7 @@ const PrivyLoginButton = dynamic(() => import("./PrivyLoginButton"), {
 export function LoginButton({
   label = "log in with x",
   className = "btn-primary",
+  role = "tipper",
   onAuthed,
 }: Props) {
   const appId = publicEnv.privyAppId;
@@ -47,7 +49,7 @@ export function LoginButton({
               "Content-Type": "application/json",
               Authorization: "Bearer demo:heettike",
             },
-            body: JSON.stringify({ role: "tipper" }),
+            body: JSON.stringify({ role }),
           }).catch(() => null);
         }}
       >
@@ -65,6 +67,11 @@ export function LoginButton({
   }
 
   return (
-    <PrivyLoginButton label={label} className={className} onAuthed={onAuthed} />
+    <PrivyLoginButton
+      label={label}
+      className={className}
+      role={role}
+      onAuthed={onAuthed}
+    />
   );
 }

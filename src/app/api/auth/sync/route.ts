@@ -5,6 +5,7 @@ import { config, isAllowlistedTipper } from "@/lib/config";
 import { bearerFromRequest, createPrivyClient } from "@/lib/privy";
 import { createSolanaClient } from "@/lib/solana";
 import { clawbackRetroTips } from "@/lib/tips";
+import { mergeLoginIdentity } from "@/lib/auth-merge";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -116,23 +117,38 @@ export async function POST(req: NextRequest) {
           }
         : {};
 
+    const existing = await prisma.user.findUnique({
+      where: { xId },
+      select: { privyDid: true, walletAddress: true },
+    });
+    const merged = mergeLoginIdentity(
+      {
+        privyDid: existing?.privyDid ?? null,
+        walletAddress: existing?.walletAddress ?? null,
+      },
+      {
+        privyDid: claims.userId,
+        walletAddress: wallet || null,
+      }
+    );
+
     const user = await prisma.user.upsert({
       where: { xId },
       create: {
         xId,
         username,
-        privyDid: claims.userId,
-        walletAddress: wallet || null,
+        privyDid: merged.privyDid,
+        walletAddress: merged.walletAddress,
         role: wantTipper ? "tipper" : "recipient",
         ...tokenUpdate,
-        ...(wantTipper && wallet ? { tipsArmedAt: new Date() } : {}),
+        ...(wantTipper && merged.walletAddress ? { tipsArmedAt: new Date() } : {}),
         tipSettings: wantTipper ? { create: {} } : undefined,
         balance: { create: {} },
       },
       update: {
         username,
-        privyDid: claims.userId,
-        ...(wallet ? { walletAddress: wallet } : {}),
+        privyDid: merged.privyDid,
+        ...(merged.walletAddress ? { walletAddress: merged.walletAddress } : {}),
         ...(wantTipper ? { role: "tipper" } : {}),
         ...tokenUpdate,
       },

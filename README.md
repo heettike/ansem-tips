@@ -39,7 +39,8 @@ flowchart TB
     Hot["Custody hot wallet"]
     Recip["Recipient wallet"]
     Mint["ansem mint"]
-    Hot -->|withdraw / tip SPL| Recip
+    Hot -->|tip SPL to privy wallet| Recip
+    Hot -->|withdraw fallback| Recip
     Mint -.-> Hot
   end
 
@@ -55,8 +56,9 @@ hi
 1. **Poll** X actions for TIPPER_X_USERNAME via /api/cron/poll (or the poll script).
 2. **Dedupe** with unique ProcessedAction.actionId.
 3. **Enqueue** Tip rows using TipSettings amounts (bull emoji upgrades to super_tip).
-4. **Process** debit tipper Balance.deposited and credit recipient Balance.withdrawable.
-5. **On-chain** SPL transfer when recipient wallet is linked and HOT_WALLET_SECRET is set; otherwise withdraw later via /api/withdraw.
+4. **Process** provision a Privy Solana wallet for the recipient (keyed by X user id), then SPL $ansem from the hot wallet to **that** address.
+5. **Ledger** debit tipper `deposited` and bump lifetime sent/received. Withdrawable stays 0 when the chain send lands. If Privy create or SPL fails, credit withdrawable so they can cash out on login.
+6. **Withdraw** leftover withdrawable (failed on-chain tips only) via /api/withdraw. Recipients already holding tokens in their Privy wallet send out from that wallet.
 
 ---
 
@@ -64,13 +66,13 @@ hi
 
 | Role | Funds | Mechanism |
 |------|--------|-----------|
-| Tipper | Deposits \$ansem into custody | Send SPL to hot wallet; credit Balance.deposited via /api/deposit |
-| Tip | Internal ledger move | Debit tipper deposited; credit recipient withdrawable (optional immediate SPL) |
-| Recipient | Withdraw | /api/withdraw sends SPL from hot wallet to personal address |
+| Tipper | Deposits \$ansem into their Privy wallet | Deposit watcher credits Balance.deposited |
+| Tip | On-chain SPL to recipient Privy wallet | Hot wallet → provisioned Privy Solana address; debit deposited |
+| Recipient | Already has tokens in Privy wallet | X login matches the pre-created twitter user; leftover withdrawable uses /api/withdraw |
 | Platform | Hot wallet key | HOT_WALLET_SECRET (base58) — never commit |
 | Gratitude | Culture fund address | GRATITUDE_WALLET (no product token) |
 
-Ledger is authoritative for tips. Chain transfers happen on withdraw (always) and on tip process when the recipient wallet is already known.
+Tips send only to the Privy address we provisioned — never a self-reported wallet. Chain sigs are real Solscan signatures. Failed create/transfer credits withdrawable as the only fallback.
 ## Quick start
 
 ---

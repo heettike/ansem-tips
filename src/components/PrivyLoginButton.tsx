@@ -9,6 +9,7 @@ import { ClientErrorBoundary } from "@/components/ClientErrorBoundary";
 type Props = {
   label?: string;
   className?: string;
+  role?: "tipper" | "recipient";
   onAuthed?: (info: {
     privyDid: string;
     username?: string;
@@ -23,7 +24,7 @@ type CapturedOAuth = {
   accessTokenExpiresInSeconds?: number | null;
 };
 
-function LoginInner({ label, className, onAuthed }: Props) {
+function LoginInner({ label, className, role = "tipper", onAuthed }: Props) {
   const { ready, authenticated, user, login, getAccessToken } = usePrivy();
   const [busy, setBusy] = useState(false);
   const oauthRef = useRef<CapturedOAuth | null>(null);
@@ -53,7 +54,7 @@ function LoginInner({ label, className, onAuthed }: Props) {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            role: "tipper",
+            role,
             walletAddress: sol,
             ...(tokens
               ? {
@@ -81,7 +82,7 @@ function LoginInner({ label, className, onAuthed }: Props) {
         setBusy(false);
       }
     },
-    [user, getAccessToken, onAuthed]
+    [user, getAccessToken, onAuthed, role]
   );
 
   // Must stay mounted on the page the user returns to after X OAuth.

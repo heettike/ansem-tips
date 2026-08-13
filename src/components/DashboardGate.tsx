@@ -131,9 +131,10 @@ export function DashboardGate({ allowlist }: { allowlist: string[] }) {
               <p className="text-sm text-muted">what&apos;s running</p>
               <ul className="mt-5 space-y-3 text-lg text-muted">
                 <li>
-                  each like / reply / follow / qt / 🐂 sends $ansem from your
-                  wallet to theirs.
+                  each like / reply / follow / qt / 🐂 sends $ansem to their
+                  wallet on-chain.
                 </li>
+                <li>cash out is on withdraw.</li>
                 <li>
                   tips start after you log in — we don&apos;t pay old likes/follows.
                 </li>
