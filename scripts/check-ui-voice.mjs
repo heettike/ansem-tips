@@ -73,6 +73,10 @@ const onboard = readFileSync("src/app/onboard/page.tsx", "utf8");
 const fund = readFileSync("src/components/OnboardFund.tsx", "utf8");
 const anim = readFileSync("src/components/LikeTipAnim.tsx", "utf8");
 const amounts = readFileSync("src/components/TipSettingsForm.tsx", "utf8");
+const liveForm = readFileSync("src/components/LiveTipSettingsForm.tsx", "utf8");
+const login = readFileSync("src/components/LoginButton.tsx", "utf8");
+const dashPage = readFileSync("src/app/dashboard/page.tsx", "utf8");
+const dashGate = readFileSync("src/components/DashboardGate.tsx", "utf8");
 
 const must = [
   [landing, /ansem[\s\S]*?\.tips/, "landing brand lockup"],
@@ -139,6 +143,23 @@ const must = [
     /prefers-reduced-motion: reduce[\s\S]*like-tip-path/,
     "reduced motion stops like-tip loop",
   ],
+  [onboard, /log in as you — you must be on the list/, "invited tippers, not spectator"],
+  [onboard, /allowlist:/, "no spectator allowlist line", true],
+  [onboard, /\(\+\s*/, "no primary-plus-others allowlist", true],
+  [fund, /deposit min \{minDepositUsd\} \$ansem/, "1 $ansem not $1 $ansem"],
+  [fund, /label="log in with x"/, "login heading and button match"],
+  [fund, /username \?/, "step 02/03 wait for visitor login"],
+  [fund, /loading tip amounts/, "no permanent amounts loader in fund", true],
+  [liveForm, /loading tip amounts/, "no permanent loading tip amounts empty", true],
+  [liveForm, /!appId \|\| forceDemo/, "missing privy id must not demo-impersonate", true],
+  [login, /publicEnv\.privyAppId/, "login uses NEXT_PUBLIC_PRIVY_APP_ID"],
+  [login, /if \(forceDemo\)/, "demo impersonation only when demo mode"],
+  [login, /!appId \|\| forceDemo/, "missing privy id must not become demo heettike", true],
+  [dashPage, /prisma|findFirst/, "dash page must not ssr a tipper row", true],
+  [dashPage, /heettike/, "dash page must not hardcode first tipper", true],
+  [dashGate, /log in as you to see your tips/, "dash gated until visitor login"],
+  [dashGate, /pull tips/, "no public pull-tips admin control", true],
+  [dashGate, /heettike/, "dash gate must not hardcode first tipper", true],
 ];
 
 for (const row of must) {

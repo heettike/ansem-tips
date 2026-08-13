@@ -118,7 +118,7 @@ export function TipSettingsForm({
         <div>
           <h3 className="text-2xl font-bold tracking-tight">tip amounts</h3>
           <p className="mt-1 text-sm text-muted">
-            this much $ansem leaves your wallet. min ${minTip}.
+            this much $ansem leaves your wallet. min {minTip} $ansem.
           </p>
         </div>
         <label className="flex items-center gap-2 text-sm">

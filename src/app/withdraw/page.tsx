@@ -157,7 +157,7 @@ export default function WithdrawPage() {
 
       <div className="mt-10">
         <LoginButton
-          label="sign in with x"
+          label="log in with x"
           onAuthed={async (info) => {
             if (info.username) {
               setUsername(info.username);

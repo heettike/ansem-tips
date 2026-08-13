@@ -1,6 +1,4 @@
-import Link from "next/link";
 import { LikeTipAnim } from "@/components/LikeTipAnim";
-import { LiveTipSettingsForm } from "@/components/LiveTipSettingsForm";
 import { OnboardFund } from "@/components/OnboardFund";
 import { config } from "@/lib/config";
 
@@ -8,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 export default function OnboardPage() {
   const allowlist = config.tipperAllowlist;
-  const tipper = allowlist[0] || "heettike";
+  const invited = allowlist.map((t) => `@${t}`).join(", ");
   const initial = {
     likeAmount: config.minTipUsd,
     commentAmount: config.minTipUsd,
@@ -35,41 +33,19 @@ export default function OnboardPage() {
 
       <LikeTipAnim />
 
-      <p className="mt-10 max-w-md text-muted">
-        allowlist: <span className="text-white">@{tipper}</span>
-        {allowlist.length > 1 && (
-          <>
-            {" "}
-            (+{" "}
-            {allowlist
-              .slice(1)
-              .map((t) => `@${t}`)
-              .join(", ")}
-            )
-          </>
-        )}
+      <p className="mt-10 max-w-lg text-muted">
+        invited: <span className="text-white">{invited}</span>
+      </p>
+      <p className="mt-2 max-w-lg text-muted">
+        log in as you — you must be on the list.
       </p>
 
-      <ol className="mt-16 space-y-12">
-        <OnboardFund
-          minDepositUsd={config.minDepositUsd}
-          allowlist={allowlist}
-        />
-
-        <li>
-          <p className="mb-3 text-sm text-muted">03</p>
-          <LiveTipSettingsForm initial={initial} minTip={config.minTipUsd} />
-        </li>
-      </ol>
-
-      <div className="mt-16 flex flex-wrap gap-3">
-        <Link href="/dashboard" className="btn-primary">
-          open dash
-        </Link>
-        <Link href="/" className="btn-ghost">
-          home
-        </Link>
-      </div>
+      <OnboardFund
+        minDepositUsd={config.minDepositUsd}
+        minTip={config.minTipUsd}
+        allowlist={allowlist}
+        initial={initial}
+      />
     </div>
   );
 }

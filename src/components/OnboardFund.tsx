@@ -1,100 +1,143 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import Link from "next/link";
 import { LoginButton } from "@/components/LoginButton";
+import { LiveTipSettingsForm } from "@/components/LiveTipSettingsForm";
+import type { TipAmountSettings } from "@/types";
 
 const WALLET_PLACEHOLDER = "log in with x — your deposit address shows up here";
 
 export function OnboardFund({
   minDepositUsd,
+  minTip,
   allowlist,
+  initial,
 }: {
   minDepositUsd: number;
+  minTip: number;
   allowlist: string[];
+  initial: TipAmountSettings;
 }) {
   const [username, setUsername] = useState<string | null>(null);
   const [wallet, setWallet] = useState<string | null>(null);
   const [deposited, setDeposited] = useState<number | null>(null);
 
-  const loadDeposit = useCallback(async (u: string, fallbackWallet?: string | null) => {
-    try {
-      const res = await fetch(
-        `/api/balance?username=${encodeURIComponent(u)}&role=tipper`
-      );
-      const data = await res.json();
-      if (data.ok && data.balance) {
-        setDeposited(Number(data.balance.deposited) || 0);
-        if (data.balance.walletAddress) {
-          setWallet(data.balance.walletAddress);
-          return;
+  const loadDeposit = useCallback(
+    async (u: string, fallbackWallet?: string | null) => {
+      try {
+        const res = await fetch(
+          `/api/balance?username=${encodeURIComponent(u)}&role=tipper`
+        );
+        const data = await res.json();
+        if (data.ok && data.balance) {
+          setDeposited(Number(data.balance.deposited) || 0);
+          if (data.balance.walletAddress) {
+            setWallet(data.balance.walletAddress);
+            return;
+          }
+        } else {
+          setDeposited(0);
         }
-      } else {
+      } catch {
         setDeposited(0);
       }
-    } catch {
-      setDeposited(0);
-    }
-    if (fallbackWallet) setWallet(fallbackWallet);
-  }, []);
+      if (fallbackWallet) setWallet(fallbackWallet);
+    },
+    []
+  );
 
   const allowed =
     !!username && allowlist.includes(username.replace(/^@/, "").toLowerCase());
 
   return (
     <>
-      <li>
-        <p className="text-sm text-muted">01</p>
-        <h2 className="mt-2 text-2xl font-bold tracking-tight">
-          log in with x
-        </h2>
-        <p className="mt-3 text-muted">
-          one login. we create your tip deposit wallet. don&apos;t paste keys.
-        </p>
-        <div className="mt-5">
-          <LoginButton
-            label="continue with x"
-            onAuthed={(info) => {
-              const u = info.username
-                ? info.username.replace(/^@/, "").toLowerCase()
-                : null;
-              setUsername(u);
-              if (info.walletAddress) setWallet(info.walletAddress);
-              if (u) void loadDeposit(u, info.walletAddress);
-            }}
-          />
-        </div>
-        {username && (
-          <p className="mt-3 text-sm mark">@{username}</p>
-        )}
-        {username && !allowed && (
-          <div className="mt-6 border border-danger p-4 text-sm text-danger">
-            you&apos;re not on the tipper list. ask whoever runs this.
+      <ol className="mt-16 space-y-12">
+        <li>
+          <p className="text-sm text-muted">01</p>
+          <h2 className="mt-2 text-2xl font-bold tracking-tight">
+            log in with x
+          </h2>
+          <p className="mt-3 text-muted">
+            one login. we create your tip deposit wallet. don&apos;t paste keys.
+          </p>
+          <div className="mt-5">
+            <LoginButton
+              label="log in with x"
+              onAuthed={(info) => {
+                const u = info.username
+                  ? info.username.replace(/^@/, "").toLowerCase()
+                  : null;
+                setUsername(u);
+                if (info.walletAddress) setWallet(info.walletAddress);
+                if (u) void loadDeposit(u, info.walletAddress);
+              }}
+            />
           </div>
-        )}
-      </li>
+          {username && <p className="mt-3 text-sm mark">@{username}</p>}
+          {username && !allowed && (
+            <div className="mt-6 border border-danger p-4 text-sm text-danger">
+              you&apos;re not on the tipper list. ask whoever runs this.
+            </div>
+          )}
+        </li>
 
-      <li>
-        <p className="text-sm text-muted">02</p>
-        <h2 className="mt-2 text-2xl font-bold tracking-tight">
-          deposit min ${minDepositUsd} $ansem
-        </h2>
+        <li>
+          <p className="text-sm text-muted">02</p>
+          <h2 className="mt-2 text-2xl font-bold tracking-tight">
+            deposit min {minDepositUsd} $ansem
+          </h2>
+          {username ? (
+            <>
+              <p className="mt-3 text-muted">
+                send $ansem to @{username}&apos;s deposit address. funded so
+                far:{" "}
+                <span className="gold">
+                  {deposited == null
+                    ? "…"
+                    : `${deposited.toFixed(2)} $ansem`}
+                </span>
+              </p>
+              <div className="mt-5 border border-[#222] p-4 text-sm break-all text-muted">
+                {wallet || WALLET_PLACEHOLDER}
+              </div>
+            </>
+          ) : (
+            <p className="mt-3 text-muted">{WALLET_PLACEHOLDER}</p>
+          )}
+        </li>
+
+        <li>
+          <p className="mb-3 text-sm text-muted">03</p>
+          {username ? (
+            <LiveTipSettingsForm initial={initial} minTip={minTip} />
+          ) : (
+            <div>
+              <h3 className="text-2xl font-bold tracking-tight">
+                tip amounts
+              </h3>
+              <p className="mt-3 text-muted">
+                log in with x first — then set how much leaves your wallet.
+              </p>
+            </div>
+          )}
+        </li>
+      </ol>
+
+      <div className="mt-16 flex flex-wrap gap-3">
         {username ? (
-          <p className="mt-3 text-muted">
-            send $ansem to @{username}&apos;s deposit address. funded so far:{" "}
-            <span className="gold">
-              {deposited == null ? "…" : `$${deposited.toFixed(2)}`}
-            </span>
-          </p>
+          <Link href="/dashboard" className="btn-primary">
+            open dash
+          </Link>
         ) : (
-          <p className="mt-3 text-muted">
-            log in first. then send $ansem to your wallet — not someone
-            else&apos;s.
-          </p>
+          <Link href="/dashboard" className="btn-ghost">
+            dash after login
+          </Link>
         )}
-        <div className="mt-5 border border-[#222] p-4 text-sm break-all text-muted">
-          {wallet || WALLET_PLACEHOLDER}
-        </div>
-      </li>
+        <Link href="/" className={username ? "btn-ghost" : "btn-primary"}>
+          home
+        </Link>
+      </div>
     </>
   );
 }
