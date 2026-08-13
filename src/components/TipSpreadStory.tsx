@@ -182,7 +182,7 @@ export function TipSpreadStory() {
               );
             })}
             <div
-              className="absolute aspect-square -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full border-[3px] border-white"
+              className="absolute -translate-x-1/2 -translate-y-1/2"
               style={{
                 left: "50%",
                 top: `${(HUB.y / VIEW.h) * 100}%`,
@@ -190,13 +190,15 @@ export function TipSpreadStory() {
                 zIndex: 2,
               }}
             >
-              <Image
-                src="/brand/ansem-pfp.jpg"
-                alt="ansem"
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 21vw, 220px"
-              />
+              <div className="relative aspect-square w-full overflow-hidden rounded-full border-[3px] border-white">
+                <Image
+                  src="/brand/ansem-pfp.jpg"
+                  alt="ansem"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 21vw, 220px"
+                />
+              </div>
             </div>
           </div>
         </div>

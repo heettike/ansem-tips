@@ -201,6 +201,17 @@ for (const dead of [
   }
 }
 
+try {
+  const pfp = readFileSync("public/brand/ansem-pfp.jpg");
+  if (pfp.length < 8000) {
+    console.error("FAIL public/brand/ansem-pfp.jpg is too small to be the x pfp");
+    failures++;
+  }
+} catch {
+  console.error("FAIL missing vendored public/brand/ansem-pfp.jpg");
+  failures++;
+}
+
 if (failures) {
   console.error(`\n${failures} ui voice check(s) failed`);
   process.exit(1);
