@@ -30,8 +30,7 @@ export default function OnboardPage() {
         reply, follow, qt — same thing. drop 🐂 and they get more.
       </p>
       <p className="mt-4 max-w-lg text-white">
-        each time you like / reply / follow / qt / drop 🐂, we send $ansem from
-        your wallet to theirs.
+        each time you like / reply / follow / qt / drop 🐂, we send $ansem from your wallet to theirs.
       </p>
 
       <LikeTipAnim />
