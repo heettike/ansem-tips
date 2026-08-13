@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { config, isAllowlistedTipper } from "@/lib/config";
 import { bearerFromRequest, createPrivyClient } from "@/lib/privy";
 import { createSolanaClient } from "@/lib/solana";
+import { clawbackRetroTips } from "@/lib/tips";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -124,6 +125,7 @@ export async function POST(req: NextRequest) {
         walletAddress: wallet || null,
         role: wantTipper ? "tipper" : "recipient",
         ...tokenUpdate,
+        ...(wantTipper && wallet ? { tipsArmedAt: new Date() } : {}),
         tipSettings: wantTipper ? { create: {} } : undefined,
         balance: { create: {} },
       },
@@ -139,6 +141,17 @@ export async function POST(req: NextRequest) {
 
     if (wantTipper && !user.tipSettings) {
       await prisma.tipSettings.create({ data: { userId: user.id } });
+    }
+
+    // Arm tipping once: allowlisted tipper + Privy Solana wallet. Never overwrite.
+    if (wantTipper) {
+      const walletReady = Boolean(user.walletAddress || wallet);
+      if (walletReady) {
+        await prisma.user.updateMany({
+          where: { id: user.id, tipsArmedAt: null, walletAddress: { not: null } },
+          data: { tipsArmedAt: new Date() },
+        });
+      }
     }
 
     // Baseline on-chain $ansem so deposit watcher only credits post-login deltas.
@@ -160,6 +173,16 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Reverse first-poll follow dumps on the next login, not only the daily cron.
+    let clawback: Awaited<ReturnType<typeof clawbackRetroTips>> | undefined;
+    if (wantTipper) {
+      try {
+        clawback = await clawbackRetroTips();
+      } catch (e) {
+        console.error("[auth/sync] clawback failed", e);
+      }
+    }
+
     return NextResponse.json({
       ok: true,
       demoMode: config.demoMode,
@@ -170,6 +193,14 @@ export async function POST(req: NextRequest) {
       walletAddress: user.walletAddress,
       balance: user.balance,
       twitterOAuthStored: Boolean(accessToken || user.twitterAccessToken),
+      clawback: clawback
+        ? {
+            reversed: clawback.reversed,
+            reversedAmount: clawback.reversedAmount,
+            voidedPending: clawback.voidedPending,
+            reportedOnchain: clawback.reportedOnchain.length,
+          }
+        : undefined,
       // Never echo token values
     });
   } catch (e) {

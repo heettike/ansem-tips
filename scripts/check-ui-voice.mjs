@@ -158,6 +158,7 @@ const must = [
   [dashPage, /prisma|findFirst/, "dash page must not ssr a tipper row", true],
   [dashPage, /heettike/, "dash page must not hardcode first tipper", true],
   [dashGate, /log in as you to see your tips/, "dash gated until visitor login"],
+  [dashGate, /tips start after you log in/, "dash says tips don't pay the past"],
   [dashGate, /pull tips/, "no public pull-tips admin control", true],
   [dashGate, /heettike/, "dash gate must not hardcode first tipper", true],
 ];

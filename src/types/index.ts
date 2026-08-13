@@ -1,5 +1,11 @@
 export type ActionType = "like" | "comment" | "follow" | "quote" | "super_tip";
-export type TipStatus = "pending" | "processing" | "completed" | "failed";
+export type TipStatus =
+  | "pending"
+  | "processing"
+  | "completed"
+  | "failed"
+  | "voided"
+  | "skipped_retro";
 export type UserRole = "tipper" | "recipient";
 
 export interface TwitterAction {
@@ -10,7 +16,13 @@ export interface TwitterAction {
   targetXId?: string;
   targetUsername: string;
   text?: string;
-  createdAt: string;
+  /** Tweet created_at from X. Omit when missing — poller fails closed and will not pay. */
+  createdAt?: string;
+  /**
+   * Follows from GET /users/:id/following have no timestamp. Poller must never
+   * treat a synthetic "now" as a real event time for payment.
+   */
+  createdAtIsSynthetic?: boolean;
   /** True when 🐂 appears in comment/QT text → upgrade to super_tip */
   hasBullEmoji?: boolean;
 }
@@ -39,6 +51,15 @@ export interface ProcessTipResult {
   error?: string;
   onChain?: boolean;
 }
+
+export type PaySkipReason =
+  | "unarmed"
+  | "no_wallet"
+  | "before_arm"
+  | "no_created_at"
+  | "follow_baseline";
+
+export type PayDecision = { pay: false; reason: PaySkipReason } | { pay: true };
 
 export interface WithdrawResult {
   success: boolean;

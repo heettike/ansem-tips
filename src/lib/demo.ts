@@ -84,6 +84,7 @@ export function demoTwitterActions(): TwitterAction[] {
       tipperUsername: DEMO_TIPPER.username,
       targetUsername: "heliuslabs",
       createdAt: now,
+      createdAtIsSynthetic: true,
     },
   ];
 }

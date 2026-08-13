@@ -134,6 +134,9 @@ export function DashboardGate({ allowlist }: { allowlist: string[] }) {
                   each like / reply / follow / qt / 🐂 sends $ansem from your
                   wallet to theirs.
                 </li>
+                <li>
+                  tips start after you log in — we don&apos;t pay old likes/follows.
+                </li>
                 <li>same action never tips twice.</li>
                 <li>empty means nothing tipped yet — not fake numbers.</li>
               </ul>
