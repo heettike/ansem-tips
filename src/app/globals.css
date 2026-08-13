@@ -274,11 +274,58 @@ td {
   animation: ring-in 1.2s ease both;
 }
 
+.vv-chip {
+  position: absolute;
+  left: 50%;
+  top: 46.5116279%;
+  z-index: 1;
+  transform: translate(-50%, -50%);
+  padding: 0.22rem 0.5rem;
+  border: 1px solid;
+  background: #000;
+  font-family: Helvetica, "Helvetica Neue", Arial, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  animation-name: vv-chip-travel;
+  animation-timing-function: cubic-bezier(0.33, 0, 0.2, 1);
+  animation-iteration-count: infinite;
+}
+
+@keyframes vv-chip-travel {
+  0% {
+    left: 50%;
+    top: 46.5116279%;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  78% {
+    opacity: 1;
+  }
+  100% {
+    left: var(--end-x);
+    top: var(--end-y);
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .vv-line,
   .vv-node,
-  .vv-ring {
+  .vv-ring,
+  .vv-chip {
     animation: none !important;
+  }
+
+  .vv-chip {
+    left: var(--end-x);
+    top: var(--end-y);
+    opacity: 1;
   }
 }
 

@@ -91,7 +91,16 @@ const must = [
     true,
   ],
   [spread, /circle/, "vv circle diagram"],
-  [spread, /tipper/, "tipper node"],
+  [spread, /ansem-pfp\.jpg/, "vendored ansem x pfp hub"],
+  [spread, /@blknoiz06/, "tiny hub handle"],
+  [spread, /tipper/, "tipper copy remains"],
+  [spread, /\$12/, "$12 chip"],
+  [spread, /\$28/, "$28 chip"],
+  [spread, /\$47/, "$47 chip"],
+  [spread, /\$64/, "$64 chip"],
+  [spread, /\$81/, "$81 chip"],
+  [spread, /\$100/, "$100 chip"],
+  [spread, /pbs\.twimg|unavatar\.io/, "no runtime pfp hotlink", true],
   [spread, /herd|compounds|network/i, "network-effects idea"],
   [spread, /hundreds/, "scale language"],
   [
@@ -99,6 +108,12 @@ const must = [
     /\blike\b|\breply\b|\bfollow\b|\bqt\b|super tip|tip actions/i,
     "diagram must not list tip actions",
     true,
+  ],
+  [css, /vv-chip-travel/, "amount chip travel keyframes"],
+  [
+    css,
+    /prefers-reduced-motion: reduce[\s\S]*\.vv-chip/,
+    "reduced motion stops chip travel",
   ],
   [css, /#000000|#000\b/, "pure black canvas"],
   [css, /text-transform:\s*lowercase/, "lowercase system"],
@@ -184,6 +199,17 @@ for (const dead of [
   } catch {
     /* good */
   }
+}
+
+try {
+  const pfp = readFileSync("public/brand/ansem-pfp.jpg");
+  if (pfp.length < 8000) {
+    console.error("FAIL public/brand/ansem-pfp.jpg is too small to be the x pfp");
+    failures++;
+  }
+} catch {
+  console.error("FAIL missing vendored public/brand/ansem-pfp.jpg");
+  failures++;
 }
 
 if (failures) {
