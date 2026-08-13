@@ -69,6 +69,10 @@ const css = readFileSync("src/app/globals.css", "utf8");
 const layout = readFileSync("src/app/layout.tsx", "utf8");
 const nav = readFileSync("src/components/Nav.tsx", "utf8");
 const providers = readFileSync("src/components/Providers.tsx", "utf8");
+const onboard = readFileSync("src/app/onboard/page.tsx", "utf8");
+const fund = readFileSync("src/components/OnboardFund.tsx", "utf8");
+const anim = readFileSync("src/components/LikeTipAnim.tsx", "utf8");
+const amounts = readFileSync("src/components/TipSettingsForm.tsx", "utf8");
 
 const must = [
   [landing, /ansem[\s\S]*?\.tips/, "landing brand lockup"],
@@ -101,6 +105,40 @@ const must = [
   [layout, /from "next\/font\/google"/, "no next/font google flex", true],
   [layout, /crt-shell/i, "no crt-shell on body", true],
   [providers, /return <>\{children\}<\/>/, "privy not at root"],
+  [onboard, /LikeTipAnim/, "onboard mounts like-tip animation"],
+  [
+    onboard,
+    /from your wallet to theirs/,
+    "onboard states wallet-to-wallet mechanic",
+  ],
+  [onboard, /like \/ reply \/ follow \/ qt/, "onboard names the five actions"],
+  [onboard, /from ["']@\/lib\/db["']|prisma/, "onboard must not ssr a tipper row", true],
+  [onboard, /findFirst/, "onboard must not load first allowlisted tipper", true],
+  [
+    fund,
+    /log in with x — your deposit address shows up here/,
+    "deposit placeholder until login",
+  ],
+  [fund, /onAuthed/, "deposit waits for the visitor's x login"],
+  [fund, /heettike|blknoiz06/, "fund must not hardcode another tipper", true],
+  [anim, /@you/, "anim tipper node"],
+  [anim, /@them/, "anim recipient node"],
+  [anim, /\$ansem/, "anim $ansem chip"],
+  [anim, /like/, "anim shows a like"],
+  [anim, /scanline|crt|mp4/i, "anim is css poster not crt/video", true],
+  [anim, /animateTransform/, "chip travels in svg user units"],
+  [anim, /prefers-reduced-motion/, "anim reads reduced motion"],
+  [
+    amounts,
+    /leaves your wallet when you like/,
+    "amount hint is money leaving on like",
+  ],
+  [css, /like-tip-like/, "like-tip like keyframes"],
+  [
+    css,
+    /prefers-reduced-motion: reduce[\s\S]*like-tip-path/,
+    "reduced motion stops like-tip loop",
+  ],
 ];
 
 for (const row of must) {

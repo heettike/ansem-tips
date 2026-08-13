@@ -112,9 +112,11 @@ export default async function DashboardPage() {
         <div>
           <p className="text-sm text-muted">what&apos;s running</p>
           <ul className="mt-5 space-y-3 text-lg text-muted">
-            <li>we watch likes, replies, qts, and follows.</li>
+            <li>
+              each like / reply / follow / qt / 🐂 sends $ansem from your
+              wallet to theirs.
+            </li>
             <li>same action never tips twice.</li>
-            <li>🐂 in a comment or qt = super tip.</li>
             <li>empty means nothing tipped yet — not fake numbers.</li>
           </ul>
         </div>

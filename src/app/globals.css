@@ -281,3 +281,110 @@ td {
     animation: none !important;
   }
 }
+
+/* like → $ansem leaves @you for @them (onboard only) */
+.like-tip-frame {
+  animation: like-tip-in 5s ease infinite;
+}
+
+.like-tip-like-dot {
+  animation: like-tip-like 5s ease infinite;
+}
+
+.like-tip-like-word {
+  animation: like-tip-like-word 5s ease infinite;
+}
+
+.like-tip-path {
+  stroke-dasharray: 420;
+  animation: like-tip-draw 5s ease infinite;
+}
+
+.like-tip-nodes {
+  animation: like-tip-in 5s ease infinite;
+}
+
+@keyframes like-tip-in {
+  0% {
+    opacity: 0;
+  }
+  10%,
+  88% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes like-tip-like {
+  0%,
+  18% {
+    fill: #000;
+    stroke: #6b6b6b;
+  }
+  26%,
+  88% {
+    fill: #ffffff;
+    stroke: #ffffff;
+  }
+  100% {
+    fill: #000;
+    stroke: #6b6b6b;
+  }
+}
+
+@keyframes like-tip-like-word {
+  0%,
+  18% {
+    fill: #6b6b6b;
+  }
+  26%,
+  88% {
+    fill: #ffffff;
+  }
+  100% {
+    fill: #6b6b6b;
+  }
+}
+
+@keyframes like-tip-draw {
+  0% {
+    stroke-dashoffset: 420;
+    opacity: 0.2;
+  }
+  22%,
+  88% {
+    stroke-dashoffset: 0;
+    opacity: 0.45;
+  }
+  100% {
+    stroke-dashoffset: 420;
+    opacity: 0.2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .like-tip-frame,
+  .like-tip-like-dot,
+  .like-tip-like-word,
+  .like-tip-path,
+  .like-tip-chip,
+  .like-tip-nodes {
+    animation: none !important;
+  }
+
+  .like-tip-like-dot {
+    fill: #ffffff;
+    stroke: #ffffff;
+  }
+
+  .like-tip-like-word {
+    fill: #ffffff;
+  }
+
+  .like-tip-path {
+    stroke-dashoffset: 0;
+    opacity: 0.45;
+  }
+}
