@@ -123,6 +123,7 @@ export async function POST(req: NextRequest) {
         privyDid: claims.userId,
         walletAddress: wallet || null,
         role: wantTipper ? "tipper" : "recipient",
+        lastActiveAt: new Date(),
         ...tokenUpdate,
         tipSettings: wantTipper ? { create: {} } : undefined,
         balance: { create: {} },
@@ -130,6 +131,7 @@ export async function POST(req: NextRequest) {
       update: {
         username,
         privyDid: claims.userId,
+        lastActiveAt: new Date(),
         ...(wallet ? { walletAddress: wallet } : {}),
         ...(wantTipper ? { role: "tipper" } : {}),
         ...tokenUpdate,

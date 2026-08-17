@@ -3,8 +3,10 @@ import { config } from "@/lib/config";
 import {
   createTwitterClient,
   hasBullEmoji,
+  hasLfg,
   refreshTwitterUserToken,
 } from "@/lib/twitter";
+import { sendTelegramAlert } from "@/lib/telegram";
 import {
   tipTransferFromHotWallet,
   withdrawFromHotWallet,
@@ -196,6 +198,14 @@ export async function pollAndEnqueueTips(tipperUsername?: string): Promise<{
     }
 
     const actionType = resolveActionType(action);
+
+    // Plain comments only tip on "lfg" (bull-emoji comments already resolved to super_tip).
+    // Action stays marked processed so we never re-check it.
+    if (actionType === "comment" && !hasLfg(action.text)) {
+      skipped++;
+      continue;
+    }
+
     const amount = Math.max(
       config.minTipUsd,
       amountFor(tipper.tipSettings, actionType)
@@ -249,6 +259,9 @@ export async function pollAndEnqueueTips(tipperUsername?: string): Promise<{
   const bal = tipper.balance?.deposited ?? 0;
   if (bal < LOW_BALANCE_THRESHOLD) {
     await twitter.pingLowBalance(tipperUser.username, bal);
+    await sendTelegramAlert(
+      `low balance: @${tipperUser.username} has ${bal.toFixed(2)} $ansem left to tip`
+    );
     console.warn(
       `[ALERT] Low tipper balance for @${tipperUser.username}: ${bal}`
     );
@@ -288,6 +301,9 @@ export async function processTip(tipId: string): Promise<ProcessTipResult> {
     });
     const twitter = createTwitterClient();
     await twitter.pingLowBalance(tip.fromUser.username, deposited);
+    await sendTelegramAlert(
+      `tip failed: @${tip.fromUser.username} has ${deposited.toFixed(2)} $ansem, needed ${tip.amount.toFixed(2)}`
+    );
     console.warn(
       `[ALERT] Insufficient balance for tip ${tipId}: have ${deposited}, need ${tip.amount}`
     );
@@ -407,7 +423,7 @@ export async function withdrawForUser(
       });
       await tx.user.update({
         where: { id: userId },
-        data: { walletAddress: toAddress },
+        data: { walletAddress: toAddress, lastActiveAt: new Date() },
       });
       await tx.withdrawal.create({
         data: {
@@ -463,6 +479,70 @@ export async function saveTipSettings(
     superTipAmount: updated.superTipAmount,
     enabled: updated.enabled,
   };
+}
+
+/**
+ * Expire stale claims: ledger-credited tips older than CLAIM_EXPIRY_DAYS whose
+ * recipient hasn't logged in or withdrawn in that window go back to the tipper.
+ * On-chain-paid tips (real txSig) are never touched.
+ */
+export async function expireStaleClaims(): Promise<{
+  expired: number;
+  refunded: number;
+}> {
+  const cutoff = new Date(
+    Date.now() - config.claimExpiryDays * 24 * 60 * 60 * 1000
+  );
+  const stale = await prisma.tip.findMany({
+    where: {
+      status: "completed",
+      txSig: { startsWith: "ledger_" },
+      createdAt: { lt: cutoff },
+      toUserId: { not: null },
+    },
+    include: { toUser: true },
+    take: 200,
+    orderBy: { createdAt: "asc" },
+  });
+
+  let expired = 0;
+  let refunded = 0;
+
+  for (const tip of stale) {
+    const lastActive = tip.toUser?.lastActiveAt;
+    if (lastActive && lastActive.getTime() >= cutoff.getTime()) continue;
+
+    await prisma.$transaction(async (tx) => {
+      const bal = await tx.balance.findUnique({
+        where: { userId: tip.toUserId! },
+      });
+      const refund = Math.min(tip.amount, bal?.withdrawable ?? 0);
+      if (refund > 0) {
+        await tx.balance.update({
+          where: { userId: tip.toUserId! },
+          data: { withdrawable: { decrement: refund } },
+        });
+        await tx.balance.upsert({
+          where: { userId: tip.fromUserId },
+          create: { userId: tip.fromUserId, deposited: refund },
+          update: { deposited: { increment: refund } },
+        });
+      }
+      await tx.tip.update({
+        where: { id: tip.id },
+        data: { status: "expired" },
+      });
+      refunded += refund;
+    });
+    expired++;
+  }
+
+  if (expired > 0) {
+    console.warn(
+      `[tips] expired ${expired} stale claims, refunded ${refunded.toFixed(2)} $ansem to tippers`
+    );
+  }
+  return { expired, refunded };
 }
 
 /** Credit tipper deposited ledger after observing an on-chain deposit (ops/manual). */

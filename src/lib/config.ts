@@ -53,8 +53,9 @@ export const config = {
   hotWalletAddress: env("HOT_WALLET_ADDRESS", ""),
 
   // Limits
-  minDepositUsd: envFloat("MIN_DEPOSIT_USD", 1),
-  minTipUsd: envFloat("MIN_TIP_USD", 0.01),
+  minDepositUsd: envFloat("MIN_DEPOSIT_USD", 100),
+  minTipUsd: envFloat("MIN_TIP_USD", 1),
+  claimExpiryDays: envFloat("CLAIM_EXPIRY_DAYS", 30),
 
   // Auth
   privyAppId: env("NEXT_PUBLIC_PRIVY_APP_ID", ""),
@@ -67,6 +68,10 @@ export const config = {
   twitterAccessToken: env("TWITTER_ACCESS_TOKEN", ""),
   twitterAccessSecret: env("TWITTER_ACCESS_SECRET", ""),
   twitterBotUserId: env("TWITTER_BOT_USER_ID", ""),
+
+  // Telegram low-balance fallback (X bot TBD)
+  telegramBotToken: env("TELEGRAM_BOT_TOKEN", ""),
+  telegramChatId: env("TELEGRAM_CHAT_ID", ""),
 
   // Cron
   cronSecret: env("CRON_SECRET", "dev-cron-secret"),

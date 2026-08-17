@@ -3,9 +3,15 @@ import { demoTwitterActions } from "@/lib/demo";
 import type { TwitterAction, TwitterClient, TwitterOAuthTokens } from "@/types";
 
 const BULL = "🐂";
+const LFG = /lfg/i;
 
 function hasBullEmoji(text?: string): boolean {
   return Boolean(text && text.includes(BULL));
+}
+
+/** Comments only tip when they contain "lfg" (any case). Bull emoji super-tips regardless. */
+function hasLfg(text?: string): boolean {
+  return Boolean(text && LFG.test(text));
 }
 
 /**
@@ -259,4 +265,4 @@ export async function refreshTwitterUserToken(
   }
 }
 
-export { hasBullEmoji, BULL };
+export { hasBullEmoji, hasLfg, BULL };

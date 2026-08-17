@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { config } from "@/lib/config";
-import { pollAndEnqueueTips, processPendingTips } from "@/lib/tips";
+import {
+  expireStaleClaims,
+  pollAndEnqueueTips,
+  processPendingTips,
+} from "@/lib/tips";
 import { watchTipperDeposits } from "@/lib/deposits";
 
 export const runtime = "nodejs";
@@ -46,6 +50,9 @@ async function handle(req: NextRequest) {
 
     const processed = await processPendingTips();
 
+    // Return unclaimed tips to tippers after CLAIM_EXPIRY_DAYS (same daily cron).
+    const claims = await expireStaleClaims();
+
     return NextResponse.json({
       ok: true,
       demoMode: config.demoMode,
@@ -53,6 +60,7 @@ async function handle(req: NextRequest) {
       deposits,
       polls,
       processed,
+      claims,
     });
   } catch (e) {
     console.error("[cron/poll]", e);

@@ -43,6 +43,9 @@ export default function WithdrawPage() {
   const [withdrawals, setWithdrawals] = useState<WithdrawalRow[]>([]);
   const [totalWithdrawn, setTotalWithdrawn] = useState(0);
   const [livePriceUsd, setLivePriceUsd] = useState<number | null>(null);
+  const [checkName, setCheckName] = useState("");
+  const [checkResult, setCheckResult] = useState<string | null>(null);
+  const [checking, setChecking] = useState(false);
 
   async function refreshBalance(u: string) {
     const res = await fetch(
@@ -94,6 +97,30 @@ export default function WithdrawPage() {
       refreshWithdrawals(u),
       refreshPrice(),
     ]);
+  }
+
+  async function onCheckTips(e: React.FormEvent) {
+    e.preventDefault();
+    const u = checkName.replace(/^@/, "").trim().toLowerCase();
+    if (!u) return;
+    setChecking(true);
+    setCheckResult(null);
+    try {
+      const res = await fetch(
+        `/api/balance?username=${encodeURIComponent(u)}&role=recipient`
+      );
+      const data = await res.json();
+      const w = Number(data?.balance?.withdrawable) || 0;
+      setCheckResult(
+        w > 0
+          ? `@${u} has $${w.toFixed(2)} in $ansem waiting — sign in with x to withdraw.`
+          : `no unclaimed tips for @${u} yet.`
+      );
+    } catch {
+      setCheckResult("lookup failed — try again.");
+    } finally {
+      setChecking(false);
+    }
   }
 
   async function onWithdraw(e: React.FormEvent) {
@@ -168,9 +195,25 @@ export default function WithdrawPage() {
           }}
         />
         {!username && (
-          <p className="mt-4 text-sm text-muted">
-            not signed in yet — balances stay empty until you log in.
-          </p>
+          <>
+            <form onSubmit={onCheckTips} className="mt-8 flex gap-3">
+              <input
+                className="input flex-1"
+                placeholder="your x username — check for tips"
+                value={checkName}
+                onChange={(e) => setCheckName(e.target.value)}
+              />
+              <button type="submit" className="btn-primary" disabled={checking}>
+                {checking ? "checking…" : "check"}
+              </button>
+            </form>
+            {checkResult && (
+              <p className="mt-3 text-sm text-muted">{checkResult}</p>
+            )}
+            <p className="mt-4 text-sm text-muted">
+              unclaimed tips return to the creator after 30 days.
+            </p>
+          </>
         )}
       </div>
 
