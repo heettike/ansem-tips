@@ -570,6 +570,62 @@ td {
   }
 }
 
+/* ------------------------------------------------------------------ */
+/* community wall — react-tweet, locked to the light poster system     */
+/* ------------------------------------------------------------------ */
+
+.community-wall .react-tweet-theme {
+  /* fill the column, match poster radii + hairlines */
+  margin: 0;
+  max-width: none;
+  border-radius: 20px;
+  --tweet-container-margin: 0;
+  --tweet-body-font-size: 1rem;
+  --tweet-border: 1px solid rgba(0, 0, 0, 0.08);
+  --tweet-font-family: var(--font-sans);
+  --tweet-font-color: #000000;
+  --tweet-font-color-secondary: rgba(0, 0, 0, 0.4);
+  --tweet-bg-color: #ffffff;
+  --tweet-bg-color-hover: #fafafa;
+  --tweet-quoted-bg-color-hover: rgba(0, 0, 0, 0.03);
+  --tweet-color-blue-primary: var(--accent-blue);
+  --tweet-color-blue-secondary: var(--accent-blue);
+  --tweet-color-blue-secondary-hover: rgba(0, 112, 243, 0.1);
+  --tweet-skeleton-gradient: linear-gradient(
+    270deg,
+    #fafafa,
+    #eaeaea,
+    #eaeaea,
+    #fafafa
+  );
+}
+
+/* tweets are quoted user content — never lowercase them */
+.community-wall .react-tweet-theme,
+.community-wall .react-tweet-theme * {
+  text-transform: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* manifesto — quiet paragraph, serif sign-off                         */
+/* ------------------------------------------------------------------ */
+
+.manifesto-text {
+  max-width: 42rem;
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.manifesto-signoff {
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-weight: 700;
+  font-size: clamp(2.25rem, 5.5vw, 3.5rem);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: #000;
+}
+
 /* like → $ansem leaves @you for @them (onboard only) */
 .like-tip-frame {
   animation: like-tip-in 5s ease infinite;

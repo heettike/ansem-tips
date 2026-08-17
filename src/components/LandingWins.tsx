@@ -33,9 +33,14 @@ export function LandingWins() {
             ))}
           </ul>
 
-          <p className="mt-6 text-sm text-white/40">
-            tips processed — · value moved —
-          </p>
+          <div className="mt-8">
+            <p className="display font-mono text-[clamp(3rem,8vw,5.5rem)] tabular-nums">
+              27307
+            </p>
+            <p className="micro-label mt-3">noice powered tips</p>
+          </div>
+
+          <p className="mt-6 text-sm text-white/40">$$ moved —</p>
         </div>
 
         <div className="shader-frame h-64 md:h-auto md:min-h-[280px]">
@@ -56,6 +61,9 @@ export function LandingWins() {
           <p className="mt-3 text-white/40">
             any coin, any chain — starting with{" "}
             <span className="gold">$ansem</span> on solana.
+          </p>
+          <p className="mt-3 text-white/40">
+            tokenising a trillion atomic units of attention everyday
           </p>
         </div>
 

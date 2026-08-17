@@ -4,6 +4,8 @@ import { TipSpreadStory } from "@/components/TipSpreadStory";
 import { LandingStats } from "@/components/LandingStats";
 import { LandingWins } from "@/components/LandingWins";
 import { ShaderCanvas } from "@/components/ShaderCanvas";
+import { CommunityWall } from "@/components/CommunityWall";
+import { LandingManifesto } from "@/components/LandingManifesto";
 
 export function LandingHero() {
   return (
@@ -18,7 +20,8 @@ export function LandingHero() {
         </div>
 
         <h1 className="display mt-10 max-w-[85%] text-[clamp(2.5rem,5.5vw,3.5rem)]">
-          tip <span className="gold">$ansem</span>. grow the herd.
+          tip any <span className="gold">token</span> when you like, comment,
+          follow or more
         </h1>
 
         <div className="shader-frame mt-10 h-64 sm:h-80">
@@ -62,6 +65,12 @@ export function LandingHero() {
 
       {/* farcaster record + claim facts */}
       <LandingWins />
+
+      {/* real tweets from the community */}
+      <CommunityWall />
+
+      {/* the dream — quiet manifesto before the footer */}
+      <LandingManifesto />
     </div>
   );
 }
