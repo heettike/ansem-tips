@@ -732,3 +732,11 @@ td {
     opacity: 0.45;
   }
 }
+
+/* community wall lazy cells reserve space until the tweet mounts */
+.tweet-placeholder {
+  min-height: 220px;
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fafafa;
+}

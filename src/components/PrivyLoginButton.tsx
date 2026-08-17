@@ -25,7 +25,7 @@ type CapturedOAuth = {
 };
 
 function LoginInner({ label, className, role = "tipper", onAuthed }: Props) {
-  const { ready, authenticated, user, login, getAccessToken } = usePrivy();
+  const { ready, authenticated, user, login, logout, getAccessToken } = usePrivy();
   const [busy, setBusy] = useState(false);
   const oauthRef = useRef<CapturedOAuth | null>(null);
   const syncedFor = useRef<string | null>(null);
@@ -110,15 +110,48 @@ function LoginInner({ label, className, role = "tipper", onAuthed }: Props) {
     void syncAccount(oauthRef.current);
   }, [ready, authenticated, user, syncAccount]);
 
+  const twitterName = (user?.twitter as { username?: string } | undefined)
+    ?.username;
+
+  // Already-authenticated: login() is a silent no-op in privy, which reads as
+  // a dead button. Show the session and let the click re-sync instead.
   return (
-    <button
-      type="button"
-      className={className}
-      disabled={!ready || busy}
-      onClick={() => login()}
-    >
-      {!ready ? "loading…" : busy ? "logging in…" : label}
-    </button>
+    <span className="inline-flex flex-wrap items-center gap-3">
+      <button
+        type="button"
+        className={className}
+        disabled={!ready || busy}
+        onClick={() => {
+          if (authenticated) {
+            void syncAccount(oauthRef.current);
+          } else {
+            login();
+          }
+        }}
+      >
+        {!ready
+          ? "loading…"
+          : busy
+            ? "logging in…"
+            : authenticated
+              ? twitterName
+                ? `signed in as @${twitterName}`
+                : "signed in"
+              : label}
+      </button>
+      {ready && authenticated && !busy && (
+        <button
+          type="button"
+          className="text-sm text-muted underline-offset-2 hover:underline"
+          onClick={() => {
+            void logout();
+            syncedFor.current = null;
+          }}
+        >
+          log out
+        </button>
+      )}
+    </span>
   );
 }
 
