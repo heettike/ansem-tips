@@ -179,18 +179,20 @@ export default function WithdrawPage() {
         withdraw <span className="gold">$ansem</span>
       </h1>
       <p className="mt-5 text-muted">
-        log in with x. see what you earned. cash out to your wallet.
+        log in with x. tips already hit your wallet on-chain. cash out leftover
+        balance here.
       </p>
 
       <div className="mt-10">
         <LoginButton
-          label="sign in with x"
+          label="log in with x"
+          role="recipient"
           onAuthed={async (info) => {
             if (info.username) {
               setUsername(info.username);
               await refreshAll(info.username);
             }
-            if (info.walletAddress) setToAddress(info.walletAddress);
+            setToAddress((prev) => prev || info.walletAddress || "");
             setUserId(null);
           }}
         />

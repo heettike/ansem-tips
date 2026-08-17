@@ -24,6 +24,10 @@ model User {
   lastSeenTokenBalance    Float?
   /// Last login or withdrawal — claims expire when stale past CLAIM_EXPIRY_DAYS
   lastActiveAt            DateTime?
+  /// Tipping starts only after login + Privy Solana wallet. Null = unarmed (baseline only, never pay).
+  tipsArmedAt             DateTime?
+  /// First follow poll after arming records current following as seen; later polls may pay new follows.
+  followBaselineAt        DateTime?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 

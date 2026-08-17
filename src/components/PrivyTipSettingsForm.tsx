@@ -21,10 +21,7 @@ function TipSettingsInner({
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!ready || !authenticated) {
-      setToken(null);
-      return;
-    }
+    if (!ready || !authenticated) return;
     let cancelled = false;
     (async () => {
       const t = await getAccessToken();
@@ -34,6 +31,18 @@ function TipSettingsInner({
       cancelled = true;
     };
   }, [ready, authenticated, getAccessToken]);
+
+  if (!ready) {
+    return <p className="text-sm text-muted">one second…</p>;
+  }
+
+  if (!authenticated) {
+    return (
+      <p className="text-muted">
+        log in with x first — then set how much leaves your wallet.
+      </p>
+    );
+  }
 
   return (
     <TipSettingsForm initial={initial} minTip={minTip} authToken={token} />

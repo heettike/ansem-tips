@@ -1,5 +1,6 @@
 import { config, hasTwitterCreds } from "@/lib/config";
 import { demoTwitterActions } from "@/lib/demo";
+import { realCreatedAt } from "@/lib/tip-policy";
 import type { TwitterAction, TwitterClient, TwitterOAuthTokens } from "@/types";
 
 const BULL = "🐂";
@@ -107,7 +108,7 @@ function createLiveTwitterClient(
         tipperUsername: "",
         targetXId: t.author_id,
         targetUsername: (t.author_id && users.get(t.author_id)) || "unknown",
-        createdAt: t.created_at ?? new Date().toISOString(),
+        createdAt: realCreatedAt(t.created_at),
       }));
     },
 
@@ -139,7 +140,7 @@ function createLiveTwitterClient(
             "unknown",
           text,
           hasBullEmoji: hasBullEmoji(text),
-          createdAt: t.created_at ?? new Date().toISOString(),
+          createdAt: realCreatedAt(t.created_at),
         } satisfies TwitterAction;
       });
     },
@@ -179,7 +180,7 @@ function createLiveTwitterClient(
           targetUsername: (targetXId && users.get(targetXId)) || "unknown",
           text,
           hasBullEmoji: hasBullEmoji(text),
-          createdAt: t.created_at ?? new Date().toISOString(),
+          createdAt: realCreatedAt(t.created_at),
         } satisfies TwitterAction;
       });
     },
@@ -195,7 +196,9 @@ function createLiveTwitterClient(
         tipperUsername: "",
         targetXId: u.id,
         targetUsername: u.username,
+        // Display-only. Poller must not treat this as a real follow time.
         createdAt: new Date().toISOString(),
+        createdAtIsSynthetic: true,
       }));
     },
 

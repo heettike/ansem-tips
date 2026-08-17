@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { config } from "@/lib/config";
 import {
+  clawbackRetroTips,
   expireStaleClaims,
   pollAndEnqueueTips,
   processPendingTips,
@@ -34,6 +35,8 @@ async function handle(req: NextRequest) {
       ? [tipperParam.replace(/^@/, "").toLowerCase()]
       : config.tipperAllowlist;
 
+    const clawback = await clawbackRetroTips();
+
     const deposits = await watchTipperDeposits(tippers);
 
     const polls = [];
@@ -57,6 +60,7 @@ async function handle(req: NextRequest) {
       ok: true,
       demoMode: config.demoMode,
       tippers,
+      clawback,
       deposits,
       polls,
       processed,

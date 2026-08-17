@@ -9,7 +9,7 @@ import { TipSettingsForm } from "./TipSettingsForm";
 const PrivyTipSettingsForm = dynamic(() => import("./PrivyTipSettingsForm"), {
   ssr: false,
   loading: () => (
-    <div className="py-6 text-sm text-muted">loading tip amounts…</div>
+    <p className="text-sm text-muted">one second…</p>
   ),
 });
 
@@ -23,13 +23,21 @@ export function LiveTipSettingsForm({
   const appId = publicEnv.privyAppId;
   const forceDemo = publicEnv.demoMode;
 
-  if (!appId || forceDemo) {
+  if (forceDemo) {
     return (
       <TipSettingsForm
         initial={initial}
         minTip={minTip}
         authToken="demo:heettike"
       />
+    );
+  }
+
+  if (!appId) {
+    return (
+      <p className="text-sm text-muted">
+        log in with x — not configured.
+      </p>
     );
   }
 

@@ -161,18 +161,6 @@ export async function withdrawFromHotWallet(
   return result;
 }
 
-/**
- * Optional tip-path on-chain move: custody hot wallet → recipient wallet
- * when the recipient already linked a Solana address. Ledger still authoritative.
- */
-export async function tipTransferFromHotWallet(
-  toAddress: string,
-  amount: number
-): Promise<{ signature: string; demo: boolean } | null> {
-  if (!hasHotWallet()) return null;
-  return withdrawFromHotWallet(toAddress, amount);
-}
-
 export function explorerTxUrl(sig: string): string {
   return `https://solscan.io/tx/${sig}`;
 }
