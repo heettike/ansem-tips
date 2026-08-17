@@ -1,5 +1,5 @@
 import { config } from "./config";
-import { hasLfg } from "./twitter";
+import { matchesTrigger } from "./twitter";
 import { decideWhetherToPay } from "./tip-policy";
 import type { ActionType, TwitterAction } from "../types";
 
@@ -15,6 +15,14 @@ export type EnqueueTipper = {
     followAmount: number;
     quoteAmount: number;
     superTipAmount: number;
+    /// Per-tipper comment trigger ("lfg" default; can be emoji-only)
+    commentTrigger?: string | null;
+    /// Per-tipper super-tip trigger (bull emoji default)
+    superTipTrigger?: string | null;
+    /// Tip token (empty tipTokenAddress = default $ansem on solana)
+    tipChain?: string | null;
+    tipTokenAddress?: string | null;
+    tipTokenSymbol?: string | null;
   };
 };
 
@@ -37,6 +45,9 @@ export type EnqueueStore = {
     toXUsername: string;
     toXId?: string;
     amount: number;
+    chain?: string;
+    tokenAddress?: string;
+    tokenSymbol?: string;
     metadata: string;
   }): Promise<void>;
   setFollowBaselineAt(userId: string, at: Date): Promise<void>;
@@ -49,10 +60,13 @@ export type EnqueueResult = {
   actions: string[];
 };
 
-function resolveActionType(action: TwitterAction): ActionType {
+function resolveActionType(
+  action: TwitterAction,
+  superTipTrigger: string
+): ActionType {
   if (
     (action.actionType === "comment" || action.actionType === "quote") &&
-    (action.hasBullEmoji || (action.text && action.text.includes("🐂")))
+    matchesTrigger(action.text, superTipTrigger)
   ) {
     return "super_tip";
   }
@@ -104,7 +118,9 @@ export async function enqueueFetchedActions(opts: {
       continue;
     }
 
-    const actionType = resolveActionType(action);
+    const superTrigger = tipper.tipSettings.superTipTrigger || "🐂";
+    const commentTrigger = tipper.tipSettings.commentTrigger || "lfg";
+    const actionType = resolveActionType(action, superTrigger);
 
     const marked = await store.markProcessed({
       actionId: action.actionId,
@@ -118,9 +134,9 @@ export async function enqueueFetchedActions(opts: {
 
     if (action.actionType === "follow") sawFollow = true;
 
-    // Plain comments only tip on "lfg" (bull-emoji comments already resolved to super_tip).
+    // Plain comments only tip on the tipper's trigger (super-tip trigger already resolved above).
     // Stays marked processed so we never re-check it.
-    if (actionType === "comment" && !hasLfg(action.text)) {
+    if (actionType === "comment" && !matchesTrigger(action.text, commentTrigger)) {
       skipped++;
       continue;
     }
@@ -164,6 +180,9 @@ export async function enqueueFetchedActions(opts: {
       toXUsername: action.targetUsername,
       toXId: action.targetXId,
       amount,
+      chain: tipper.tipSettings.tipChain ?? "solana",
+      tokenAddress: tipper.tipSettings.tipTokenAddress ?? "",
+      tokenSymbol: tipper.tipSettings.tipTokenSymbol ?? "ansem",
       metadata: JSON.stringify({ text: action.text ?? null }),
     });
 

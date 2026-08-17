@@ -28,6 +28,10 @@ model User {
   tipsArmedAt             DateTime?
   /// First follow poll after arming records current following as seen; later polls may pay new follows.
   followBaselineAt        DateTime?
+  /// EVM address (Privy embedded or user-provided) for base/bsc/robinhood deposits
+  evmAddress              String?
+
+  tokenBalances TokenBalance[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -48,6 +52,15 @@ model TipSettings {
   followAmount   Float    @default(1)
   quoteAmount    Float    @default(1)
   superTipAmount Float    @default(5)
+  /// Comments only tip when they contain this (case-insensitive; can be emoji-only)
+  commentTrigger String   @default("lfg")
+  /// Comments/QTs containing this upgrade to super_tip
+  superTipTrigger String  @default("🐂")
+  /// Tip token: chain from chains.ts registry; empty tokenAddress = default $ansem
+  tipChain         String @default("solana")
+  tipTokenAddress  String @default("")
+  tipTokenSymbol   String @default("ansem")
+  tipTokenDecimals Int    @default(6)
   enabled        Boolean  @default(true)
   updatedAt      DateTime @updatedAt
 }
@@ -63,6 +76,10 @@ model Tip {
   toXUsername String
   toXId       String?
   amount      Float
+  /// Token unit of this tip (empty tokenAddress = default $ansem on solana)
+  chain        String  @default("solana")
+  tokenAddress String  @default("")
+  tokenSymbol  String  @default("ansem")
   txSig       String?
   status      String   @default("pending")
   metadata    String?
@@ -94,6 +111,10 @@ model Withdrawal {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   amount    Float
+  /// Token withdrawn (empty tokenAddress = default $ansem on solana)
+  chain        String @default("solana")
+  tokenAddress String @default("")
+  tokenSymbol  String @default("ansem")
   toAddress String
   txSig     String   @unique
   status    String   @default("completed")
@@ -101,6 +122,25 @@ model Withdrawal {
 
   @@index([userId])
   @@index([createdAt])
+}
+
+/// Per-token ledger for non-default tokens (default $ansem stays on Balance)
+model TokenBalance {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chain        String
+  tokenAddress String
+  symbol       String
+  decimals     Int      @default(18)
+  deposited    Float    @default(0)
+  withdrawable Float    @default(0)
+  /// Deposit watcher baseline (onchain balance at last check)
+  lastSeenOnchain Float?
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, chain, tokenAddress])
+  @@index([userId])
 }
 
 /// Dedupe store — never double-process an X action

@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { TipSpreadStory } from "@/components/TipSpreadStory";
+import { LandingStats } from "@/components/LandingStats";
+import { LandingWins } from "@/components/LandingWins";
 
 export function LandingHero() {
   return (
@@ -17,6 +19,10 @@ export function LandingHero() {
 
           <p className="mt-8 max-w-xl text-2xl font-bold tracking-tight text-muted sm:text-3xl">
             tip <span className="gold">$ansem</span>. grow the herd.
+          </p>
+
+          <p className="mt-4 text-sm text-muted">
+            any coin, any chain — starting with $ansem on solana.
           </p>
 
           <div className="mt-12 flex flex-wrap items-center gap-8 text-lg font-bold">
@@ -50,6 +56,12 @@ export function LandingHero() {
 
       {/* one idea object — network effects */}
       <TipSpreadStory />
+
+      {/* core numbers + allowlisted creators */}
+      <LandingStats />
+
+      {/* farcaster record + claim facts */}
+      <LandingWins />
     </div>
   );
 }

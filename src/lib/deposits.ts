@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/db";
 import { config, isAllowlistedTipper } from "@/lib/config";
-import { createSolanaClient } from "@/lib/solana";
+import { createSolanaClient, getSplBalance } from "@/lib/solana";
+import { erc20Balance } from "@/lib/evm";
+import { chainInfo, isDefaultToken } from "@/lib/chains";
 import { creditDeposit } from "@/lib/tips";
 import type { DepositWatchResult } from "@/types";
 
@@ -24,7 +26,7 @@ export async function watchTipperDeposits(
       username: { in: tippers },
       walletAddress: { not: null },
     },
-    include: { balance: true },
+    include: { balance: true, tipSettings: true },
   });
 
   const solana = createSolanaClient();
@@ -115,5 +117,91 @@ export async function watchTipperDeposits(
     }
   }
 
+  // Non-default tip tokens: watch the same delta pattern on the per-token ledger.
+  for (const user of users) {
+    const ts = user.tipSettings;
+    if (!ts || isDefaultToken(ts.tipChain, ts.tipTokenAddress)) continue;
+    try {
+      await watchTokenDeposit(user.id, user.username, {
+        chain: ts.tipChain,
+        tokenAddress: ts.tipTokenAddress,
+        symbol: ts.tipTokenSymbol,
+        decimals: ts.tipTokenDecimals,
+        solanaOwner: user.walletAddress,
+        evmOwner: user.evmAddress,
+      });
+    } catch (e) {
+      console.error(`[deposits] token watch failed @${user.username}`, e);
+    }
+  }
+
   return { checked: results.length, creditedTotal, results };
+}
+
+async function watchTokenDeposit(
+  userId: string,
+  username: string,
+  t: {
+    chain: string;
+    tokenAddress: string;
+    symbol: string;
+    decimals: number;
+    solanaOwner: string | null;
+    evmOwner: string | null;
+  }
+): Promise<void> {
+  const info = chainInfo(t.chain);
+  if (!info || !t.tokenAddress) return;
+  const owner = info.kind === "evm" ? t.evmOwner : t.solanaOwner;
+  if (!owner) return;
+
+  const onchain =
+    info.kind === "evm"
+      ? await erc20Balance(t.chain, t.tokenAddress, owner, t.decimals)
+      : await getSplBalance(owner, t.tokenAddress, t.decimals);
+
+  const where = {
+    userId_chain_tokenAddress: {
+      userId,
+      chain: t.chain,
+      tokenAddress: t.tokenAddress,
+    },
+  };
+  const row = await prisma.tokenBalance.findUnique({ where });
+
+  if (!row || row.lastSeenOnchain == null) {
+    // First observation: baseline only, credit nothing.
+    await prisma.tokenBalance.upsert({
+      where,
+      create: {
+        userId,
+        chain: t.chain,
+        tokenAddress: t.tokenAddress,
+        symbol: t.symbol,
+        decimals: t.decimals,
+        lastSeenOnchain: onchain,
+      },
+      update: { lastSeenOnchain: onchain },
+    });
+    return;
+  }
+
+  const delta = onchain - row.lastSeenOnchain;
+  if (delta > 0) {
+    await prisma.tokenBalance.update({
+      where,
+      data: {
+        deposited: { increment: delta },
+        lastSeenOnchain: onchain,
+      },
+    });
+    console.info(
+      `[deposits] credited ${delta} ${t.symbol} (${t.chain}) to @${username}`
+    );
+  } else if (delta < 0) {
+    await prisma.tokenBalance.update({
+      where,
+      data: { lastSeenOnchain: onchain },
+    });
+  }
 }

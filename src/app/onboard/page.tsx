@@ -33,8 +33,54 @@ export default function OnboardPage() {
 
       <LikeTipAnim />
 
+      <div className="mt-14">
+        <p className="text-sm text-muted">the rules</p>
+        <dl className="mt-4 divide-y divide-[#222] border-y border-[#222]">
+          <div className="grid gap-1 py-4 sm:grid-cols-[7rem_1fr] sm:gap-6">
+            <dt className="text-muted">amounts</dt>
+            <dd>
+              you set each one. minimum ${config.minTipUsd} per action.
+            </dd>
+          </div>
+          <div className="grid gap-1 py-4 sm:grid-cols-[7rem_1fr] sm:gap-6">
+            <dt className="text-muted">replies</dt>
+            <dd>
+              only tip when they contain your trigger — default
+              &quot;lfg&quot;. yours can be any word or emoji.
+            </dd>
+          </div>
+          <div className="grid gap-1 py-4 sm:grid-cols-[7rem_1fr] sm:gap-6">
+            <dt className="text-muted">super tip</dt>
+            <dd>
+              a reply or qt with your super-tip trigger — default 🐂 — pays
+              your bigger super-tip amount.
+            </dd>
+          </div>
+          <div className="grid gap-1 py-4 sm:grid-cols-[7rem_1fr] sm:gap-6">
+            <dt className="text-muted">deposit</dt>
+            <dd>minimum ${config.minDepositUsd}.</dd>
+          </div>
+          <div className="grid gap-1 py-4 sm:grid-cols-[7rem_1fr] sm:gap-6">
+            <dt className="text-muted">wallet</dt>
+            <dd>log in with x. privy creates your wallet.</dd>
+          </div>
+          <div className="grid gap-1 py-4 sm:grid-cols-[7rem_1fr] sm:gap-6">
+            <dt className="text-muted">claims</dt>
+            <dd>
+              recipients claim at the withdraw page — they can check waiting
+              tips by x username before logging in. unclaimed tips return to
+              you after 30 days.
+            </dd>
+          </div>
+          <div className="grid gap-1 py-4 sm:grid-cols-[7rem_1fr] sm:gap-6">
+            <dt className="text-muted">chains</dt>
+            <dd>any coin, any chain is coming. today: $ansem on solana.</dd>
+          </div>
+        </dl>
+      </div>
+
       <p className="mt-10 max-w-lg text-muted">
-        invited: <span className="text-white">{invited}</span>
+        invite-only. invited: <span className="text-white">{invited}</span>
       </p>
       <p className="mt-2 max-w-lg text-muted">
         log in as you — you must be on the list.

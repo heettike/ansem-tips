@@ -22,6 +22,17 @@ type ReceivedTip = {
   tweetUrl: string | null;
 };
 
+type TokenBalanceRow = {
+  chain: string;
+  tokenAddress: string;
+  symbol: string;
+  decimals: number;
+  deposited: number;
+  withdrawable: number;
+};
+
+const DEFAULT_TOKEN = "ansem:solana:";
+
 const EMPTY_BALANCE: BalanceView = {
   deposited: 0,
   withdrawable: 0,
@@ -46,6 +57,8 @@ export default function WithdrawPage() {
   const [checkName, setCheckName] = useState("");
   const [checkResult, setCheckResult] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
+  const [tokenBalances, setTokenBalances] = useState<TokenBalanceRow[]>([]);
+  const [selectedToken, setSelectedToken] = useState(DEFAULT_TOKEN);
 
   async function refreshBalance(u: string) {
     const res = await fetch(
@@ -56,6 +69,11 @@ export default function WithdrawPage() {
       setBalance(data.balance);
       setAmount(Number(data.balance.withdrawable) || 0);
       if (data.balance.walletAddress) setToAddress(data.balance.walletAddress);
+    }
+    if (data.ok && Array.isArray(data.tokenBalances)) {
+      setTokenBalances(
+        data.tokenBalances.filter((t: TokenBalanceRow) => t.withdrawable > 0)
+      );
     }
   }
 
@@ -129,12 +147,23 @@ export default function WithdrawPage() {
     setStatusHtml(null);
     setStatusError(null);
     try {
+      const picked = tokenBalances.find(
+        (t) => `${t.symbol}:${t.chain}:${t.tokenAddress}` === selectedToken
+      );
       const res = await fetch("/api/withdraw", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           toAddress,
           amount,
+          ...(picked
+            ? {
+                chain: picked.chain,
+                tokenAddress: picked.tokenAddress,
+                tokenSymbol: picked.symbol,
+                tokenDecimals: picked.decimals,
+              }
+            : {}),
           ...(userId ? { userId } : {}),
           ...(username ? { xUsername: username } : {}),
         }),
@@ -142,7 +171,13 @@ export default function WithdrawPage() {
       const data = await res.json();
       if (data.ok && data.result?.success && data.result.txSig) {
         const sig = data.result.txSig as string;
-        const url = `https://solscan.io/tx/${sig}`;
+        const explorers: Record<string, string> = {
+          base: "https://basescan.org/tx/",
+          bsc: "https://bscscan.com/tx/",
+        };
+        const url = `${
+          (picked && explorers[picked.chain]) || "https://solscan.io/tx/"
+        }${sig}`;
         setStatusHtml(
           `sent — <a href="${url}" target="_blank" rel="noreferrer" class="text-accent hover:underline">view receipt</a>`
         );
@@ -259,6 +294,43 @@ export default function WithdrawPage() {
 
       <form onSubmit={onWithdraw} className="mt-16 space-y-6 border-t border-[#222] pt-12">
         <p className="display text-3xl">cash out</p>
+        {tokenBalances.length > 0 && (
+          <label className="block">
+            <span className="mb-2 block text-sm text-muted">
+              coin{" "}
+              <span className="opacity-70">
+                (one withdraw per coin — pick which to cash out)
+              </span>
+            </span>
+            <select
+              className="input"
+              value={selectedToken}
+              onChange={(e) => {
+                setSelectedToken(e.target.value);
+                const t = tokenBalances.find(
+                  (row) =>
+                    `${row.symbol}:${row.chain}:${row.tokenAddress}` ===
+                    e.target.value
+                );
+                setAmount(
+                  t ? t.withdrawable : Number(balance.withdrawable) || 0
+                );
+              }}
+            >
+              <option value={DEFAULT_TOKEN}>
+                $ansem on solana ({balance.withdrawable.toFixed(2)})
+              </option>
+              {tokenBalances.map((t) => (
+                <option
+                  key={`${t.chain}:${t.tokenAddress}`}
+                  value={`${t.symbol}:${t.chain}:${t.tokenAddress}`}
+                >
+                  {t.symbol} on {t.chain} ({t.withdrawable.toFixed(4)})
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <label className="block">
           <span className="mb-2 block text-sm text-muted">
             destination wallet

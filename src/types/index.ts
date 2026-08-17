@@ -33,6 +33,15 @@ export interface TipAmountSettings {
   followAmount: number;
   quoteAmount: number;
   superTipAmount: number;
+  /** Case-insensitive comment trigger; emoji-only allowed */
+  commentTrigger?: string;
+  /** Comments/QTs with this upgrade to super_tip */
+  superTipTrigger?: string;
+  /** Tip token; empty tipTokenAddress = default $ansem on solana */
+  tipChain?: string;
+  tipTokenAddress?: string;
+  tipTokenSymbol?: string;
+  tipTokenDecimals?: number;
   enabled: boolean;
 }
 

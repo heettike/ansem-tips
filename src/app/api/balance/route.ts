@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
     if (username) {
       const user = await prisma.user.findFirst({
         where: { username },
-        include: { balance: true },
+        include: { balance: true, tokenBalances: true },
       });
 
       if (user?.balance) {
@@ -53,6 +53,16 @@ export async function GET(req: NextRequest) {
             walletAddress: user.walletAddress,
             onchain,
           },
+          tokenBalances: user.tokenBalances
+            .filter((t) => t.deposited > 0 || t.withdrawable > 0)
+            .map((t) => ({
+              chain: t.chain,
+              tokenAddress: t.tokenAddress,
+              symbol: t.symbol,
+              decimals: t.decimals,
+              deposited: t.deposited,
+              withdrawable: t.withdrawable,
+            })),
         });
       }
     }

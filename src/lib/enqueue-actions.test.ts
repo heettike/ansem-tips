@@ -82,6 +82,8 @@ function tipper(overrides: Partial<EnqueueTipper> = {}): EnqueueTipper {
       followAmount: 0.01,
       quoteAmount: 0.01,
       superTipAmount: 0.05,
+      commentTrigger: "lfg",
+      superTipTrigger: "🐂",
     },
     ...overrides,
   };
@@ -269,5 +271,33 @@ describe("enqueueFetchedActions — lfg comment gate", () => {
     });
     assert.equal(result.enqueued, 1);
     assert.equal(mem.tips.length, 1);
+  });
+});
+
+describe("enqueueFetchedActions — per-tipper triggers", () => {
+  it("emoji-only comment trigger tips on emoji, not on lfg", async () => {
+    const mem = memoryStore();
+    const t = tipper();
+    t.tipSettings = { ...t.tipSettings, commentTrigger: "🔥" };
+    const result = await enqueueFetchedActions({
+      tipper: t,
+      actions: [comment("e1", "this 🔥"), comment("e2", "lfg brother")],
+      store: mem.store,
+    });
+    assert.equal(result.enqueued, 1);
+    assert.equal(mem.tips[0].actionId, "comment_e1");
+  });
+
+  it("custom super-tip trigger upgrades comments", async () => {
+    const mem = memoryStore();
+    const t = tipper();
+    t.tipSettings = { ...t.tipSettings, superTipTrigger: "🚀" };
+    const result = await enqueueFetchedActions({
+      tipper: t,
+      actions: [comment("s1", "to the moon 🚀")],
+      store: mem.store,
+    });
+    assert.equal(result.enqueued, 1);
+    assert.ok(mem.processed.has("comment_s1"));
   });
 });

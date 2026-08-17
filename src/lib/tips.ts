@@ -6,6 +6,15 @@ import {
 } from "@/lib/twitter";
 import { withdrawFromHotWallet } from "@/lib/solana";
 import { sendTelegramAlert } from "@/lib/telegram";
+import { transferSplFromHotWallet } from "@/lib/solana";
+import { transferErc20FromHotWallet } from "@/lib/evm";
+import { chainInfo, isDefaultToken } from "@/lib/chains";
+import {
+  debitTokenWithdrawal,
+  getTokenBalance,
+  settleTokenTipLedger,
+  type TokenKey,
+} from "@/lib/token-ledger";
 import {
   createPrivyAdmin,
   ensureRecipientPrivyWallet,
@@ -64,6 +73,9 @@ function prismaEnqueueStore(): EnqueueStore {
           toXUsername: row.toXUsername,
           toXId: row.toXId,
           amount: row.amount,
+          chain: row.chain ?? "solana",
+          tokenAddress: row.tokenAddress ?? "",
+          tokenSymbol: row.tokenSymbol ?? "ansem",
           status: "pending",
           metadata: row.metadata,
         },
@@ -385,7 +397,7 @@ export async function processTip(tipId: string): Promise<ProcessTipResult> {
   const tip = await prisma.tip.findUnique({
     where: { id: tipId },
     include: {
-      fromUser: { include: { balance: true } },
+      fromUser: { include: { balance: true, tipSettings: true } },
       toUser: true,
     },
   });
@@ -433,6 +445,39 @@ export async function processTip(tipId: string): Promise<ProcessTipResult> {
       `[ALERT] Insufficient balance for tip ${tipId}: have ${deposited}, need ${tip.amount}`
     );
     return { tipId, status: "failed", error: "Insufficient tipper balance" };
+  }
+
+  // Non-default tokens settle to the per-token ledger; payout happens at withdraw.
+  if (!isDefaultToken(tip.chain, tip.tokenAddress)) {
+    if (!tip.toUserId) {
+      await prisma.tip.update({ where: { id: tipId }, data: { status: "failed" } });
+      return { tipId, status: "failed", error: "No recipient for token tip" };
+    }
+    const key: TokenKey = {
+      chain: tip.chain,
+      tokenAddress: tip.tokenAddress,
+      symbol: tip.tokenSymbol,
+      decimals: tip.fromUser.tipSettings?.tipTokenDecimals ?? 18,
+    };
+    const ok = await settleTokenTipLedger({
+      fromUserId: tip.fromUserId,
+      toUserId: tip.toUserId,
+      key,
+      amount: tip.amount,
+    });
+    if (!ok) {
+      await prisma.tip.update({ where: { id: tipId }, data: { status: "failed" } });
+      await sendTelegramAlert(
+        `tip failed: @${tip.fromUser.username} lacks ${tip.amount} ${tip.tokenSymbol} (${tip.chain})`
+      );
+      return { tipId, status: "failed", error: "Insufficient token balance" };
+    }
+    const txSig = `ledger_${tipId}`;
+    await prisma.tip.update({
+      where: { id: tipId },
+      data: { status: "completed", txSig },
+    });
+    return { tipId, status: "completed", txSig, onChain: false };
   }
 
   const settled = await settlePendingTip(
@@ -539,10 +584,16 @@ export async function processPendingTips(limit = 25): Promise<ProcessTipResult[]
 export async function withdrawForUser(
   userId: string,
   toAddress: string,
-  amount: number
+  amount: number,
+  token?: TokenKey
 ): Promise<WithdrawResult> {
   if (amount <= 0) {
     return { success: false, amount, toAddress, error: "Amount must be > 0" };
+  }
+
+  // Non-default tokens: per-token ledger + per-chain custody payout.
+  if (token && !isDefaultToken(token.chain, token.tokenAddress)) {
+    return withdrawTokenForUser(userId, toAddress, amount, token);
   }
 
   const balance = await prisma.balance.findUnique({ where: { userId } });
@@ -602,6 +653,93 @@ export async function withdrawForUser(
   }
 }
 
+/** Multi-chain token withdraw: TokenBalance ledger + SPL or ERC-20 custody payout. */
+async function withdrawTokenForUser(
+  userId: string,
+  toAddress: string,
+  amount: number,
+  token: TokenKey
+): Promise<WithdrawResult> {
+  const info = chainInfo(token.chain);
+  if (!info) {
+    return { success: false, amount, toAddress, error: `Unknown chain: ${token.chain}` };
+  }
+  const bal = await getTokenBalance(userId, token);
+  if (!bal || bal.withdrawable < amount) {
+    return {
+      success: false,
+      amount,
+      toAddress,
+      error: "Nothing to withdraw yet — your tip balance is 0 (or too low for that amount).",
+    };
+  }
+
+  try {
+    const result =
+      info.kind === "evm"
+        ? await transferErc20FromHotWallet({
+            chain: token.chain,
+            tokenAddress: token.tokenAddress,
+            toAddress,
+            amount,
+            decimals: token.decimals,
+          })
+        : await transferSplFromHotWallet({
+            mintAddress: token.tokenAddress,
+            decimals: token.decimals,
+            toAddress,
+            amount,
+          });
+
+    await prisma.$transaction(async (tx) => {
+      await tx.tokenBalance.update({
+        where: {
+          userId_chain_tokenAddress: {
+            userId,
+            chain: token.chain,
+            tokenAddress: token.tokenAddress,
+          },
+        },
+        data: { withdrawable: { decrement: amount } },
+      });
+      await tx.user.update({
+        where: { id: userId },
+        data: { lastActiveAt: new Date() },
+      });
+      await tx.withdrawal.create({
+        data: {
+          userId,
+          amount,
+          chain: token.chain,
+          tokenAddress: token.tokenAddress,
+          tokenSymbol: token.symbol,
+          toAddress,
+          txSig: result.signature,
+          status: "completed",
+        },
+      });
+    });
+    return { success: true, txSig: result.signature, amount, toAddress, demo: false };
+  } catch (e) {
+    return {
+      success: false,
+      amount,
+      toAddress,
+      error: e instanceof Error ? e.message : "Withdraw failed",
+    };
+  }
+}
+
+function tokenSettingsUpdate(settings: TipAmountSettings) {
+  if (!settings.tipChain) return {};
+  return {
+    tipChain: settings.tipChain,
+    tipTokenAddress: settings.tipTokenAddress ?? "",
+    tipTokenSymbol: settings.tipTokenSymbol || "ansem",
+    tipTokenDecimals: settings.tipTokenDecimals ?? 6,
+  };
+}
+
 /** Persist tipper tip amount settings (allowlisted tippers only). */
 export async function saveTipSettings(
   userId: string,
@@ -616,6 +754,9 @@ export async function saveTipSettings(
       followAmount: Math.max(config.minTipUsd, settings.followAmount),
       quoteAmount: Math.max(config.minTipUsd, settings.quoteAmount),
       superTipAmount: Math.max(config.minTipUsd, settings.superTipAmount),
+      ...(settings.commentTrigger ? { commentTrigger: settings.commentTrigger } : {}),
+      ...(settings.superTipTrigger ? { superTipTrigger: settings.superTipTrigger } : {}),
+      ...tokenSettingsUpdate(settings),
       enabled: settings.enabled,
     },
     update: {
@@ -624,6 +765,9 @@ export async function saveTipSettings(
       followAmount: Math.max(config.minTipUsd, settings.followAmount),
       quoteAmount: Math.max(config.minTipUsd, settings.quoteAmount),
       superTipAmount: Math.max(config.minTipUsd, settings.superTipAmount),
+      ...(settings.commentTrigger ? { commentTrigger: settings.commentTrigger } : {}),
+      ...(settings.superTipTrigger ? { superTipTrigger: settings.superTipTrigger } : {}),
+      ...tokenSettingsUpdate(settings),
       enabled: settings.enabled,
     },
   });
@@ -633,6 +777,12 @@ export async function saveTipSettings(
     followAmount: updated.followAmount,
     quoteAmount: updated.quoteAmount,
     superTipAmount: updated.superTipAmount,
+    commentTrigger: updated.commentTrigger,
+    superTipTrigger: updated.superTipTrigger,
+    tipChain: updated.tipChain,
+    tipTokenAddress: updated.tipTokenAddress,
+    tipTokenSymbol: updated.tipTokenSymbol,
+    tipTokenDecimals: updated.tipTokenDecimals,
     enabled: updated.enabled,
   };
 }

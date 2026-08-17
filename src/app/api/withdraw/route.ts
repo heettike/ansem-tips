@@ -10,8 +10,12 @@ export const dynamic = "force-dynamic";
 const bodySchema = z.object({
   userId: z.string().optional(),
   xUsername: z.string().optional(),
-  toAddress: z.string().min(32).max(64),
+  toAddress: z.string().min(20).max(64),
   amount: z.number().positive(),
+  chain: z.enum(["solana", "base", "bsc", "robinhood"]).optional(),
+  tokenAddress: z.string().trim().max(64).optional(),
+  tokenSymbol: z.string().trim().max(20).optional(),
+  tokenDecimals: z.number().int().min(0).max(18).optional(),
 });
 
 /**
@@ -75,7 +79,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const result = await withdrawForUser(uid, toAddress, amount);
+    const token =
+      parsed.data.chain && parsed.data.tokenAddress
+        ? {
+            chain: parsed.data.chain,
+            tokenAddress: parsed.data.tokenAddress,
+            symbol: parsed.data.tokenSymbol || parsed.data.tokenAddress.slice(0, 8),
+            decimals: parsed.data.tokenDecimals ?? 18,
+          }
+        : undefined;
+    const result = await withdrawForUser(uid, toAddress, amount, token);
     if (
       !result.success &&
       result.error &&

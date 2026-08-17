@@ -61,6 +61,12 @@ export function TipSettingsForm({
           followAmount: data.settings.followAmount,
           quoteAmount: data.settings.quoteAmount,
           superTipAmount: data.settings.superTipAmount,
+          commentTrigger: data.settings.commentTrigger || "lfg",
+          superTipTrigger: data.settings.superTipTrigger || "🐂",
+          tipChain: data.settings.tipChain || "solana",
+          tipTokenAddress: data.settings.tipTokenAddress || "",
+          tipTokenSymbol: data.settings.tipTokenSymbol || "ansem",
+          tipTokenDecimals: data.settings.tipTokenDecimals ?? 6,
           enabled: data.settings.enabled,
         });
       } catch {
@@ -72,7 +78,10 @@ export function TipSettingsForm({
     };
   }, [authToken]);
 
-  function update(key: keyof TipAmountSettings, value: number | boolean) {
+  function update(
+    key: keyof TipAmountSettings,
+    value: number | boolean | string
+  ) {
     setSettings((s) => ({ ...s, [key]: value }));
     setSaved(false);
   }
@@ -151,6 +160,104 @@ export function TipSettingsForm({
             />
           </label>
         ))}
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <label className="block">
+          <span className="mb-2 block text-sm text-muted">
+            reply trigger{" "}
+            <span className="opacity-70">
+              (replies only tip when they contain this — word or emoji)
+            </span>
+          </span>
+          <input
+            className="input"
+            type="text"
+            maxLength={50}
+            value={settings.commentTrigger ?? "lfg"}
+            onChange={(e) => update("commentTrigger", e.target.value)}
+          />
+        </label>
+        <label className="block">
+          <span className="mb-2 block text-sm text-muted">
+            super tip trigger{" "}
+            <span className="opacity-70">
+              (replies or qts with this pay the super tip)
+            </span>
+          </span>
+          <input
+            className="input"
+            type="text"
+            maxLength={50}
+            value={settings.superTipTrigger ?? "🐂"}
+            onChange={(e) => update("superTipTrigger", e.target.value)}
+          />
+        </label>
+      </div>
+
+      <div className="space-y-4 border-t border-[#222] pt-5">
+        <p className="text-sm text-muted">
+          tip token{" "}
+          <span className="opacity-70">
+            (default is $ansem on solana — pick any coin on any chain)
+          </span>
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="block">
+            <span className="mb-2 block text-sm text-muted">chain</span>
+            <select
+              className="input"
+              value={settings.tipChain ?? "solana"}
+              onChange={(e) => update("tipChain", e.target.value)}
+            >
+              <option value="solana">solana</option>
+              <option value="base">base</option>
+              <option value="bsc">bnb chain</option>
+              <option value="robinhood">robinhood chain</option>
+            </select>
+          </label>
+          <label className="block">
+            <span className="mb-2 block text-sm text-muted">
+              token address{" "}
+              <span className="opacity-70">(blank = $ansem)</span>
+            </span>
+            <input
+              className="input"
+              type="text"
+              maxLength={64}
+              placeholder="mint or contract address"
+              value={settings.tipTokenAddress ?? ""}
+              onChange={(e) => update("tipTokenAddress", e.target.value.trim())}
+            />
+          </label>
+          <label className="block">
+            <span className="mb-2 block text-sm text-muted">symbol</span>
+            <input
+              className="input"
+              type="text"
+              maxLength={20}
+              value={settings.tipTokenSymbol ?? "ansem"}
+              onChange={(e) => update("tipTokenSymbol", e.target.value.trim())}
+            />
+          </label>
+          <label className="block">
+            <span className="mb-2 block text-sm text-muted">decimals</span>
+            <input
+              className="input"
+              type="number"
+              min={0}
+              max={18}
+              step="1"
+              value={settings.tipTokenDecimals ?? 6}
+              onChange={(e) =>
+                update(
+                  "tipTokenDecimals",
+                  Math.max(0, Math.min(18, Number(e.target.value) || 0))
+                )
+              }
+            />
+          </label>
+        </div>
       </div>
 
       <button

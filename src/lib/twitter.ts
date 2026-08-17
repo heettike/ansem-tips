@@ -15,6 +15,12 @@ function hasLfg(text?: string): boolean {
   return Boolean(text && LFG.test(text));
 }
 
+/** Per-tipper trigger match: case-insensitive substring; emoji triggers work as plain includes. */
+function matchesTrigger(text?: string | null, trigger?: string | null): boolean {
+  if (!text || !trigger?.trim()) return false;
+  return text.toLowerCase().includes(trigger.trim().toLowerCase());
+}
+
 /**
  * X API v2 client.
  * Prefer per-tipper user-context OAuth access tokens (stored after Privy login)
@@ -268,4 +274,4 @@ export async function refreshTwitterUserToken(
   }
 }
 
-export { hasBullEmoji, hasLfg, BULL };
+export { hasBullEmoji, hasLfg, matchesTrigger, BULL };
