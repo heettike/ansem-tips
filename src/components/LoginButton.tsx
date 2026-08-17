@@ -1,12 +1,12 @@
 "use client";
 
-import { publicEnv } from "@/lib/publicEnv";
-
-import dynamic from "next/dynamic";
+import { useEffect, useRef } from "react";
+import { useXSession } from "@/components/XSession";
 
 type Props = {
   label?: string;
   className?: string;
+  /** kept for call-site compatibility; the provider owns the role now */
   role?: "tipper" | "recipient";
   onAuthed?: (info: {
     privyDid: string;
@@ -15,50 +15,60 @@ type Props = {
   }) => void;
 };
 
-const PrivyLoginButton = dynamic(() => import("./PrivyLoginButton"), {
-  ssr: false,
-});
-
 /**
- * Privy X login. Demo impersonation only when NEXT_PUBLIC_DEMO_MODE=true.
- * Missing app id must not silently log in as heettike.
+ * Session-state button. Must render inside <XSessionProvider>.
+ * out → login CTA · in → signed-in chip + log out · loading → quiet.
+ * onAuthed fires automatically when a session lands (fresh login or
+ * restored on page load), so pages can keep their data loading as-is.
  */
 export function LoginButton({
   label = "log in with x",
   className = "btn-primary",
-  role = "tipper",
   onAuthed,
 }: Props) {
-  const appId = publicEnv.privyAppId;
-  const forceDemo = publicEnv.demoMode;
+  const session = useXSession();
+  const notifiedFor = useRef<string | null>(null);
 
-  if (forceDemo) {
+  useEffect(() => {
+    if (session.status !== "in" || !session.privyDid) return;
+    if (notifiedFor.current === session.privyDid) return;
+    notifiedFor.current = session.privyDid;
+    onAuthed?.({
+      privyDid: session.privyDid,
+      username: session.username ?? undefined,
+      walletAddress: session.walletAddress,
+    });
+  }, [session.status, session.privyDid, session.username, session.walletAddress, onAuthed]);
+
+  if (session.status === "loading") {
     return (
-      <button
-        type="button"
-        className={className}
-        onClick={async () => {
-          onAuthed?.({
-            privyDid: "did:privy:demo-heettike",
-            username: "heettike",
-            walletAddress: "DemoTipper1111111111111111111111111111111",
-          });
-          await fetch("/api/auth/sync", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: "Bearer demo:heettike",
-            },
-            body: JSON.stringify({ role }),
-          }).catch(() => null);
-        }}
-      >
-        {label} (demo)
+      <button type="button" className={className} disabled>
+        one second…
       </button>
     );
   }
 
-  if (!appId) {
+  if (session.status === "in") {
+    return (
+      <span className="inline-flex flex-wrap items-center gap-3">
+        <span className="pill">
+          {session.username ? `signed in as @${session.username}` : "signed in"}
+        </span>
+        <button
+          type="button"
+          className="text-sm text-muted underline-offset-2 hover:underline"
+          onClick={() => {
+            notifiedFor.current = null;
+            session.logout();
+          }}
+        >
+          log out
+        </button>
+      </span>
+    );
+  }
+
+  if (!session.configured) {
     return (
       <button type="button" className={className} disabled>
         {label}
@@ -67,11 +77,8 @@ export function LoginButton({
   }
 
   return (
-    <PrivyLoginButton
-      label={label}
-      className={className}
-      role={role}
-      onAuthed={onAuthed}
-    />
+    <button type="button" className={className} onClick={session.login}>
+      {label}
+    </button>
   );
 }

@@ -53,7 +53,7 @@ let failures = 0;
 for (const file of files) {
   const text = readFileSync(file, "utf8");
   for (const re of ban) {
-    if (re.source.includes("DemoTipper") && file.endsWith("LoginButton.tsx")) {
+    if (re.source.includes("DemoTipper") && file.endsWith("XSession.tsx")) {
       continue;
     }
     if (re.test(text)) {
@@ -74,7 +74,7 @@ const fund = readFileSync("src/components/OnboardFund.tsx", "utf8");
 const anim = readFileSync("src/components/LikeTipAnim.tsx", "utf8");
 const amounts = readFileSync("src/components/TipSettingsForm.tsx", "utf8");
 const liveForm = readFileSync("src/components/LiveTipSettingsForm.tsx", "utf8");
-const login = readFileSync("src/components/LoginButton.tsx", "utf8");
+const login = readFileSync("src/components/XSession.tsx", "utf8");
 const dashPage = readFileSync("src/app/dashboard/page.tsx", "utf8");
 const dashGate = readFileSync("src/components/DashboardGate.tsx", "utf8");
 
@@ -168,8 +168,8 @@ const must = [
   [liveForm, /loading tip amounts/, "no permanent loading tip amounts empty", true],
   [liveForm, /!appId \|\| forceDemo/, "missing privy id must not demo-impersonate", true],
   [login, /publicEnv\.privyAppId/, "login uses NEXT_PUBLIC_PRIVY_APP_ID"],
-  [login, /if \(forceDemo\)/, "demo impersonation only when demo mode"],
-  [login, /!appId \|\| forceDemo/, "missing privy id must not become demo heettike", true],
+  [login, /if \(publicEnv\.demoMode\)/, "demo impersonation only when demo mode"],
+  [login, /!appId \|\| publicEnv\.demoMode/, "missing privy id must not become demo heettike", true],
   [dashPage, /prisma|findFirst/, "dash page must not ssr a tipper row", true],
   [dashPage, /heettike/, "dash page must not hardcode first tipper", true],
   [dashGate, /log in as you to see your tips/, "dash gated until visitor login"],

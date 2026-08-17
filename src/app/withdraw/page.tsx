@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { BalanceCard } from "@/components/BalanceCard";
 import { LoginButton } from "@/components/LoginButton";
+import { XSessionProvider, useXSession } from "@/components/XSession";
 import { ReceivedTipsFeed } from "@/components/ReceivedTipsFeed";
 import {
   WithdrawalHistory,
@@ -42,6 +43,15 @@ const EMPTY_BALANCE: BalanceView = {
 };
 
 export default function WithdrawPage() {
+  return (
+    <XSessionProvider role="recipient">
+      <WithdrawInner />
+    </XSessionProvider>
+  );
+}
+
+function WithdrawInner() {
+  const session = useXSession();
   const [toAddress, setToAddress] = useState("");
   const [amount, setAmount] = useState(0);
   const [statusHtml, setStatusHtml] = useState<string | null>(null);
@@ -239,7 +249,7 @@ export default function WithdrawPage() {
               setUserId(null);
             }}
           />
-          {!username && (
+          {session.status === "out" && !username && (
             <>
               <form onSubmit={onCheckTips} className="mt-8 flex gap-3">
                 <input

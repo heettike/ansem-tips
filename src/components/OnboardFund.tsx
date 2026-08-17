@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import Link from "next/link";
 import { LoginButton } from "@/components/LoginButton";
+import { XSessionProvider, useXSession } from "@/components/XSession";
 import { LiveTipSettingsForm } from "@/components/LiveTipSettingsForm";
 import type { TipAmountSettings } from "@/types";
 
@@ -19,6 +20,25 @@ export function OnboardFund({
   allowlist: string[];
   initial: TipAmountSettings;
 }) {
+  return (
+    <XSessionProvider role="tipper">
+      <OnboardFundInner minDepositUsd={minDepositUsd} minTip={minTip} allowlist={allowlist} initial={initial} />
+    </XSessionProvider>
+  );
+}
+
+function OnboardFundInner({
+  minDepositUsd,
+  minTip,
+  allowlist,
+  initial,
+}: {
+  minDepositUsd: number;
+  minTip: number;
+  allowlist: string[];
+  initial: TipAmountSettings;
+}) {
+  const session = useXSession();
   const [username, setUsername] = useState<string | null>(null);
   const [wallet, setWallet] = useState<string | null>(null);
   const [deposited, setDeposited] = useState<number | null>(null);
@@ -48,7 +68,9 @@ export function OnboardFund({
   );
 
   const allowed =
-    !!username && allowlist.includes(username.replace(/^@/, "").toLowerCase());
+    (!!username &&
+      allowlist.includes(username.replace(/^@/, "").toLowerCase())) ||
+    session.accessStatus === "approved";
 
   return (
     <>
@@ -79,8 +101,9 @@ export function OnboardFund({
           </div>
           {username && <p className="mt-3 text-sm mark">@{username}</p>}
           {username && !allowed && (
-            <div className="mt-6 rounded-2xl border border-danger/30 p-4 text-sm text-danger">
-              you&apos;re not on the tipper list. ask whoever runs this.
+            <div className="mt-6 rounded-2xl border border-black/10 p-4 text-sm text-muted">
+              you&apos;re on the waitlist — we approve tippers by hand. your
+              deposit address activates once you&apos;re in.
             </div>
           )}
         </li>

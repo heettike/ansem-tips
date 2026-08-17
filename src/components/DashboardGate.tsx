@@ -5,6 +5,7 @@ import Link from "next/link";
 import { BalanceCard } from "@/components/BalanceCard";
 import { TipsTable } from "@/components/TipsTable";
 import { LoginButton } from "@/components/LoginButton";
+import { XSessionProvider, useXSession } from "@/components/XSession";
 import type { BalanceView } from "@/types";
 
 const EMPTY_BALANCE: BalanceView = {
@@ -16,6 +17,15 @@ const EMPTY_BALANCE: BalanceView = {
 };
 
 export function DashboardGate({ allowlist }: { allowlist: string[] }) {
+  return (
+    <XSessionProvider role="tipper">
+      <DashboardInner allowlist={allowlist} />
+    </XSessionProvider>
+  );
+}
+
+function DashboardInner({ allowlist }: { allowlist: string[] }) {
+  const session = useXSession();
   const [username, setUsername] = useState<string | null>(null);
   const [balance, setBalance] = useState<BalanceView>(EMPTY_BALANCE);
   const [tips, setTips] = useState<
@@ -36,7 +46,8 @@ export function DashboardGate({ allowlist }: { allowlist: string[] }) {
   const allowed =
     (!!username &&
       allowlist.includes(username.replace(/^@/, "").toLowerCase())) ||
-    accessStatus === "approved";
+    accessStatus === "approved" ||
+    session.accessStatus === "approved";
   const waitlisted = !!username && !allowed;
 
   async function loadMine(u: string) {
