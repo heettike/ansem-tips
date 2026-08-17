@@ -53,26 +53,42 @@ export function LandingStats() {
   ];
 
   return (
-    <section className="px-6 py-24 sm:py-32">
-      <div className="mx-auto max-w-6xl">
-        <p className="text-sm text-muted">right now</p>
+    <>
+      {/* core numbers */}
+      <section className="poster-card">
+        <div className="flex items-center justify-between gap-4">
+          <p className="brand-text">
+            ansem<span className="mark">.tips</span>
+          </p>
+          <span className="pill">right now</span>
+        </div>
 
-        <div className="mt-10 grid gap-x-8 gap-y-12 sm:grid-cols-3">
+        <div className="mt-12 space-y-10">
           {figures.map((f) => (
             <div key={f.label}>
               <p
-                className={`display text-5xl tabular-nums sm:text-7xl ${
+                className={`display text-5xl tabular-nums sm:text-6xl ${
                   f.gold ? "gold" : ""
                 }`}
               >
                 {f.value}
               </p>
-              <p className="mt-3 text-muted">{f.label}</p>
+              <p className="micro-label mt-3">{f.label}</p>
             </div>
           ))}
         </div>
+      </section>
 
-        <ul className="mt-20 divide-y divide-[#222] border-y border-[#222]">
+      {/* allowlisted creators */}
+      <section className="poster-card">
+        <div className="flex items-center justify-between gap-4">
+          <p className="brand-text">
+            ansem<span className="mark">.tips</span>
+          </p>
+          <span className="pill">creators tipping</span>
+        </div>
+
+        <ul className="mt-12 divide-y divide-black/[0.08] border-y border-black/[0.08]">
           {CREATORS.map((handle) => {
             const total = totals.get(handle);
             return (
@@ -89,7 +105,7 @@ export function LandingStats() {
                     width={44}
                     height={44}
                     loading="lazy"
-                    className="h-11 w-11 shrink-0 rounded-full border border-[#222] object-cover"
+                    className="h-11 w-11 shrink-0 rounded-full border border-black/[0.08] object-cover"
                   />
                   <a
                     href={`https://x.com/${handle}`}
@@ -110,7 +126,11 @@ export function LandingStats() {
             );
           })}
         </ul>
-      </div>
-    </section>
+
+        <p className="caption mt-8">
+          any coin, any chain — starting with $ansem on solana.
+        </p>
+      </section>
+    </>
   );
 }

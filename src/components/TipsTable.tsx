@@ -11,11 +11,11 @@ type TipRow = {
 export function TipsTable({ tips }: { tips: TipRow[] }) {
   return (
     <div>
-      <p className="text-sm text-muted">recent tips</p>
+      <p className="micro-label">recent tips</p>
       <div className="mt-6 overflow-x-auto">
         <table className="w-full min-w-[560px] text-left text-sm">
           <thead className="text-muted">
-            <tr className="border-b border-[#222]">
+            <tr className="border-b border-black/[0.08]">
               <th className="pb-3 pr-4 font-medium">action</th>
               <th className="pb-3 pr-4 font-medium">to</th>
               <th className="pb-3 pr-4 font-medium">amount</th>
@@ -25,7 +25,7 @@ export function TipsTable({ tips }: { tips: TipRow[] }) {
           </thead>
           <tbody>
             {tips.map((t) => (
-              <tr key={t.id} className="border-b border-[#222]">
+              <tr key={t.id} className="border-b border-black/[0.08]">
                 <td className="py-4 pr-4">
                   {t.actionType === "super_tip" ? (
                     <span className="mark">🐂 super</span>

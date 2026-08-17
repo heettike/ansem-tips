@@ -24,8 +24,8 @@ export function WithdrawalHistory({
 }) {
   return (
     <div>
-      <p className="text-sm text-muted">past withdrawals</p>
-      <ul className="mt-6 divide-y divide-[#222] border-y border-[#222]">
+      <p className="micro-label">past withdrawals</p>
+      <ul className="mt-6 divide-y divide-black/[0.08] border-y border-black/[0.08]">
         {withdrawals.map((w) => (
           <li
             key={w.id}
@@ -59,7 +59,7 @@ export function WithdrawalHistory({
               href={w.solscanUrl}
               target="_blank"
               rel="noreferrer"
-              className="text-sm text-white underline underline-offset-4 hover:text-accent"
+              className="text-sm text-black underline underline-offset-4 hover:text-accent"
             >
               receipt →
             </a>

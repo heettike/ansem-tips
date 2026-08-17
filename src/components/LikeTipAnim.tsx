@@ -14,7 +14,7 @@ function reducedMotionSnapshot() {
 
 /**
  * poster-diagram: tweet → like → $ansem leaves @you for @them.
- * svg loop, not a video. visualize value: black field, white lines, one green chip.
+ * svg loop, not a video. white field, ink lines, one orange chip.
  */
 export function LikeTipAnim() {
   const reduce = useSyncExternalStore(
@@ -24,7 +24,7 @@ export function LikeTipAnim() {
   );
 
   return (
-    <figure className="like-tip mt-12 border border-[#222] px-4 py-8 sm:px-8">
+    <figure className="like-tip mt-10 rounded-3xl border border-black/[0.08] bg-white px-4 py-8 sm:px-8">
       <svg
         viewBox="0 0 720 360"
         className="mx-auto h-auto w-full max-w-2xl"
@@ -37,15 +37,16 @@ export function LikeTipAnim() {
           y="24"
           width="400"
           height="148"
-          fill="#000"
-          stroke="#ffffff"
+          rx="20"
+          fill="#ffffff"
+          stroke="#000000"
           strokeWidth="1.5"
         />
         <text
           className="like-tip-frame"
           x="184"
           y="64"
-          fill="#6b6b6b"
+          fill="rgba(0,0,0,0.4)"
           fontSize="16"
           fontFamily="Helvetica, Arial, sans-serif"
         >
@@ -55,7 +56,7 @@ export function LikeTipAnim() {
           className="like-tip-frame"
           x="184"
           y="104"
-          fill="#f5b942"
+          fill="#ff4d00"
           fontSize="28"
           fontFamily="Helvetica, Arial, sans-serif"
           fontWeight="700"
@@ -67,15 +68,15 @@ export function LikeTipAnim() {
           cx="192"
           cy="140"
           r="7"
-          fill={reduce ? "#ffffff" : "#000"}
-          stroke={reduce ? "#ffffff" : "#6b6b6b"}
+          fill={reduce ? "#ff4d00" : "#ffffff"}
+          stroke={reduce ? "#ff4d00" : "#999999"}
           strokeWidth="1.5"
         />
         <text
           className="like-tip-like-word"
           x="210"
           y="145"
-          fill={reduce ? "#ffffff" : "#6b6b6b"}
+          fill={reduce ? "#ff4d00" : "#999999"}
           fontSize="16"
           fontFamily="Helvetica, Arial, sans-serif"
           fontWeight="700"
@@ -88,15 +89,15 @@ export function LikeTipAnim() {
             cx="120"
             cy="280"
             r="34"
-            fill="#000"
-            stroke="#ffffff"
+            fill="#ffffff"
+            stroke="#000000"
             strokeWidth="2"
           />
           <text
             x="120"
             y="286"
             textAnchor="middle"
-            fill="#ffffff"
+            fill="#000000"
             fontSize="14"
             fontFamily="Helvetica, Arial, sans-serif"
             fontWeight="700"
@@ -107,15 +108,15 @@ export function LikeTipAnim() {
             cx="600"
             cy="280"
             r="34"
-            fill="#000"
-            stroke="#ffffff"
+            fill="#ffffff"
+            stroke="#000000"
             strokeWidth="2"
           />
           <text
             x="600"
             y="286"
             textAnchor="middle"
-            fill="#ffffff"
+            fill="#000000"
             fontSize="14"
             fontFamily="Helvetica, Arial, sans-serif"
             fontWeight="700"
@@ -130,9 +131,9 @@ export function LikeTipAnim() {
           y1="280"
           x2="566"
           y2="280"
-          stroke="#ffffff"
+          stroke="#000000"
           strokeWidth="1.25"
-          strokeOpacity="0.45"
+          strokeOpacity="0.35"
         />
 
         <g
@@ -164,15 +165,16 @@ export function LikeTipAnim() {
             y="264"
             width="88"
             height="32"
-            fill="#000"
-            stroke="#b6ff3b"
+            rx="16"
+            fill="#ffffff"
+            stroke="#ff4d00"
             strokeWidth="1.5"
           />
           <text
             x="212"
             y="285"
             textAnchor="middle"
-            fill="#b6ff3b"
+            fill="#ff4d00"
             fontSize="14"
             fontFamily="Helvetica, Arial, sans-serif"
             fontWeight="700"
@@ -181,7 +183,7 @@ export function LikeTipAnim() {
           </text>
         </g>
       </svg>
-      <figcaption className="mt-6 text-sm text-muted">
+      <figcaption className="caption mt-6">
         like → $ansem leaves @you for @them
       </figcaption>
     </figure>

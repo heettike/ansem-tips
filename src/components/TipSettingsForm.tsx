@@ -135,7 +135,7 @@ export function TipSettingsForm({
             type="checkbox"
             checked={settings.enabled}
             onChange={(e) => update("enabled", e.target.checked)}
-            className="size-4 accent-[#b6ff3b]"
+            className="size-4 accent-[#ff4d00]"
           />
           on
         </label>
@@ -195,7 +195,7 @@ export function TipSettingsForm({
         </label>
       </div>
 
-      <div className="space-y-4 border-t border-[#222] pt-5">
+      <div className="space-y-4 border-t border-black/[0.08] pt-5">
         <p className="text-sm text-muted">
           tip token{" "}
           <span className="opacity-70">
@@ -269,7 +269,7 @@ export function TipSettingsForm({
       </button>
       {saved && <p className="text-sm mark">saved.</p>}
       {error && (
-        <p className="border border-danger p-3 text-sm text-danger">{error}</p>
+        <p className="rounded-2xl border border-danger/30 p-3 text-sm text-danger">{error}</p>
       )}
     </form>
   );

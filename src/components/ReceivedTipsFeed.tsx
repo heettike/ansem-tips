@@ -24,8 +24,8 @@ const ACTION_LABEL: Record<string, string> = {
 export function ReceivedTipsFeed({ tips }: { tips: ReceivedTip[] }) {
   return (
     <div>
-      <p className="text-sm text-muted">tips you earned</p>
-      <ul className="mt-6 divide-y divide-[#222] border-y border-[#222]">
+      <p className="micro-label">tips you earned</p>
+      <ul className="mt-6 divide-y divide-black/[0.08] border-y border-black/[0.08]">
         {tips.map((t) => {
           const verb = ACTION_LABEL[t.actionType] || t.actionType;
           const isFollow = t.actionType === "follow";

@@ -208,182 +208,196 @@ export default function WithdrawPage() {
   const lifetime = balance.lifetimeReceived || 0;
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-16">
-      <p className="text-sm text-muted">recipient</p>
-      <h1 className="display mt-4 text-4xl sm:text-6xl">
-        withdraw <span className="gold">$ansem</span>
-      </h1>
-      <p className="mt-5 text-muted">
-        log in with x. tips already hit your wallet on-chain. cash out leftover
-        balance here.
-      </p>
+    <div className="mx-auto max-w-2xl space-y-6 px-5 pb-16 pt-6">
+      {/* login + username check */}
+      <section className="poster-card">
+        <div className="flex items-center justify-between gap-4">
+          <p className="brand-text">
+            ansem<span className="mark">.tips</span>
+          </p>
+          <span className="pill">recipient</span>
+        </div>
 
-      <div className="mt-10">
-        <LoginButton
-          label="log in with x"
-          role="recipient"
-          onAuthed={async (info) => {
-            if (info.username) {
-              setUsername(info.username);
-              await refreshAll(info.username);
-            }
-            setToAddress((prev) => prev || info.walletAddress || "");
-            setUserId(null);
-          }}
-        />
-        {!username && (
-          <>
-            <form onSubmit={onCheckTips} className="mt-8 flex gap-3">
-              <input
-                className="input flex-1"
-                placeholder="your x username — check for tips"
-                value={checkName}
-                onChange={(e) => setCheckName(e.target.value)}
-              />
-              <button type="submit" className="btn-primary" disabled={checking}>
-                {checking ? "checking…" : "check"}
-              </button>
-            </form>
-            {checkResult && (
-              <p className="mt-3 text-sm text-muted">{checkResult}</p>
-            )}
-            <p className="mt-4 text-sm text-muted">
-              unclaimed tips return to the creator after 30 days.
-            </p>
-          </>
-        )}
-      </div>
+        <h1 className="display mt-10 text-[clamp(2rem,7vw,3rem)]">
+          withdraw <span className="gold">$ansem</span>
+        </h1>
+        <p className="mt-5 text-muted">
+          log in with x. tips already hit your wallet on-chain. cash out leftover
+          balance here.
+        </p>
 
-      <div className="mt-16 grid gap-10 sm:grid-cols-3">
-        <div>
-          <p className="text-sm text-muted">lifetime</p>
-          <p className="display mt-2 text-3xl gold">${lifetime.toFixed(2)}</p>
-          {livePriceUsd != null && (
-            <p className="mt-2 text-xs text-muted">
-              spot ≈ ${(lifetime * livePriceUsd).toFixed(6)}
-            </p>
+        <div className="mt-8">
+          <LoginButton
+            label="log in with x"
+            role="recipient"
+            onAuthed={async (info) => {
+              if (info.username) {
+                setUsername(info.username);
+                await refreshAll(info.username);
+              }
+              setToAddress((prev) => prev || info.walletAddress || "");
+              setUserId(null);
+            }}
+          />
+          {!username && (
+            <>
+              <form onSubmit={onCheckTips} className="mt-8 flex gap-3">
+                <input
+                  className="input flex-1"
+                  placeholder="your x username — check for tips"
+                  value={checkName}
+                  onChange={(e) => setCheckName(e.target.value)}
+                />
+                <button type="submit" className="btn-primary" disabled={checking}>
+                  {checking ? "checking…" : "check"}
+                </button>
+              </form>
+              {checkResult && (
+                <p className="mt-3 text-sm text-muted">{checkResult}</p>
+              )}
+              <p className="caption mt-4">
+                unclaimed tips return to the creator after 30 days.
+              </p>
+            </>
           )}
         </div>
-        <div>
-          <p className="text-sm text-muted">withdrawable</p>
-          <p className="display mt-2 text-3xl gold">
-            ${balance.withdrawable.toFixed(2)}
-          </p>
-        </div>
-        <div>
-          <p className="text-sm text-muted">withdrawn</p>
-          <p className="display mt-2 text-3xl">${totalWithdrawn.toFixed(2)}</p>
-        </div>
-      </div>
+      </section>
 
-      <div className="mt-16">
+      {/* core numbers */}
+      <section className="poster-card">
+        <div className="grid gap-8 sm:grid-cols-3">
+          <div>
+            <p className="micro-label">lifetime</p>
+            <p className="display mt-2 text-3xl gold">${lifetime.toFixed(2)}</p>
+            {livePriceUsd != null && (
+              <p className="mt-2 text-xs text-muted">
+                spot ≈ ${(lifetime * livePriceUsd).toFixed(6)}
+              </p>
+            )}
+          </div>
+          <div>
+            <p className="micro-label">withdrawable</p>
+            <p className="display mt-2 text-3xl gold">
+              ${balance.withdrawable.toFixed(2)}
+            </p>
+          </div>
+          <div>
+            <p className="micro-label">withdrawn</p>
+            <p className="display mt-2 text-3xl">${totalWithdrawn.toFixed(2)}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="poster-card">
         <BalanceCard
           title="earned balance"
           balance={balance}
           highlight="withdrawable"
         />
-      </div>
+      </section>
 
-      <div className="mt-16">
+      <section className="poster-card">
         <ReceivedTipsFeed tips={tips} />
-      </div>
+      </section>
 
-      <div className="mt-16">
+      <section className="poster-card">
         <WithdrawalHistory withdrawals={withdrawals} />
-      </div>
+      </section>
 
-      <form onSubmit={onWithdraw} className="mt-16 space-y-6 border-t border-[#222] pt-12">
-        <p className="display text-3xl">cash out</p>
-        {tokenBalances.length > 0 && (
+      <section className="poster-card">
+        <form onSubmit={onWithdraw} className="space-y-6">
+          <p className="display text-3xl">cash out</p>
+          {tokenBalances.length > 0 && (
+            <label className="block">
+              <span className="mb-2 block text-sm text-muted">
+                coin{" "}
+                <span className="opacity-70">
+                  (one withdraw per coin — pick which to cash out)
+                </span>
+              </span>
+              <select
+                className="input"
+                value={selectedToken}
+                onChange={(e) => {
+                  setSelectedToken(e.target.value);
+                  const t = tokenBalances.find(
+                    (row) =>
+                      `${row.symbol}:${row.chain}:${row.tokenAddress}` ===
+                      e.target.value
+                  );
+                  setAmount(
+                    t ? t.withdrawable : Number(balance.withdrawable) || 0
+                  );
+                }}
+              >
+                <option value={DEFAULT_TOKEN}>
+                  $ansem on solana ({balance.withdrawable.toFixed(2)})
+                </option>
+                {tokenBalances.map((t) => (
+                  <option
+                    key={`${t.chain}:${t.tokenAddress}`}
+                    value={`${t.symbol}:${t.chain}:${t.tokenAddress}`}
+                  >
+                    {t.symbol} on {t.chain} ({t.withdrawable.toFixed(4)})
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <label className="block">
             <span className="mb-2 block text-sm text-muted">
-              coin{" "}
-              <span className="opacity-70">
-                (one withdraw per coin — pick which to cash out)
-              </span>
+              destination wallet
             </span>
-            <select
+            <input
               className="input"
-              value={selectedToken}
-              onChange={(e) => {
-                setSelectedToken(e.target.value);
-                const t = tokenBalances.find(
-                  (row) =>
-                    `${row.symbol}:${row.chain}:${row.tokenAddress}` ===
-                    e.target.value
-                );
-                setAmount(
-                  t ? t.withdrawable : Number(balance.withdrawable) || 0
-                );
-              }}
-            >
-              <option value={DEFAULT_TOKEN}>
-                $ansem on solana ({balance.withdrawable.toFixed(2)})
-              </option>
-              {tokenBalances.map((t) => (
-                <option
-                  key={`${t.chain}:${t.tokenAddress}`}
-                  value={`${t.symbol}:${t.chain}:${t.tokenAddress}`}
-                >
-                  {t.symbol} on {t.chain} ({t.withdrawable.toFixed(4)})
-                </option>
-              ))}
-            </select>
+              placeholder="your wallet address"
+              value={toAddress}
+              onChange={(e) => setToAddress(e.target.value)}
+              required
+              minLength={32}
+            />
           </label>
-        )}
-        <label className="block">
-          <span className="mb-2 block text-sm text-muted">
-            destination wallet
-          </span>
-          <input
-            className="input"
-            placeholder="your wallet address"
-            value={toAddress}
-            onChange={(e) => setToAddress(e.target.value)}
-            required
-            minLength={32}
-          />
-        </label>
 
-        <label className="block">
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <span className="text-sm text-muted">amount ($ansem)</span>
-            <button
-              type="button"
-              className="text-sm text-accent hover:underline"
-              onClick={() => setAmount(Number(balance.withdrawable) || 0)}
-            >
-              max ({balance.withdrawable.toFixed(2)})
-            </button>
-          </div>
-          <input
-            className="input"
-            type="number"
-            min={0.01}
-            step="0.01"
-            max={balance.withdrawable || undefined}
-            value={amount}
-            onChange={(e) => setAmount(Number(e.target.value))}
-            required
-          />
-        </label>
+          <label className="block">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <span className="text-sm text-muted">amount ($ansem)</span>
+              <button
+                type="button"
+                className="text-sm text-accent hover:underline"
+                onClick={() => setAmount(Number(balance.withdrawable) || 0)}
+              >
+                max ({balance.withdrawable.toFixed(2)})
+              </button>
+            </div>
+            <input
+              className="input"
+              type="number"
+              min={0.01}
+              step="0.01"
+              max={balance.withdrawable || undefined}
+              value={amount}
+              onChange={(e) => setAmount(Number(e.target.value))}
+              required
+            />
+          </label>
 
-        <button type="submit" className="btn-primary" disabled={loading}>
-          {loading ? "sending…" : "withdraw"}
-        </button>
+          <button type="submit" className="btn-primary" disabled={loading}>
+            {loading ? "sending…" : "withdraw"}
+          </button>
 
-        {statusHtml && (
-          <p
-            className="break-all text-sm text-muted"
-            dangerouslySetInnerHTML={{ __html: statusHtml }}
-          />
-        )}
-        {statusError && (
-          <p className="break-all border border-danger p-3 text-sm text-danger">
-            {statusError}
-          </p>
-        )}
-      </form>
+          {statusHtml && (
+            <p
+              className="break-all text-sm text-muted"
+              dangerouslySetInnerHTML={{ __html: statusHtml }}
+            />
+          )}
+          {statusError && (
+            <p className="break-all rounded-2xl border border-danger/30 p-3 text-sm text-danger">
+              {statusError}
+            </p>
+          )}
+        </form>
+      </section>
     </div>
   );
 }

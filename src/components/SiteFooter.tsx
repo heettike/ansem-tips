@@ -11,7 +11,7 @@ export function SiteFooter() {
   }
 
   return (
-    <footer className="px-6 py-10 text-center text-xs text-muted">
+    <footer className="mx-auto max-w-[1200px] px-5 py-10 text-center text-xs text-muted">
       ansem.tips · tip $ansem · the black bull · not financial advice
     </footer>
   );

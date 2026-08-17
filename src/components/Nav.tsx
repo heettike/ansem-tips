@@ -19,18 +19,18 @@ export function Nav() {
 
   return (
     <header className="relative z-40">
-      <div className="mx-auto flex max-w-6xl items-baseline justify-between gap-6 px-6 py-6">
-        <Link href="/" className="text-sm font-bold tracking-tight">
-          ansem.tips
+      <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-6 px-5 py-6">
+        <Link href="/" className="brand-text">
+          ansem<span className="mark">.tips</span>
         </Link>
-        <nav className="flex flex-wrap items-center justify-end gap-x-5 gap-y-2 text-sm">
+        <nav className="flex flex-wrap items-center justify-end gap-2">
           {links.map((l) => {
             const active = pathname.startsWith(l.href);
             return (
               <Link
                 key={l.href}
                 href={l.href}
-                className="link-quiet"
+                className="pill"
                 data-active={active ? "true" : "false"}
               >
                 {l.label}

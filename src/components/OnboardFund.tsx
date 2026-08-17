@@ -52,10 +52,13 @@ export function OnboardFund({
 
   return (
     <>
-      <ol className="mt-16 space-y-12">
-        <li>
-          <p className="text-sm text-muted">01</p>
-          <h2 className="mt-2 text-2xl font-bold tracking-tight">
+      <ol className="space-y-6">
+        <li className="poster-card">
+          <div className="flex items-center justify-between gap-4">
+            <p className="micro-label">step</p>
+            <span className="pill">01</span>
+          </div>
+          <h2 className="mt-6 text-2xl font-bold tracking-tight">
             log in with x
           </h2>
           <p className="mt-3 text-muted">
@@ -76,15 +79,18 @@ export function OnboardFund({
           </div>
           {username && <p className="mt-3 text-sm mark">@{username}</p>}
           {username && !allowed && (
-            <div className="mt-6 border border-danger p-4 text-sm text-danger">
+            <div className="mt-6 rounded-2xl border border-danger/30 p-4 text-sm text-danger">
               you&apos;re not on the tipper list. ask whoever runs this.
             </div>
           )}
         </li>
 
-        <li>
-          <p className="text-sm text-muted">02</p>
-          <h2 className="mt-2 text-2xl font-bold tracking-tight">
+        <li className="poster-card">
+          <div className="flex items-center justify-between gap-4">
+            <p className="micro-label">step</p>
+            <span className="pill">02</span>
+          </div>
+          <h2 className="mt-6 text-2xl font-bold tracking-tight">
             deposit min {minDepositUsd} $ansem
           </h2>
           {username ? (
@@ -98,7 +104,7 @@ export function OnboardFund({
                     : `${deposited.toFixed(2)} $ansem`}
                 </span>
               </p>
-              <div className="mt-5 border border-[#222] p-4 text-sm break-all text-muted">
+              <div className="mt-5 break-all rounded-2xl border border-black/[0.08] bg-[#fafafa] p-4 text-sm text-black/70">
                 {wallet || WALLET_PLACEHOLDER}
               </div>
             </>
@@ -107,8 +113,11 @@ export function OnboardFund({
           )}
         </li>
 
-        <li>
-          <p className="mb-3 text-sm text-muted">03</p>
+        <li className="poster-card">
+          <div className="mb-6 flex items-center justify-between gap-4">
+            <p className="micro-label">step</p>
+            <span className="pill">03</span>
+          </div>
           {username ? (
             <LiveTipSettingsForm initial={initial} minTip={minTip} />
           ) : (
@@ -124,7 +133,7 @@ export function OnboardFund({
         </li>
       </ol>
 
-      <div className="mt-16 flex flex-wrap gap-3">
+      <div className="mt-6 flex flex-wrap gap-3">
         {username ? (
           <Link href="/dashboard" className="btn-primary">
             open dash

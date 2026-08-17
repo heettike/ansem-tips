@@ -67,69 +67,87 @@ export function DashboardGate({ allowlist }: { allowlist: string[] }) {
 
   if (!username) {
     return (
-      <div className="mx-auto max-w-2xl px-6 py-16">
-        <p className="text-sm text-muted">tipper</p>
-        <h1 className="display mt-3 text-4xl sm:text-6xl">your dash</h1>
-        <p className="mt-4 max-w-md text-muted">
-          log in as you to see your tips — not someone else&apos;s.
-        </p>
-        <p className="mt-3 max-w-md text-muted">
-          recipients cash out on{" "}
-          <Link href="/withdraw" className="text-white underline underline-offset-4">
-            withdraw
-          </Link>
-          .
-        </p>
-        <div className="mt-10">
-          <LoginButton
-            label="log in with x"
-            onAuthed={(info) => {
-              const u = info.username
-                ? info.username.replace(/^@/, "").toLowerCase()
-                : null;
-              setUsername(u);
-              if (u) void loadMine(u);
-            }}
-          />
+      <div className="mx-auto max-w-2xl px-5 pb-16 pt-6">
+        <div className="poster-card">
+          <div className="flex items-center justify-between gap-4">
+            <p className="brand-text">
+              ansem<span className="mark">.tips</span>
+            </p>
+            <span className="pill">tipper</span>
+          </div>
+          <h1 className="display mt-10 text-[clamp(2rem,7vw,3rem)]">
+            your dash
+          </h1>
+          <p className="mt-4 max-w-md text-muted">
+            log in as you to see your tips — not someone else&apos;s.
+          </p>
+          <p className="mt-3 max-w-md text-muted">
+            recipients cash out on{" "}
+            <Link
+              href="/withdraw"
+              className="text-black underline underline-offset-4"
+            >
+              withdraw
+            </Link>
+            .
+          </p>
+          <div className="mt-10">
+            <LoginButton
+              label="log in with x"
+              onAuthed={(info) => {
+                const u = info.username
+                  ? info.username.replace(/^@/, "").toLowerCase()
+                  : null;
+                setUsername(u);
+                if (u) void loadMine(u);
+              }}
+            />
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-16">
-      <div className="flex flex-wrap items-end justify-between gap-6">
-        <div>
-          <p className="text-sm text-muted">tipper</p>
-          <h1 className="display mt-3 text-4xl sm:text-6xl">@{username}</h1>
-          <p className="mt-4 max-w-md text-muted">
-            {!allowed
-              ? "you're not on the tipper list. ask whoever runs this."
-              : loaded
-                ? "your balances — real numbers only"
-                : "loading your numbers…"}
-          </p>
-          {error && (
-            <p className="mt-3 max-w-lg break-all text-xs text-danger">
-              {error.slice(0, 160)}
+    <div className="mx-auto max-w-[1200px] space-y-6 px-5 pb-16 pt-6">
+      <div className="poster-card">
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <div>
+            <p className="micro-label">tipper</p>
+            <h1 className="display mt-3 text-[clamp(2rem,6vw,3rem)]">
+              @{username}
+            </h1>
+            <p className="mt-4 max-w-md text-muted">
+              {!allowed
+                ? "you're not on the tipper list. ask whoever runs this."
+                : loaded
+                  ? "your balances — real numbers only"
+                  : "loading your numbers…"}
             </p>
-          )}
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <LoginButton label="log in with x" className="btn-ghost" />
-          <Link href="/onboard" className="btn-ghost">
-            settings
-          </Link>
+            {error && (
+              <p className="mt-3 max-w-lg break-all text-xs text-danger">
+                {error.slice(0, 160)}
+              </p>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <LoginButton label="log in with x" className="btn-ghost" />
+            <Link href="/onboard" className="btn-ghost">
+              settings
+            </Link>
+          </div>
         </div>
       </div>
 
       {allowed && (
         <>
-          <div className="mt-16 grid gap-10 lg:grid-cols-[1fr_1.4fr]">
-            <BalanceCard title="tipper balance" balance={balance} />
-            <div>
-              <p className="text-sm text-muted">what&apos;s running</p>
-              <ul className="mt-5 space-y-3 text-lg text-muted">
+          <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
+            <div className="poster-card">
+              <BalanceCard title="tipper balance" balance={balance} />
+            </div>
+            <div className="poster-card">
+              <p className="micro-label">what&apos;s running</p>
+              <ul className="mt-6 space-y-3 text-lg text-black/70">
                 <li>
                   each like / reply / follow / qt / 🐂 sends $ansem to their
                   wallet on-chain.
@@ -144,7 +162,7 @@ export function DashboardGate({ allowlist }: { allowlist: string[] }) {
             </div>
           </div>
 
-          <div className="mt-16">
+          <div className="poster-card">
             <TipsTable tips={tips} />
           </div>
         </>

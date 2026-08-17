@@ -17,25 +17,41 @@ export default function OnboardPage() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-16">
-      <p className="text-sm text-muted">tipper</p>
-      <h1 className="display mt-4 text-4xl sm:text-6xl">
-        like someone.
-        <br />
-        $ansem leaves your wallet for theirs.
-      </h1>
-      <p className="mt-5 max-w-lg text-lg text-muted">
-        reply, follow, qt — same thing. drop 🐂 and they get more.
-      </p>
-      <p className="mt-4 max-w-lg text-white">
-        each time you like / reply / follow / qt / drop 🐂, we send $ansem from your wallet to theirs.
-      </p>
+    <div className="mx-auto max-w-2xl space-y-6 px-5 pb-16 pt-6">
+      {/* intro poster — mechanic + animation */}
+      <section className="poster-card">
+        <div className="flex items-center justify-between gap-4">
+          <p className="brand-text">
+            ansem<span className="mark">.tips</span>
+          </p>
+          <span className="pill">tipper</span>
+        </div>
 
-      <LikeTipAnim />
+        <h1 className="display mt-10 max-w-[85%] text-[clamp(2rem,7vw,3rem)]">
+          like someone.
+          <br />
+          $ansem leaves your wallet for theirs.
+        </h1>
+        <p className="mt-5 max-w-lg text-lg text-muted">
+          reply, follow, qt — same thing. drop 🐂 and they get more.
+        </p>
+        <p className="mt-4 max-w-lg">
+          each time you like / reply / follow / qt / drop 🐂, we send $ansem from your wallet to theirs.
+        </p>
 
-      <div className="mt-14">
-        <p className="text-sm text-muted">the rules</p>
-        <dl className="mt-4 divide-y divide-[#222] border-y border-[#222]">
+        <LikeTipAnim />
+      </section>
+
+      {/* the rules */}
+      <section className="poster-card">
+        <div className="flex items-center justify-between gap-4">
+          <p className="brand-text">
+            ansem<span className="mark">.tips</span>
+          </p>
+          <span className="pill">the rules</span>
+        </div>
+
+        <dl className="mt-10 divide-y divide-black/[0.08] border-y border-black/[0.08]">
           <div className="grid gap-1 py-4 sm:grid-cols-[7rem_1fr] sm:gap-6">
             <dt className="text-muted">amounts</dt>
             <dd>
@@ -77,14 +93,14 @@ export default function OnboardPage() {
             <dd>any coin, any chain is coming. today: $ansem on solana.</dd>
           </div>
         </dl>
-      </div>
 
-      <p className="mt-10 max-w-lg text-muted">
-        invite-only. invited: <span className="text-white">{invited}</span>
-      </p>
-      <p className="mt-2 max-w-lg text-muted">
-        log in as you — you must be on the list.
-      </p>
+        <p className="mt-8 max-w-lg text-muted">
+          invite-only. invited: <span className="text-black">{invited}</span>
+        </p>
+        <p className="mt-2 max-w-lg text-muted">
+          log in as you — you must be on the list.
+        </p>
+      </section>
 
       <OnboardFund
         minDepositUsd={config.minDepositUsd}

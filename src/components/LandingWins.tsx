@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ShaderCanvas } from "@/components/ShaderCanvas";
 
 const WINS = [
   "listed on coinbase",
@@ -8,55 +9,63 @@ const WINS = [
 
 export function LandingWins() {
   return (
-    <section className="px-6 py-24 sm:py-32">
-      <div className="mx-auto max-w-6xl">
-        <p className="text-sm text-muted">before this</p>
-        <h2 className="display mt-6 text-[clamp(2.25rem,7vw,4.5rem)]">
-          the same engine ran
-          <br />
-          tipping on farcaster.
-        </h2>
-
-        <ul className="mt-12 divide-y divide-[#222] border-y border-[#222]">
-          {WINS.map((w) => (
-            <li key={w} className="py-5 text-xl font-bold sm:text-2xl">
-              {w}
-            </li>
-          ))}
-        </ul>
-
-        <p className="mt-6 text-sm text-muted">
-          tips processed — · value moved —
+    <section className="poster-card poster-card-dark pixel-grid poster-span-2">
+      <div className="flex items-center justify-between gap-4">
+        <p className="brand-text">
+          ansem<span className="mark">.tips</span>
         </p>
+        <span className="pill">before this</span>
+      </div>
 
-        {/* claim + chains — quiet facts, small type */}
-        <div className="mt-24 max-w-xl">
+      <h2 className="display mt-10 max-w-[85%] text-[clamp(2rem,4.5vw,3.25rem)]">
+        the same engine ran
+        <br />
+        tipping on farcaster.
+      </h2>
+
+      <div className="mt-10 grid gap-10 md:grid-cols-2">
+        <div>
+          <ul className="divide-y divide-white/10 border-y border-white/10">
+            {WINS.map((w) => (
+              <li key={w} className="py-5 text-xl font-bold sm:text-2xl">
+                {w}
+              </li>
+            ))}
+          </ul>
+
+          <p className="mt-6 text-sm text-white/40">
+            tips processed — · value moved —
+          </p>
+        </div>
+
+        <div className="shader-frame h-64 md:h-auto md:min-h-[280px]">
+          <ShaderCanvas variant="pixels" className="absolute inset-0" />
+        </div>
+      </div>
+
+      {/* claim + chains — quiet facts, small type */}
+      <div className="mt-16 flex flex-wrap items-end justify-between gap-8">
+        <div className="max-w-xl">
           <p className="text-lg text-white sm:text-xl">
             got tipped? check what&apos;s waiting by your x username — no login
             needed.
           </p>
-          <p className="mt-3 text-muted">
+          <p className="mt-3 text-white/40">
             unclaimed tips return to the creator after 30 days.
           </p>
-          <p className="mt-3 text-muted">
+          <p className="mt-3 text-white/40">
             any coin, any chain — starting with{" "}
             <span className="gold">$ansem</span> on solana.
           </p>
+        </div>
 
-          <div className="mt-10 flex flex-wrap items-center gap-8 text-lg font-bold">
-            <Link
-              href="/withdraw"
-              className="text-white underline decoration-white underline-offset-8 hover:text-accent hover:decoration-accent"
-            >
-              claim your tips
-            </Link>
-            <Link
-              href="/onboard"
-              className="text-muted underline decoration-[#333] underline-offset-8 hover:text-white hover:decoration-white"
-            >
-              start tipping
-            </Link>
-          </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link href="/withdraw" className="btn-primary">
+            claim your tips
+          </Link>
+          <Link href="/onboard" className="btn-ghost">
+            start tipping
+          </Link>
         </div>
       </div>
     </section>
