@@ -18,7 +18,7 @@ export default function Error({
       <p className="mt-4 text-muted">
         reload and try again. if it keeps happening, come back later.
       </p>
-      <p className="mt-6 break-all border border-danger p-3 text-xs text-danger">
+      <p className="mt-6 break-all rounded-lg border border-danger/30 p-3 text-xs text-danger">
         {error.message}
       </p>
       <div className="mt-10 flex justify-center gap-3">

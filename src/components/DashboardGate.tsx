@@ -83,15 +83,10 @@ function DashboardInner({ allowlist }: { allowlist: string[] }) {
 
   if (!username) {
     return (
-      <div className="mx-auto max-w-2xl px-5 pb-16 pt-6">
+      <div className="mx-auto max-w-2xl px-5 pb-24 pt-10">
         <div className="poster-card">
-          <div className="flex items-center justify-between gap-4">
-            <p className="brand-text">
-              ansem<span className="mark">.tips</span>
-            </p>
-            <span className="pill">tipper</span>
-          </div>
-          <h1 className="display mt-10 text-[clamp(2rem,7vw,3rem)]">
+          <p className="micro-label">tipper</p>
+          <h1 className="display mt-8 text-[clamp(2rem,6vw,3rem)]">
             your dash
           </h1>
           <p className="mt-4 max-w-md text-muted">
@@ -101,7 +96,7 @@ function DashboardInner({ allowlist }: { allowlist: string[] }) {
             recipients cash out on{" "}
             <Link
               href="/withdraw"
-              className="text-black underline underline-offset-4"
+              className="text-ink underline underline-offset-4"
             >
               withdraw
             </Link>
@@ -125,12 +120,12 @@ function DashboardInner({ allowlist }: { allowlist: string[] }) {
   }
 
   return (
-    <div className="mx-auto max-w-[1200px] space-y-6 px-5 pb-16 pt-6">
+    <div className="mx-auto max-w-[1200px] space-y-6 px-5 pb-24 pt-10">
       <div className="poster-card">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
             <p className="micro-label">tipper</p>
-            <h1 className="display mt-3 text-[clamp(2rem,6vw,3rem)]">
+            <h1 className="display mt-3 text-[clamp(2rem,5vw,2.75rem)]">
               @{username}
             </h1>
             <p className="mt-4 max-w-md text-muted">
@@ -165,7 +160,7 @@ function DashboardInner({ allowlist }: { allowlist: string[] }) {
             </div>
             <div className="poster-card">
               <p className="micro-label">what&apos;s running</p>
-              <ul className="mt-6 space-y-3 text-lg text-black/70">
+              <ul className="mt-6 space-y-3 text-lg text-body">
                 <li>
                   each like / reply / follow / qt / 🐂 sends $ansem to their
                   wallet on-chain.

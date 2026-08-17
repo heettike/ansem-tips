@@ -13,8 +13,9 @@ function reducedMotionSnapshot() {
 }
 
 /**
- * poster-diagram: tweet → like → $ansem leaves @you for @them.
- * svg loop, not a video. white field, ink lines, one orange chip.
+ * editorial diagram: tweet → like → $ansem leaves @you for @them.
+ * svg loop, not a video. white field, ink lines, one desaturated pastel
+ * on the like + travelling chip.
  */
 export function LikeTipAnim() {
   const reduce = useSyncExternalStore(
@@ -24,7 +25,7 @@ export function LikeTipAnim() {
   );
 
   return (
-    <figure className="like-tip mt-10 rounded-3xl border border-black/[0.08] bg-white px-4 py-8 sm:px-8">
+    <figure className="like-tip mt-10 rounded-2xl border border-[#e7e5e4] bg-white px-4 py-8 sm:px-8">
       <svg
         viewBox="0 0 720 360"
         className="mx-auto h-auto w-full max-w-2xl"
@@ -37,29 +38,21 @@ export function LikeTipAnim() {
           y="24"
           width="400"
           height="148"
-          rx="20"
+          rx="16"
           fill="#ffffff"
-          stroke="#000000"
-          strokeWidth="1.5"
+          stroke="#292524"
+          strokeWidth="1"
         />
-        <text
-          className="like-tip-frame"
-          x="184"
-          y="64"
-          fill="rgba(0,0,0,0.4)"
-          fontSize="16"
-          fontFamily="Helvetica, Arial, sans-serif"
-        >
+        <text className="like-tip-frame" x="184" y="64" fill="#777169" fontSize="16">
           @them
         </text>
         <text
           className="like-tip-frame"
           x="184"
           y="104"
-          fill="#ff4d00"
+          fill="#0c0a09"
           fontSize="28"
-          fontFamily="Helvetica, Arial, sans-serif"
-          fontWeight="700"
+          fontWeight="500"
         >
           $ansem
         </text>
@@ -68,18 +61,17 @@ export function LikeTipAnim() {
           cx="192"
           cy="140"
           r="7"
-          fill={reduce ? "#ff4d00" : "#ffffff"}
-          stroke={reduce ? "#ff4d00" : "#999999"}
+          fill={reduce ? "#e8b8c4" : "#ffffff"}
+          stroke={reduce ? "#292524" : "#a8a29e"}
           strokeWidth="1.5"
         />
         <text
           className="like-tip-like-word"
           x="210"
           y="145"
-          fill={reduce ? "#ff4d00" : "#999999"}
+          fill={reduce ? "#292524" : "#a8a29e"}
           fontSize="16"
-          fontFamily="Helvetica, Arial, sans-serif"
-          fontWeight="700"
+          fontWeight="500"
         >
           like
         </text>
@@ -90,17 +82,16 @@ export function LikeTipAnim() {
             cy="280"
             r="34"
             fill="#ffffff"
-            stroke="#000000"
-            strokeWidth="2"
+            stroke="#292524"
+            strokeWidth="1.5"
           />
           <text
             x="120"
             y="286"
             textAnchor="middle"
-            fill="#000000"
+            fill="#0c0a09"
             fontSize="14"
-            fontFamily="Helvetica, Arial, sans-serif"
-            fontWeight="700"
+            fontWeight="500"
           >
             @you
           </text>
@@ -109,17 +100,16 @@ export function LikeTipAnim() {
             cy="280"
             r="34"
             fill="#ffffff"
-            stroke="#000000"
-            strokeWidth="2"
+            stroke="#292524"
+            strokeWidth="1.5"
           />
           <text
             x="600"
             y="286"
             textAnchor="middle"
-            fill="#000000"
+            fill="#0c0a09"
             fontSize="14"
-            fontFamily="Helvetica, Arial, sans-serif"
-            fontWeight="700"
+            fontWeight="500"
           >
             @them
           </text>
@@ -131,8 +121,8 @@ export function LikeTipAnim() {
           y1="280"
           x2="566"
           y2="280"
-          stroke="#000000"
-          strokeWidth="1.25"
+          stroke="#292524"
+          strokeWidth="1"
           strokeOpacity="0.35"
         />
 
@@ -167,17 +157,16 @@ export function LikeTipAnim() {
             height="32"
             rx="16"
             fill="#ffffff"
-            stroke="#ff4d00"
+            stroke="#e8b8c4"
             strokeWidth="1.5"
           />
           <text
             x="212"
             y="285"
             textAnchor="middle"
-            fill="#ff4d00"
+            fill="#292524"
             fontSize="14"
-            fontFamily="Helvetica, Arial, sans-serif"
-            fontWeight="700"
+            fontWeight="500"
           >
             $ansem
           </text>

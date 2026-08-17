@@ -3,17 +3,27 @@ const MANIFESTO =
 
 export function LandingManifesto() {
   return (
-    <section className="poster-card poster-span-2">
-      <div className="flex items-center justify-between gap-4">
-        <p className="brand-text">
-          ansem<span className="mark">.tips</span>
+    <section className="orb-field section-gap section-pad">
+      <div
+        className="orb orb-rose"
+        style={{ width: 420, height: 420, top: "-10%", right: "6%" }}
+        aria-hidden="true"
+      />
+      <div
+        className="orb orb-sky"
+        style={{ width: 360, height: 360, bottom: "-15%", left: "-6%" }}
+        aria-hidden="true"
+      />
+
+      <div className="wrap relative">
+        <p className="micro-label">the dream</p>
+
+        <p className="manifesto-text mt-12">{MANIFESTO}</p>
+
+        <p className="display display-lg manifesto-signoff mt-16">
+          belief, should be liquid.
         </p>
-        <span className="pill">the dream</span>
       </div>
-
-      <p className="manifesto-text mt-12">{MANIFESTO}</p>
-
-      <p className="manifesto-signoff mt-12">belief, should be liquid.</p>
     </section>
   );
 }

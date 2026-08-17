@@ -97,7 +97,7 @@ function LazyTweet({ id }: { id: string }) {
   }, [show]);
 
   return (
-    <div ref={ref} className="tweet-cell mb-6 break-inside-avoid">
+    <div ref={ref} className="tweet-cell mb-4 break-inside-avoid lg:mb-6">
       {show ? <Tweet id={id} /> : <div className="tweet-placeholder" />}
     </div>
   );
@@ -105,19 +105,16 @@ function LazyTweet({ id }: { id: string }) {
 
 export function CommunityWall() {
   return (
-    <section className="poster-card poster-span-2 community-wall">
-      <div className="flex items-center justify-between gap-4">
-        <p className="brand-text">
-          ansem<span className="mark">.tips</span>
-        </p>
-        <span className="pill">the community wall</span>
-      </div>
+    <section className="community-wall section-gap band section-pad">
+      <div className="wrap">
+        <p className="micro-label">the community wall</p>
 
-      {/* .light forces react-tweet's light theme regardless of system scheme */}
-      <div className="light mt-10 columns-1 gap-6 md:columns-2 xl:columns-3">
-        {TWEET_IDS.map((id) => (
-          <LazyTweet key={id} id={id} />
-        ))}
+        {/* .light forces react-tweet's light theme regardless of system scheme */}
+        <div className="light mt-10 columns-1 gap-6 md:columns-2 xl:columns-3">
+          {TWEET_IDS.map((id) => (
+            <LazyTweet key={id} id={id} />
+          ))}
+        </div>
       </div>
     </section>
   );

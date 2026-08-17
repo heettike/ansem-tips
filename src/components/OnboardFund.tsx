@@ -80,7 +80,7 @@ function OnboardFundInner({
             <p className="micro-label">step</p>
             <span className="pill">01</span>
           </div>
-          <h2 className="mt-6 text-2xl font-bold tracking-tight">
+          <h2 className="display display-sub mt-6">
             log in with x
           </h2>
           <p className="mt-3 text-muted">
@@ -101,7 +101,7 @@ function OnboardFundInner({
           </div>
           {username && <p className="mt-3 text-sm mark">@{username}</p>}
           {username && !allowed && (
-            <div className="mt-6 rounded-2xl border border-black/10 p-4 text-sm text-muted">
+            <div className="mt-6 rounded-lg border border-[#e7e5e4] bg-[#fafafa] p-4 text-sm text-muted">
               you&apos;re on the waitlist — we approve tippers by hand. your
               deposit address activates once you&apos;re in.
             </div>
@@ -113,7 +113,7 @@ function OnboardFundInner({
             <p className="micro-label">step</p>
             <span className="pill">02</span>
           </div>
-          <h2 className="mt-6 text-2xl font-bold tracking-tight">
+          <h2 className="display display-sub mt-6">
             deposit min {minDepositUsd} $ansem
           </h2>
           {username ? (
@@ -127,7 +127,7 @@ function OnboardFundInner({
                     : `${deposited.toFixed(2)} $ansem`}
                 </span>
               </p>
-              <div className="mt-5 break-all rounded-2xl border border-black/[0.08] bg-[#fafafa] p-4 text-sm text-black/70">
+              <div className="mt-5 break-all rounded-lg border border-[#e7e5e4] bg-[#fafafa] p-4 text-sm text-body">
                 {wallet || WALLET_PLACEHOLDER}
               </div>
             </>
@@ -145,7 +145,7 @@ function OnboardFundInner({
             <LiveTipSettingsForm initial={initial} minTip={minTip} />
           ) : (
             <div>
-              <h3 className="text-2xl font-bold tracking-tight">
+              <h3 className="display display-sub">
                 tip amounts
               </h3>
               <p className="mt-3 text-muted">

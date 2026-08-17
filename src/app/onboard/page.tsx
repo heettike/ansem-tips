@@ -17,17 +17,12 @@ export default function OnboardPage() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 px-5 pb-16 pt-6">
-      {/* intro poster — mechanic + animation */}
+    <div className="mx-auto max-w-2xl space-y-6 px-5 pb-24 pt-10">
+      {/* intro — mechanic + animation */}
       <section className="poster-card">
-        <div className="flex items-center justify-between gap-4">
-          <p className="brand-text">
-            ansem<span className="mark">.tips</span>
-          </p>
-          <span className="pill">tipper</span>
-        </div>
+        <p className="micro-label">tipper</p>
 
-        <h1 className="display mt-10 max-w-[85%] text-[clamp(2rem,7vw,3rem)]">
+        <h1 className="display mt-8 max-w-[85%] text-[clamp(2rem,6vw,3rem)] leading-[1.1]">
           like someone.
           <br />
           $ansem leaves your wallet for theirs.
@@ -44,14 +39,9 @@ export default function OnboardPage() {
 
       {/* the rules */}
       <section className="poster-card">
-        <div className="flex items-center justify-between gap-4">
-          <p className="brand-text">
-            ansem<span className="mark">.tips</span>
-          </p>
-          <span className="pill">the rules</span>
-        </div>
+        <p className="micro-label">the rules</p>
 
-        <dl className="mt-10 divide-y divide-black/[0.08] border-y border-black/[0.08]">
+        <dl className="mt-8 divide-y divide-[#f0efed] border-y border-[#e7e5e4]">
           <div className="grid gap-1 py-4 sm:grid-cols-[7rem_1fr] sm:gap-6">
             <dt className="text-muted">amounts</dt>
             <dd>
@@ -95,7 +85,7 @@ export default function OnboardPage() {
         </dl>
 
         <p className="mt-8 max-w-lg text-muted">
-          open waitlist. live now: <span className="text-black">{invited}</span>
+          open waitlist. live now: <span className="text-ink">{invited}</span>
         </p>
         <p className="mt-2 max-w-lg text-muted">
           log in with x to join — we approve tippers by hand.

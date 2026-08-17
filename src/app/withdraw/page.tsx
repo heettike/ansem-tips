@@ -189,7 +189,7 @@ function WithdrawInner() {
           (picked && explorers[picked.chain]) || "https://solscan.io/tx/"
         }${sig}`;
         setStatusHtml(
-          `sent — <a href="${url}" target="_blank" rel="noreferrer" class="text-accent hover:underline">view receipt</a>`
+          `sent — <a href="${url}" target="_blank" rel="noreferrer" class="text-ink underline underline-offset-4">view receipt</a>`
         );
         if (username) {
           await refreshAll(username);
@@ -218,17 +218,12 @@ function WithdrawInner() {
   const lifetime = balance.lifetimeReceived || 0;
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 px-5 pb-16 pt-6">
+    <div className="mx-auto max-w-2xl space-y-6 px-5 pb-24 pt-10">
       {/* login + username check */}
       <section className="poster-card">
-        <div className="flex items-center justify-between gap-4">
-          <p className="brand-text">
-            ansem<span className="mark">.tips</span>
-          </p>
-          <span className="pill">recipient</span>
-        </div>
+        <p className="micro-label">recipient</p>
 
-        <h1 className="display mt-10 text-[clamp(2rem,7vw,3rem)]">
+        <h1 className="display mt-8 text-[clamp(2rem,6vw,3rem)]">
           withdraw <span className="gold">$ansem</span>
         </h1>
         <p className="mt-5 text-muted">
@@ -373,7 +368,7 @@ function WithdrawInner() {
               <span className="text-sm text-muted">amount ($ansem)</span>
               <button
                 type="button"
-                className="text-sm text-accent hover:underline"
+                className="text-sm text-ink underline-offset-4 hover:underline"
                 onClick={() => setAmount(Number(balance.withdrawable) || 0)}
               >
                 max ({balance.withdrawable.toFixed(2)})
@@ -402,7 +397,7 @@ function WithdrawInner() {
             />
           )}
           {statusError && (
-            <p className="break-all rounded-2xl border border-danger/30 p-3 text-sm text-danger">
+            <p className="break-all rounded-lg border border-danger/30 p-3 text-sm text-danger">
               {statusError}
             </p>
           )}

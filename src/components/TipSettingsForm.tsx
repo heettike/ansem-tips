@@ -125,7 +125,7 @@ export function TipSettingsForm({
     <form onSubmit={onSave} className="space-y-5">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h3 className="text-2xl font-bold tracking-tight">tip amounts</h3>
+          <h3 className="display display-sub">tip amounts</h3>
           <p className="mt-1 text-sm text-muted">
             this much $ansem leaves your wallet. min {minTip} $ansem.
           </p>
@@ -135,7 +135,7 @@ export function TipSettingsForm({
             type="checkbox"
             checked={settings.enabled}
             onChange={(e) => update("enabled", e.target.checked)}
-            className="size-4 accent-[#ff4d00]"
+            className="size-4 accent-[#292524]"
           />
           on
         </label>
@@ -195,7 +195,7 @@ export function TipSettingsForm({
         </label>
       </div>
 
-      <div className="space-y-4 border-t border-black/[0.08] pt-5">
+      <div className="space-y-4 border-t border-[#e7e5e4] pt-5">
         <p className="text-sm text-muted">
           tip token{" "}
           <span className="opacity-70">
@@ -269,7 +269,7 @@ export function TipSettingsForm({
       </button>
       {saved && <p className="text-sm mark">saved.</p>}
       {error && (
-        <p className="rounded-2xl border border-danger/30 p-3 text-sm text-danger">{error}</p>
+        <p className="rounded-lg border border-danger/30 p-3 text-sm text-danger">{error}</p>
       )}
     </form>
   );

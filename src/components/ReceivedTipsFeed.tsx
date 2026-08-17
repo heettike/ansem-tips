@@ -25,7 +25,7 @@ export function ReceivedTipsFeed({ tips }: { tips: ReceivedTip[] }) {
   return (
     <div>
       <p className="micro-label">tips you earned</p>
-      <ul className="mt-6 divide-y divide-black/[0.08] border-y border-black/[0.08]">
+      <ul className="mt-6 divide-y divide-[#f0efed] border-y border-[#e7e5e4]">
         {tips.map((t) => {
           const verb = ACTION_LABEL[t.actionType] || t.actionType;
           const isFollow = t.actionType === "follow";
@@ -37,7 +37,7 @@ export function ReceivedTipsFeed({ tips }: { tips: ReceivedTip[] }) {
             >
               <div className="min-w-0 flex-1">
                 <p>
-                  <span className="font-bold">@{t.fromUsername}</span>{" "}
+                  <span className="font-medium text-ink">@{t.fromUsername}</span>{" "}
                   <span className="text-muted">{verb}</span>
                   {!isFollow && t.tweetUrl && (
                     <>
@@ -46,7 +46,7 @@ export function ReceivedTipsFeed({ tips }: { tips: ReceivedTip[] }) {
                         href={t.tweetUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-accent hover:underline"
+                        className="text-ink underline-offset-4 hover:underline"
                       >
                         this tweet
                       </a>
@@ -58,7 +58,7 @@ export function ReceivedTipsFeed({ tips }: { tips: ReceivedTip[] }) {
                 </p>
               </div>
               <div className="shrink-0 text-right">
-                <p className="font-bold gold">+ ${usd.toFixed(2)}</p>
+                <p className="font-medium gold">+ ${usd.toFixed(2)}</p>
                 <p className="mt-1 text-xs text-muted">
                   {t.amount.toFixed(2)} $ansem
                 </p>

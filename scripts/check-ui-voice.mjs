@@ -1,5 +1,5 @@
 /**
- * Guard: Visualize Value landing + no CRT regression.
+ * Guard: quiet editorial print system + no CRT/poster regression.
  */
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -9,7 +9,6 @@ const ban = [
   /\b420\.69\b/,
   /DemoTipper/,
   /\bGeist\b/,
-  /\bInter\b/,
   /\bArchivo\b/,
   /\bshadcn\b/i,
   /\blucide\b/i,
@@ -28,6 +27,10 @@ const ban = [
   /stadium/i,
   /text-transform:\s*uppercase/,
   /box-shadow:[^;]*rgba\(182,\s*255/i,
+  /#ff4d00/i,
+  /#b6ff3b/i,
+  /#0070f3/i,
+  /ShaderCanvas/,
 ];
 
 const allowPath = (p) =>
@@ -115,13 +118,17 @@ const must = [
     /prefers-reduced-motion: reduce[\s\S]*\.vv-chip/,
     "reduced motion stops chip travel",
   ],
-  [css, /#000000|#000\b/, "pure black canvas"],
+  [css, /--canvas:\s*#f5f5f5/, "off-white canvas"],
   [css, /text-transform:\s*lowercase/, "lowercase system"],
-  [css, /Helvetica/, "quiet grotesque"],
-  [css, /--accent:\s*#b6ff3b/, "sparse acid green"],
+  [css, /--font-inter/, "inter body font token"],
+  [css, /--font-garamond/, "editorial serif display token"],
+  [css, /--ink:\s*#0c0a09/, "warm near-black ink"],
+  [css, /border-radius:\s*9999px/, "pill geometry for ctas"],
   [css, /scanline|crt-shell|grid-noise|vignette/i, "no crt leftovers in css", true],
   [nav, /pathname === "\/"/, "nav hidden on landing"],
-  [layout, /from "next\/font\/google"/, "no next/font google flex", true],
+  [layout, /from "next\/font\/google"/, "self-hosted google fonts"],
+  [layout, /EB_Garamond/, "editorial serif display via next/font"],
+  [layout, /Inter/, "inter body font via next/font"],
   [layout, /crt-shell/i, "no crt-shell on body", true],
   [providers, /return <>\{children\}<\/>/, "privy not at root"],
   [onboard, /LikeTipAnim/, "onboard mounts like-tip animation"],

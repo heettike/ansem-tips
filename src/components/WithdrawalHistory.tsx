@@ -25,7 +25,7 @@ export function WithdrawalHistory({
   return (
     <div>
       <p className="micro-label">past withdrawals</p>
-      <ul className="mt-6 divide-y divide-black/[0.08] border-y border-black/[0.08]">
+      <ul className="mt-6 divide-y divide-[#f0efed] border-y border-[#e7e5e4]">
         {withdrawals.map((w) => (
           <li
             key={w.id}
@@ -33,7 +33,7 @@ export function WithdrawalHistory({
           >
             <div className="min-w-0 flex-1">
               <p>
-                <span className="font-bold gold">
+                <span className="font-medium gold">
                   ${(w.amountUsd ?? w.amount).toFixed(2)}
                 </span>{" "}
                 <span className="text-muted">
@@ -49,7 +49,7 @@ export function WithdrawalHistory({
                   }
                   target="_blank"
                   rel="noreferrer"
-                  className="text-accent hover:underline"
+                  className="text-ink underline-offset-4 hover:underline"
                 >
                   {shortAddr(w.toAddress)}
                 </a>
@@ -59,7 +59,7 @@ export function WithdrawalHistory({
               href={w.solscanUrl}
               target="_blank"
               rel="noreferrer"
-              className="text-sm text-black underline underline-offset-4 hover:text-accent"
+              className="text-sm text-ink underline underline-offset-4 hover:text-muted"
             >
               receipt →
             </a>

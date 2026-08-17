@@ -20,7 +20,7 @@ export function BalanceCard({
         </span>
       </p>
       <p className="mt-2 text-sm text-muted">$ansem</p>
-      <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-4 border-t border-black/[0.08] pt-6 text-sm">
+      <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-4 border-t border-[#e7e5e4] pt-6 text-sm">
         <div>
           <dt className="micro-label">deposited</dt>
           <dd className="value-text mt-1">{balance.deposited.toFixed(2)}</dd>
