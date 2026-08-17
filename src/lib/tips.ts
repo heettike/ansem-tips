@@ -349,6 +349,32 @@ export async function pollAndEnqueueTips(tipperUsername?: string): Promise<{
     safeList("follows", () => twitter.listRecentFollows(tipperUser.id)),
   ]);
 
+  // Like-unlike guard: a like tip settles for one cycle. If a recent pending
+  // like tip is no longer in the current likes snapshot, the tipper unliked —
+  // void it before any money moves. Only recent tips are checked (the snapshot
+  // holds ~20 likes, so older tips falling off the list are not "unlikes").
+  const likedActionIds = new Set(likes.map((l) => l.actionId));
+  const recentCutoff = new Date(Date.now() - 10 * 60 * 1000);
+  const pendingLikes = await prisma.tip.findMany({
+    where: {
+      fromUserId: tipper.id,
+      actionType: "like",
+      status: "pending",
+      createdAt: { gt: recentCutoff },
+    },
+    select: { id: true, actionId: true },
+  });
+  const unliked = pendingLikes.filter((t) => !likedActionIds.has(t.actionId));
+  if (unliked.length > 0) {
+    await prisma.tip.updateMany({
+      where: { id: { in: unliked.map((t) => t.id) } },
+      data: { status: "voided_unliked" },
+    });
+    console.info(
+      `[tips] voided ${unliked.length} like tips unliked within the settle window (@${tipperUser.username})`
+    );
+  }
+
   const all = [...likes, ...replies, ...quotes, ...follows].map((a) => ({
     ...a,
     tipperUsername: tipperUser.username,
@@ -573,8 +599,18 @@ export async function processTip(tipId: string): Promise<ProcessTipResult> {
 
 export async function processPendingTips(limit = 25): Promise<ProcessTipResult[]> {
   await clawbackRetroTips();
+  const likeSettleCutoff = new Date(
+    Date.now() - config.likeSettleSeconds * 1000
+  );
   const pending = await prisma.tip.findMany({
-    where: { status: "pending" },
+    where: {
+      status: "pending",
+      // Likes settle for one poll cycle so instant like-unlike never pays.
+      OR: [
+        { actionType: { not: "like" } },
+        { createdAt: { lt: likeSettleCutoff } },
+      ],
+    },
     take: limit,
     orderBy: { createdAt: "asc" },
   });

@@ -57,6 +57,8 @@ export const config = {
   minTipUsd: envFloat("MIN_TIP_USD", 1),
   claimExpiryDays: envFloat("CLAIM_EXPIRY_DAYS", 30),
   pollIntervalSeconds: envFloat("POLL_INTERVAL_SECONDS", 55),
+  /// Likes settle for one poll cycle; unliked-within-window tips are voided unpaid
+  likeSettleSeconds: envFloat("LIKE_SETTLE_SECONDS", 60),
 
   // Auth
   privyAppId: env("NEXT_PUBLIC_PRIVY_APP_ID", ""),
