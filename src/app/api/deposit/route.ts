@@ -50,14 +50,23 @@ export async function POST(req: NextRequest) {
     )
       .replace(/^@/, "")
       .toLowerCase();
-    if (!username || !isAllowlistedTipper(username)) {
-      return NextResponse.json({ ok: false, error: "Not allowlisted tipper" }, { status: 403 });
+    if (!username) {
+      return NextResponse.json({ ok: false, error: "No X username" }, { status: 403 });
     }
 
     const body = bodySchema.parse(await req.json().catch(() => ({})));
     const user = await prisma.user.findFirst({
       where: { OR: [{ privyDid: claims.userId }, { username }] },
     });
+    if (
+      !isAllowlistedTipper(username) &&
+      user?.accessStatus !== "approved"
+    ) {
+      return NextResponse.json(
+        { ok: false, error: "You're on the waitlist — tipping unlocks once approved" },
+        { status: 403 }
+      );
+    }
     if (!user) {
       return NextResponse.json(
         { ok: false, error: "Sync account via /api/auth/sync first" },

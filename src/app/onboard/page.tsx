@@ -95,10 +95,10 @@ export default function OnboardPage() {
         </dl>
 
         <p className="mt-8 max-w-lg text-muted">
-          invite-only. invited: <span className="text-black">{invited}</span>
+          open waitlist. live now: <span className="text-black">{invited}</span>
         </p>
         <p className="mt-2 max-w-lg text-muted">
-          log in as you — you must be on the list.
+          log in with x to join — we approve tippers by hand.
         </p>
       </section>
 

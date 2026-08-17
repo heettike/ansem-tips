@@ -23,8 +23,15 @@ export async function watchTipperDeposits(
   const users = await prisma.user.findMany({
     where: {
       role: "tipper",
-      username: { in: tippers },
       walletAddress: { not: null },
+      ...(usernames?.length
+        ? { username: { in: tippers } }
+        : {
+            OR: [
+              { username: { in: tippers } },
+              { accessStatus: "approved" },
+            ],
+          }),
     },
     include: { balance: true, tipSettings: true },
   });
@@ -34,7 +41,9 @@ export async function watchTipperDeposits(
   let creditedTotal = 0;
 
   for (const user of users) {
-    if (!user.walletAddress || !isAllowlistedTipper(user.username)) continue;
+    const hasAccess =
+      isAllowlistedTipper(user.username) || user.accessStatus === "approved";
+    if (!user.walletAddress || !hasAccess) continue;
 
     let onchain = 0;
     try {

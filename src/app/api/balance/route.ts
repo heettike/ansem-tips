@@ -45,6 +45,7 @@ export async function GET(req: NextRequest) {
           demoMode: config.demoMode,
           username: user.username,
           role: user.role,
+          accessStatus: user.accessStatus,
           balance: {
             deposited: user.balance.deposited,
             withdrawable: user.balance.withdrawable,

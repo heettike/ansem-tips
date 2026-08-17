@@ -30,6 +30,10 @@ model User {
   followBaselineAt        DateTime?
   /// EVM address (Privy embedded or user-provided) for base/bsc/robinhood deposits
   evmAddress              String?
+  /// Waitlist: anyone can log in; tipping needs manual approval ("pending" | "approved" | "rejected")
+  accessStatus            String   @default("pending")
+  /// X-poll throttle: skip polling this tipper if polled within POLL_INTERVAL_SECONDS
+  lastPolledAt            DateTime?
 
   tokenBalances TokenBalance[]
   createdAt     DateTime @default(now())

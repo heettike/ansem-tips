@@ -56,6 +56,7 @@ export const config = {
   minDepositUsd: envFloat("MIN_DEPOSIT_USD", 100),
   minTipUsd: envFloat("MIN_TIP_USD", 1),
   claimExpiryDays: envFloat("CLAIM_EXPIRY_DAYS", 30),
+  pollIntervalSeconds: envFloat("POLL_INTERVAL_SECONDS", 55),
 
   // Auth
   privyAppId: env("NEXT_PUBLIC_PRIVY_APP_ID", ""),

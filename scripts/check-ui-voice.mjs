@@ -158,7 +158,7 @@ const must = [
     /prefers-reduced-motion: reduce[\s\S]*like-tip-path/,
     "reduced motion stops like-tip loop",
   ],
-  [onboard, /log in as you — you must be on the list/, "invited tippers, not spectator"],
+  [onboard, /log in with x to join — we approve tippers by hand/, "waitlist copy, not spectator"],
   [onboard, /allowlist:/, "no spectator allowlist line", true],
   [onboard, /\(\+\s*/, "no primary-plus-others allowlist", true],
   [fund, /deposit min \{minDepositUsd\} \$ansem/, "1 $ansem not $1 $ansem"],

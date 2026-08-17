@@ -38,11 +38,13 @@ async function resolveTipper(req: NextRequest) {
   )
     .replace(/^@/, "")
     .toLowerCase();
-  if (!username || !isAllowlistedTipper(username)) return null;
+  if (!username) return null;
   const user = await prisma.user.findFirst({
     where: { OR: [{ privyDid: claims.userId }, { username }] },
     include: { tipSettings: true },
   });
+  if (!user) return null;
+  if (user.accessStatus !== "approved" && !isAllowlistedTipper(username)) return null;
   return user;
 }
 

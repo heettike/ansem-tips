@@ -7,6 +7,7 @@ import {
   processPendingTips,
 } from "@/lib/tips";
 import { watchTipperDeposits } from "@/lib/deposits";
+import { prisma } from "@/lib/db";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -31,16 +32,37 @@ async function handle(req: NextRequest) {
 
   try {
     const tipperParam = req.nextUrl.searchParams.get("tipper");
+    // Waitlist: poll env allowlist + manually approved tippers from the DB.
+    const approved = tipperParam
+      ? []
+      : await prisma.user.findMany({
+          where: { role: "tipper", accessStatus: "approved" },
+          select: { username: true, lastPolledAt: true },
+        });
     const tippers = tipperParam
       ? [tipperParam.replace(/^@/, "").toLowerCase()]
-      : config.tipperAllowlist;
+      : [
+          ...new Set([
+            ...config.tipperAllowlist,
+            ...approved.map((u) => u.username),
+          ]),
+        ];
+    // X-poll throttle: skip tippers polled within POLL_INTERVAL_SECONDS
+    // (the 1-min external cron still processes pending tips + deposits every run).
+    const cutoffMs = Date.now() - config.pollIntervalSeconds * 1000;
+    const lastPolled = new Map(
+      approved.map((u) => [u.username, u.lastPolledAt?.getTime() ?? 0])
+    );
+    const duePollers = tipperParam
+      ? tippers
+      : tippers.filter((t) => (lastPolled.get(t) ?? 0) < cutoffMs);
 
     const clawback = await clawbackRetroTips();
 
     const deposits = await watchTipperDeposits(tippers);
 
     const polls = [];
-    for (const tipper of tippers) {
+    for (const tipper of duePollers) {
       try {
         polls.push({ tipper, ...(await pollAndEnqueueTips(tipper)) });
       } catch (e) {

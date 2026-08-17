@@ -31,9 +31,13 @@ export function DashboardGate({ allowlist }: { allowlist: string[] }) {
   >([]);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [accessStatus, setAccessStatus] = useState<string | null>(null);
 
   const allowed =
-    !!username && allowlist.includes(username.replace(/^@/, "").toLowerCase());
+    (!!username &&
+      allowlist.includes(username.replace(/^@/, "").toLowerCase())) ||
+    accessStatus === "approved";
+  const waitlisted = !!username && !allowed;
 
   async function loadMine(u: string) {
     setError(null);
@@ -44,6 +48,7 @@ export function DashboardGate({ allowlist }: { allowlist: string[] }) {
       ]);
       const bal = await balRes.json();
       const sent = await tipRes.json();
+      if (bal.ok && bal.accessStatus) setAccessStatus(bal.accessStatus);
       if (bal.ok && bal.balance) {
         setBalance({
           deposited: Number(bal.balance.deposited) || 0,
@@ -118,8 +123,10 @@ export function DashboardGate({ allowlist }: { allowlist: string[] }) {
               @{username}
             </h1>
             <p className="mt-4 max-w-md text-muted">
-              {!allowed
-                ? "you're not on the tipper list. ask whoever runs this."
+              {waitlisted
+                ? "you're on the waitlist. we approve tippers by hand — check back soon."
+                : !allowed
+                ? "log in with x to join the waitlist."
                 : loaded
                   ? "your balances — real numbers only"
                   : "loading your numbers…"}

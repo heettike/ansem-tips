@@ -280,6 +280,13 @@ export async function pollAndEnqueueTips(tipperUsername?: string): Promise<{
     authMode = "bearer";
   }
 
+  if (existingTipper) {
+    await prisma.user.update({
+      where: { id: existingTipper.id },
+      data: { lastPolledAt: new Date() },
+    });
+  }
+
   const twitter = createTwitterClient(userAccess);
   const tipperUser = await twitter.getUserByUsername(username);
   if (!tipperUser) {

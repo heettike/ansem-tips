@@ -62,17 +62,9 @@ export async function POST(req: NextRequest) {
     }
 
     const xId = tw.subject || `privy_${claims.userId}`;
+    // Open login: anyone gets in; tipping access is manually approved (waitlist).
     const wantTipper = body.role === "tipper" || isAllowlistedTipper(username);
-    if (wantTipper && !isAllowlistedTipper(username)) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error: `@${username} is not an allowlisted tipper`,
-          allowlist: config.tipperAllowlist,
-        },
-        { status: 403 }
-      );
-    }
+    const autoApproved = isAllowlistedTipper(username);
 
     const wallet =
       body.walletAddress ||
@@ -140,6 +132,7 @@ export async function POST(req: NextRequest) {
         privyDid: merged.privyDid,
         walletAddress: merged.walletAddress,
         role: wantTipper ? "tipper" : "recipient",
+        accessStatus: autoApproved ? "approved" : "pending",
         lastActiveAt: new Date(),
         ...tokenUpdate,
         ...(wantTipper && merged.walletAddress ? { tipsArmedAt: new Date() } : {}),
@@ -150,6 +143,7 @@ export async function POST(req: NextRequest) {
         username,
         privyDid: merged.privyDid,
         lastActiveAt: new Date(),
+        ...(autoApproved ? { accessStatus: "approved" } : {}),
         ...(merged.walletAddress ? { walletAddress: merged.walletAddress } : {}),
         ...(wantTipper ? { role: "tipper" } : {}),
         ...tokenUpdate,
@@ -207,6 +201,7 @@ export async function POST(req: NextRequest) {
       userId: user.id,
       username: user.username,
       role: user.role,
+      accessStatus: user.accessStatus,
       privyDid: user.privyDid,
       walletAddress: user.walletAddress,
       balance: user.balance,
