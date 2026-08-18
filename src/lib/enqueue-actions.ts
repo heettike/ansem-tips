@@ -1,6 +1,11 @@
 import { config } from "./config";
 import { matchesTrigger } from "./twitter";
 import { decideWhetherToPay } from "./tip-policy";
+
+/** Two paid events: likes and super-tips. Everything else marks processed and skips. */
+function isPaidEvent(actionType: ActionType): boolean {
+  return actionType === "like" || actionType === "super_tip";
+}
 import type { ActionType, TwitterAction } from "../types";
 
 export type EnqueueTipper = {
@@ -119,7 +124,6 @@ export async function enqueueFetchedActions(opts: {
     }
 
     const superTrigger = tipper.tipSettings.superTipTrigger || "🐂";
-    const commentTrigger = tipper.tipSettings.commentTrigger || "lfg";
     const actionType = resolveActionType(action, superTrigger);
 
     const marked = await store.markProcessed({
@@ -134,9 +138,9 @@ export async function enqueueFetchedActions(opts: {
 
     if (action.actionType === "follow") sawFollow = true;
 
-    // Plain comments only tip on the tipper's trigger (super-tip trigger already resolved above).
-    // Stays marked processed so we never re-check it.
-    if (actionType === "comment" && !matchesTrigger(action.text, commentTrigger)) {
+    // Only likes and super-tips pay. Plain replies/qts (and any follow that
+    // reaches here) stay marked processed and skip.
+    if (!isPaidEvent(actionType)) {
       skipped++;
       continue;
     }

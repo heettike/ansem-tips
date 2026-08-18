@@ -137,7 +137,7 @@ const must = [
     /from your wallet to theirs/,
     "onboard states wallet-to-wallet mechanic",
   ],
-  [onboard, /like \/ reply \/ follow \/ qt/, "onboard names the five actions"],
+  [onboard, /like \/ drop 🐂/, "onboard names the two events"],
   [onboard, /from ["']@\/lib\/db["']|prisma/, "onboard must not ssr a tipper row", true],
   [onboard, /findFirst/, "onboard must not load first allowlisted tipper", true],
   [

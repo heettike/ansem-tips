@@ -10,24 +10,9 @@ const fields: { key: keyof TipAmountSettings; label: string; hint: string }[] = 
     hint: "this much leaves your wallet when you like",
   },
   {
-    key: "commentAmount",
-    label: "reply",
-    hint: "this much leaves your wallet when you reply",
-  },
-  {
-    key: "followAmount",
-    label: "follow",
-    hint: "this much leaves your wallet when you follow",
-  },
-  {
-    key: "quoteAmount",
-    label: "qt",
-    hint: "this much leaves your wallet when you qt",
-  },
-  {
     key: "superTipAmount",
     label: "super tip 🐂",
-    hint: "this much leaves your wallet when 🐂 is in a reply or qt",
+    hint: "this much leaves your wallet when your trigger is in a reply or qt",
   },
 ];
 
@@ -165,24 +150,9 @@ export function TipSettingsForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block">
           <span className="mb-2 block text-sm text-muted">
-            reply trigger{" "}
-            <span className="opacity-70">
-              (replies only tip when they contain this — word or emoji)
-            </span>
-          </span>
-          <input
-            className="input"
-            type="text"
-            maxLength={50}
-            value={settings.commentTrigger ?? "lfg"}
-            onChange={(e) => update("commentTrigger", e.target.value)}
-          />
-        </label>
-        <label className="block">
-          <span className="mb-2 block text-sm text-muted">
             super tip trigger{" "}
             <span className="opacity-70">
-              (replies or qts with this pay the super tip)
+              (replies or qts with this pay the super tip — word or emoji)
             </span>
           </span>
           <input

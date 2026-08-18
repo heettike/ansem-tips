@@ -24,7 +24,7 @@ const garamond = EB_Garamond({
 export const metadata: Metadata = {
   title: "ansem.tips — tip $ansem",
   description:
-    "tip $ansem when you like, reply, follow, or qt. drop 🐂 for a super tip. recipients cash out.",
+    "tip $ansem when you like. drop 🐂 in a reply or qt for a super tip. recipients cash out.",
   icons: {
     icon: "/brand/ansem.png",
     apple: "/brand/ansem.png",

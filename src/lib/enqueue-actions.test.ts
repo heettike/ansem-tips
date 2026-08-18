@@ -117,7 +117,7 @@ describe("enqueueFetchedActions — never tip the past", () => {
     assert.ok(t.followBaselineAt);
   });
 
-  it("second poll with one new follow → 1 tip", async () => {
+  it("second poll with one new follow → 0 tips (follows are not observed)", async () => {
     const mem = memoryStore();
     const baselineAt = new Date("2026-08-13T02:33:00.000Z");
     const existing = [
@@ -139,9 +139,8 @@ describe("enqueueFetchedActions — never tip the past", () => {
       store: mem.store,
     });
 
-    assert.equal(result.enqueued, 1);
-    assert.deepEqual(result.actions, ["follow_tipper_new"]);
-    assert.equal(mem.tips.length, 1);
+    assert.equal(result.enqueued, 0);
+    assert.equal(mem.tips.length, 0);
     assert.equal(mem.processed.size, 3);
   });
 
@@ -206,8 +205,7 @@ describe("enqueueFetchedActions — never tip the past", () => {
       ],
       store: mem.store,
     });
-    assert.equal(later.enqueued, 1);
-    assert.deepEqual(later.actions, ["follow_tipper_3"]);
+    assert.equal(later.enqueued, 0);
   });
 
   it("unarmed tipper baselines follows without enqueueing or stamping followBaselineAt", async () => {
@@ -251,15 +249,16 @@ describe("enqueueFetchedActions — lfg comment gate", () => {
     assert.ok(mem.processed.has("comment_1"));
   });
 
-  it("lfg comment (any case) → tips", async () => {
+  it("plain lfg comment no longer tips — only likes and super-tips pay", async () => {
     const mem = memoryStore();
     const result = await enqueueFetchedActions({
       tipper: tipper(),
       actions: [comment("2", "LFG brother"), comment("3", "lfggg")],
       store: mem.store,
     });
-    assert.equal(result.enqueued, 2);
-    assert.equal(mem.tips.length, 2);
+    assert.equal(result.enqueued, 0);
+    assert.equal(mem.tips.length, 0);
+    assert.ok(mem.processed.has("comment_2"));
   });
 
   it("bull emoji comment without lfg → super_tip still fires", async () => {
@@ -275,10 +274,10 @@ describe("enqueueFetchedActions — lfg comment gate", () => {
 });
 
 describe("enqueueFetchedActions — per-tipper triggers", () => {
-  it("emoji-only comment trigger tips on emoji, not on lfg", async () => {
+  it("emoji super-tip trigger pays; plain comments never do", async () => {
     const mem = memoryStore();
     const t = tipper();
-    t.tipSettings = { ...t.tipSettings, commentTrigger: "🔥" };
+    t.tipSettings = { ...t.tipSettings, superTipTrigger: "🔥" };
     const result = await enqueueFetchedActions({
       tipper: t,
       actions: [comment("e1", "this 🔥"), comment("e2", "lfg brother")],

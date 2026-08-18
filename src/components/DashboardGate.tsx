@@ -162,12 +162,12 @@ function DashboardInner({ allowlist }: { allowlist: string[] }) {
               <p className="micro-label">what&apos;s running</p>
               <ul className="mt-6 space-y-3 text-lg text-body">
                 <li>
-                  each like / reply / follow / qt / 🐂 sends $ansem to their
+                  each like / 🐂 super tip sends $ansem to their
                   wallet on-chain.
                 </li>
                 <li>cash out is on withdraw.</li>
                 <li>
-                  tips start after you log in — we don&apos;t pay old likes/follows.
+                  tips start after you log in — we don&apos;t pay old likes.
                 </li>
                 <li>same action never tips twice.</li>
                 <li>empty means nothing tipped yet — not fake numbers.</li>

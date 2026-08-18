@@ -28,10 +28,10 @@ export default function OnboardPage() {
           $ansem leaves your wallet for theirs.
         </h1>
         <p className="mt-5 max-w-lg text-lg text-muted">
-          reply, follow, qt — same thing. drop 🐂 and they get more.
+          drop your super-tip trigger — default 🐂 — in a reply or qt and they get more.
         </p>
         <p className="mt-4 max-w-lg">
-          each time you like / reply / follow / qt / drop 🐂, we send $ansem from your wallet to theirs.
+          each time you like / drop 🐂, we send $ansem from your wallet to theirs.
         </p>
 
         <LikeTipAnim />
@@ -49,17 +49,17 @@ export default function OnboardPage() {
             </dd>
           </div>
           <div className="grid gap-1 py-4 sm:grid-cols-[7rem_1fr] sm:gap-6">
-            <dt className="text-muted">replies</dt>
+            <dt className="text-muted">events</dt>
             <dd>
-              only tip when they contain your trigger — default
-              &quot;lfg&quot;. yours can be any word or emoji.
+              two things tip: your likes, and replies or qts that contain
+              your super-tip trigger. nothing else moves money.
             </dd>
           </div>
           <div className="grid gap-1 py-4 sm:grid-cols-[7rem_1fr] sm:gap-6">
             <dt className="text-muted">super tip</dt>
             <dd>
-              a reply or qt with your super-tip trigger — default 🐂 — pays
-              your bigger super-tip amount.
+              a reply or qt with your super-tip trigger — default 🐂, yours
+              can be any word or emoji — pays your bigger super-tip amount.
             </dd>
           </div>
           <div className="grid gap-1 py-4 sm:grid-cols-[7rem_1fr] sm:gap-6">

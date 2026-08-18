@@ -331,7 +331,6 @@ export async function pollAndEnqueueTips(tipperUsername?: string): Promise<{
         try {
           const appClient = createTwitterClient(null);
           if (label === "likes") return (await appClient.listRecentLikes(tipperUser!.id)) as T[];
-          if (label === "follows") return (await appClient.listRecentFollows(tipperUser!.id)) as T[];
           if (label === "replies") return (await appClient.listRecentReplies(tipperUser!.id)) as T[];
           if (label === "quotes") return (await appClient.listRecentQuotes(tipperUser!.id)) as T[];
         } catch (e2) {
@@ -342,11 +341,12 @@ export async function pollAndEnqueueTips(tipperUsername?: string): Promise<{
     }
   }
 
-  const [likes, replies, quotes, follows] = await Promise.all([
+  // Two observed events only: likes and super-tips (replies/qts with the
+  // super trigger). Follows and reposts are not watched.
+  const [likes, replies, quotes] = await Promise.all([
     safeList("likes", () => twitter.listRecentLikes(tipperUser.id)),
     safeList("replies", () => twitter.listRecentReplies(tipperUser.id)),
     safeList("quotes", () => twitter.listRecentQuotes(tipperUser.id)),
-    safeList("follows", () => twitter.listRecentFollows(tipperUser.id)),
   ]);
 
   // Like-unlike guard: a like tip settles for one cycle. If a recent pending
@@ -375,7 +375,7 @@ export async function pollAndEnqueueTips(tipperUsername?: string): Promise<{
     );
   }
 
-  const all = [...likes, ...replies, ...quotes, ...follows].map((a) => ({
+  const all = [...likes, ...replies, ...quotes].map((a) => ({
     ...a,
     tipperUsername: tipperUser.username,
     tipperXId: tipperUser.id,

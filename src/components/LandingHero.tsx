@@ -38,8 +38,8 @@ export function LandingHero() {
 
           <div className="pb-24 pt-16 sm:pt-24">
             <h1 className="display display-hero max-w-3xl">
-              tip any <span className="mark">token</span> when you like,
-              comment, follow or more
+              tip any <span className="mark">token</span> when you like —
+              drop 🐂 to send more
             </h1>
 
             <p className="mt-6 max-w-md text-[15px]">
