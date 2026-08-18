@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
               Date.now() + clientTokens.accessTokenExpiresInSeconds * 1000
             )
           : null;
-    } else if (wantTipper) {
+    } else {
       const serverTokens = await privy.getUserTwitterOAuthTokens?.(claims.userId);
       if (serverTokens?.accessToken) {
         accessToken = serverTokens.accessToken;
@@ -100,8 +100,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Store X tokens on every login regardless of role — the poller refreshes
+    // them indefinitely so users never need to log in again for tips to work.
     const tokenUpdate =
-      wantTipper && accessToken
+      accessToken
         ? {
             twitterAccessToken: accessToken,
             twitterRefreshToken: refreshToken ?? null,

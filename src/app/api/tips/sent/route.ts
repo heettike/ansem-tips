@@ -23,7 +23,12 @@ export async function GET(req: NextRequest) {
     }
 
     const tips = await prisma.tip.findMany({
-      where: { fromUserId: user.id },
+      where: {
+        fromUserId: user.id,
+        // two observed events only — old follow/comment rows stay in the db
+        // but never render
+        actionType: { in: ["like", "super_tip"] },
+      },
       orderBy: { createdAt: "desc" },
       take: 25,
     });
